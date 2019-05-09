@@ -1,0 +1,77 @@
+{
+  "name": "sails-arangojs",
+  "version": "0.0.1",
+  "description": "A sails-arangojs adapter for Sails / Waterline",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/run-standard-tests",
+    "pretest": "npm run lint",
+    "lint": "node ./node_modules/eslint/bin/eslint . --max-warnings=0",
+    "semantic-release": "semantic-release",
+    "commit": "git-cz"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gaithoben/sails-arangojs.git"
+  },
+  "keywords": [
+    "sails-arangojs",
+    "sails-arangodb",
+    "arangodb",
+    "arangojs",
+    "sails-arango",
+    "adapter",
+    "sails",
+    "sails.js",
+    "waterline",
+    "orm",
+    "database-adapter"
+  ],
+  "files": [
+    "helpers",
+    "private",
+    "test",
+    "index.js",
+    "README.md"
+  ],
+  "author": "Bernard Gaitho <gaithoben@gmail.com> (http://github.com/gaithoben)",
+  "bugs": {
+    "url": "https://github.com/gaithoben/sails-arangojs/issues"
+  },
+  "homepage": "https://github.com/gaithoben/sails-arangojs#readme",
+  "license": "MIT",
+  "dependencies": {
+    "@sailshq/lodash": "^3.10.2",
+    "arangojs": "^6.10.0",
+    "flaverr": "^1.10.0",
+    "machine": "^15.2.2",
+    "sqlstring": "^2.3.1",
+    "uniqid": "^5.0.3",
+    "waterline-utils": "^1.4.2"
+  },
+  "devDependencies": {
+    "eslint": "^5.4.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.2",
+    "semantic-release": "^15.13.3",
+    "waternile-adapter-tests": "^1.0.8"
+  },
+  "waterlineAdapter": {
+    "type": "sails-arangojs",
+    "interfaces": [
+      "semantic",
+      "queryable",
+      "migratable",
+      "sql"
+    ],
+    "features": [
+      "unique",
+      "crossAdapter"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  }
+}
