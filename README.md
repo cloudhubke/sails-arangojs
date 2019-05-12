@@ -93,7 +93,7 @@ const info = await collection.save(data);
 
 //OR
 
-const cursor = await dbConnection.query('FOR record IN model return record');
+const cursor = await dbConnection.query('FOR record IN model RETURN record');
 
 ```
 
