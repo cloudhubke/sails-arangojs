@@ -109,43 +109,48 @@ module.exports = require('machine').build({
     let session;
     let result;
 
-    try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
 
+    try {
       const isarray = Array.isArray(query.numericAttrName);
       // Construct sql statement
 
       let sql = '';
 
       if (isarray) {
-        sql = `select ${statement.selectClause} sum(${
-          statement.numericAttrName
-        }) as sum from ${Helpers.query.capitalize(statement.from)} where ${
-          statement.whereClause
-        }`;
+        sql = `FOR record IN ${statement.tableName}`;
+        sql = `${sql} LET sum = ${statement.numericAttrName}`;
+        sql = `${sql} LET doc = record`;
+        sql = `${sql} RETURN {doc, sum }`;
       } else {
-        sql = `select sum(${
+        sql = `FOR record IN ${statement.tableName}`;
+        if (statement.whereClause) {
+          sql = `${sql} FILTER ${statement.whereClause}`;
+        }
+        sql = `${sql} COLLECT AGGREGATE sum = SUM(record.${
           statement.numericAttrName
-        }) as sum from ${Helpers.query.capitalize(statement.from)} where ${
-          statement.whereClause
-        }`;
+        })`;
+        sql = `${sql} RETURN sum`;
       }
 
-      const deffered = session.query(sql);
+      result = await dbConnection.query(sql);
+
       if (isarray) {
-        result = await deffered.all();
+        result = result._result.map(record => Helpers.query.processNativeRecord(
+          { ...record.doc, sum: record.sum },
+          WLModel,
+        ));
       } else {
-        result = await deffered.one();
-        result = result.sum || 0;
+        result = _.isArray(result._result) ? result._result[0] : 0;
       }
 
-      await Helpers.connection.releaseSession(session, leased);
+      Helpers.connection.releaseConnection(session, leased);
     } catch (error) {
       if (session) {
-        await Helpers.connection.releaseSession(session, leased);
+        Helpers.connection.releaseConnection(session, leased);
       }
       return exits.badConnection(error);
     }

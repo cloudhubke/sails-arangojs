@@ -61,16 +61,13 @@ module.exports = {
     // If the connection doesn't have a `close` function for some reason,
     // then catch that ahead of time so we can provide a slightly nicer
     // error message and help prevent confusion.
-    // if (
-    //   !_.isObject(inputs.connection)
-    //   || !_.isFunction(inputs.connection.close)
-    // ) {
-    //   return exits.badConnection();
-    // }
+    if (!_.isObject(inputs.connection)) {
+      // || !_.isFunction(inputs.connection.close)
+      return exits.badConnection();
+    }
 
-    // I did not see anywhere in Arango Docs that we are supposed to close connections.
-    // If you find, let me know  on gaithobe\at\gmail.com
-
+    // This is a no-op function because the cursor and the pool automatically
+    // releases the connection back into the pool once the query has run.
     return exits.success({
       meta: inputs.meta,
     });

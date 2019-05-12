@@ -110,22 +110,27 @@ module.exports = require('machine').build({
     let session;
     let results;
 
-    try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
 
-      let deffered = session
-        .select(`avg(${statement.numericAttrName}.asFloat())`)
-        .from(`${statement.from}`);
+    try {
+      let sql = `FOR record in ${statement.tableName}`;
       if (statement.whereClause) {
-        deffered = deffered.where(`${statement.whereClause}`);
+        sql = `${sql} FILTER ${statement.whereClause}`;
       }
 
-      results = await deffered.scalar();
+      sql = `${sql} COLLECT AGGREGATE avg = AVG(record.${
+        statement.numericAttrName
+      })`;
+      sql = `${sql} RETURN avg`;
 
-      await Helpers.connection.releaseSession(session, leased);
+      results = await dbConnection.query(sql);
+
+      results = _.isArray(results._result) ? results._result[0] : 0;
+
+      Helpers.connection.releaseConnection(session, leased);
     } catch (error) {
       return exits.badConnection(error);
     }

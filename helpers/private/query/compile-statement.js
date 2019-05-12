@@ -44,7 +44,10 @@ module.exports = function compileStatement(options) {
     throw new Error('Criteria must contain a WHERE clause.');
   }
 
-  function specialValue(val) {
+  function specialValue(val, key) {
+    if (key === pkColumnName) {
+      return `${SqlString.escape(val)}`;
+    }
     if (_.isObject(val)) {
       return JSON.stringify(val);
     }
@@ -74,7 +77,7 @@ module.exports = function compileStatement(options) {
     if (Array.isArray(arr) && arr.length > 0) {
       if (arr.length === 1) {
         const v = arr[0];
-        str = `= ${specialValue(v)}`;
+        str = `== ${specialValue(v)}`;
       } else {
         str = `IN [${arr.map(v => (Number(v) ? v : `'${v}'`))}]`;
       }
@@ -134,7 +137,7 @@ module.exports = function compileStatement(options) {
           str = `<= ${value}`;
           return;
         case '$ne':
-          str = `<> ${value}`;
+          str = `!+ ${value}`;
           return;
 
         case '>':
@@ -150,10 +153,10 @@ module.exports = function compileStatement(options) {
           str = `<= ${value}`;
           return;
         case '<>':
-          str = `<> ${specialValue(value)}`;
+          str = `!= ${specialValue(value)}`;
           return;
         case '!=':
-          str = `<> ${specialValue(value)}`;
+          str = `!= ${specialValue(value)}`;
           return;
 
         case 'like':
@@ -210,7 +213,7 @@ module.exports = function compileStatement(options) {
         let inarr = '';
         if (value.length === 1) {
           const v = value[0];
-          inarr = `= ${specialValue(v)}`;
+          inarr = `== ${specialValue(v)}`;
         }
         inarr = `IN [${value.map(v => specialValue(v))}]`;
         criteria.push(inarr);
@@ -218,11 +221,11 @@ module.exports = function compileStatement(options) {
       }
 
       if (_.isObject(value)) {
-        criteria.push(`${key} ${getComparison(value)}`);
+        criteria.push(`record.${key} ${getComparison(value)}`);
         return;
       }
 
-      criteria.push(`${key} = ${specialValue(value)}`);
+      criteria.push(`record.${key} == ${specialValue(value, key)}`);
     });
 
     if (str) {
@@ -288,6 +291,9 @@ module.exports = function compileStatement(options) {
   }
 
   function getNumericAttrName() {
+    if (Array.isArray(numericAttrName)) {
+      return numericAttrName.map(n => `record.${n}`).join(' + ');
+    }
     if (numericAttrName) {
       return numericAttrName;
     }
@@ -308,7 +314,7 @@ module.exports = function compileStatement(options) {
     let str = '';
     if (_.isObject(sortObj)) {
       _.each(sortObj, (value, key) => {
-        str += `${key} ${value}`;
+        str += `record.${key} ${value}`;
       });
     }
     return str;
@@ -321,11 +327,13 @@ module.exports = function compileStatement(options) {
     method,
     select: selectAttributes(passedcriteria.select),
     from: model,
+    tableName: model,
     model,
     selectClause: hasSelectFields()
       ? selectAttributes(passedcriteria.select).join(', ')
       : '*',
     whereClause: compiledcriteria,
+    sortClause: sortClauseArray.join(', '),
     sortClauseArray,
     numericAttrName: getNumericAttrName(),
     values: values || {},

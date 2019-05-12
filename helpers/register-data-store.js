@@ -78,7 +78,7 @@ module.exports = require('machine').build({
   ) {
     // Dependencies
     const _ = require('@sailshq/lodash');
-    const OrientDB = require('../private/machinepack-orient');
+    const ArangoDb = require('../private/machinepack-arango');
     // var Helpers = require('./private');
 
     // Validate that the datastore isn't already initialized
@@ -111,30 +111,30 @@ module.exports = require('machine').build({
     }
 
     // TODO
-    // Primary Key for OrientDB models starts with _key insteat of id
+    // Primary Key for ArangoDb models starts with _key insteat of id
 
     // Loop through every model assigned to the datastore we're registering,
     // and ensure that each one's primary key is either required or auto-incrementing.
-    try {
-      _.each(models, (modelDef, modelIdentity) => {
-        const primaryKeyAttr = modelDef.definition[modelDef.primaryKey];
+    // try {
+    //   _.each(models, (modelDef, modelIdentity) => {
+    //     const primaryKeyAttr = modelDef.definition[modelDef.primaryKey];
 
-        // Ensure that the model's primary key has either `autoIncrement` or `required`
-        if (
-          primaryKeyAttr.required !== true
-          && (!primaryKeyAttr.autoMigrations
-            || primaryKeyAttr.autoMigrations.autoIncrement !== true)
-        ) {
-          throw new Error(
-            `In model \`${modelIdentity}\`, primary key \`${
-              modelDef.primaryKey
-            }\` must have either \`required\` or \`autoIncrement\` set.`,
-          );
-        }
-      });
-    } catch (e) {
-      return exits.badConfiguration(e);
-    }
+    //     // Ensure that the model's primary key has either `autoIncrement` or `required`
+    //     if (
+    //       primaryKeyAttr.required !== true
+    //       && (!primaryKeyAttr.autoMigrations
+    //         || primaryKeyAttr.autoMigrations.autoIncrement !== true)
+    //     ) {
+    //       throw new Error(
+    //         `In model \`${modelIdentity}\`, primary key \`${
+    //           modelDef.primaryKey
+    //         }\` must have either \`required\` or \`autoIncrement\` set.`,
+    //       );
+    //     }
+    //   });
+    // } catch (e) {
+    //   return exits.badConfiguration(e);
+    // }
 
     //  ╔═╗╦═╗╔═╗╔═╗╔╦╗╔═╗  ┌┬┐┌─┐┌┐┌┌─┐┌─┐┌─┐┬─┐
     //  ║  ╠╦╝║╣ ╠═╣ ║ ║╣   │││├─┤│││├─┤│ ┬├┤ ├┬┘
@@ -146,7 +146,7 @@ module.exports = require('machine').build({
     // manager is completely dependent on this adapter.  In other words, it is custom and database-specific.
     // This is where you should store any custom metadata specific to this datastore.
 
-    return OrientDB.createManager({
+    return ArangoDb.createManager({
       config,
       meta: _.omit(config, ['adapter', 'url', 'identity', 'schema']),
     }).switch({
@@ -193,7 +193,7 @@ module.exports = require('machine').build({
           datastores[identity] = {
             config,
             manager,
-            driver: OrientDB,
+            driver: ArangoDb,
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             // ^Note: In future releases, the driver and the adapter will simply become one thing.
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -223,7 +223,7 @@ module.exports = require('machine').build({
               throw new Error(
                 `The classType must be defined in the model: \`${
                   modelinfo.identity
-                }\`, Please define a valid classTYpe for each model. Should be one of Vertex/Document/Edge  (If you get stumped, reach out at http://github.com/gaithoben/sails-orientjs.)`,
+                }\`, Please define a valid classTYpe for each model. Should be one of Vertex/Document/Edge  (If you get stumped, reach out at http://github.com/gaithoben/sails-arangojs.)`,
               );
             }
 

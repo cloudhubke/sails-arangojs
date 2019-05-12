@@ -13,36 +13,30 @@
 //   ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚═╝  ╚═══╝╚══════╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 //
 // Instantiate a new connection from the connection manager.
+const Flaverr = require('flaverr');
+const assert = require('assert');
 
-const OrientDB = require('../../../private/machinepack-orient');
+module.exports = function getConnection({ manager }) {
+  // This is a no-op that just sends back the manager and `meta` that were passed in.
+  assert(
+    manager && manager.dbConnection,
+    'The datastore does not have a DB connection manager',
+  );
 
-module.exports = function spawnConnection(datastore) {
-  return new Promise((resolve, reject) => {
-    // Validate datastore
+  if (manager) {
+    // manager returns connection and aql
+    const { dbConnection, aql } = manager;
+    return {
+      dbConnection,
+      aql,
+    };
+  }
 
-    if (!datastore || !datastore.manager || !datastore.config) {
-      reject(new Error('Spawn Connection requires a valid datastore.'));
-    }
-
-    OrientDB.getConnection({
-      manager: datastore.manager,
-      meta: datastore.config,
-    }).switch({
-      error: function error(err) {
-        reject(err);
-      },
-      failed: function failedToConnect(err) {
-        reject(err);
-      },
-      success: async function success({ connection }) {
-        // Create a session from a pool of sessions.
-        try {
-          const session = await connection.pool.acquire();
-          resolve(session);
-        } catch (error) {
-          reject(error);
-        }
-      },
-    });
-  });
+  throw Flaverr(
+    {
+      code: 'E_GETTING_COMMECTION',
+      message: 'There are no active connections to the database',
+    },
+    new Error('Error getting an active connection'),
+  );
 };

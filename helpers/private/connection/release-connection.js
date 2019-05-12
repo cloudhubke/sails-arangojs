@@ -9,14 +9,26 @@
 // a helper or spawns a new connection. This is a normalized helper so the actual
 // helper methods don't need to deal with the branching logic.
 
-const _ = require('@sailshq/lodash');
-const spawnConnection = require('./spawn-connection');
+const ArangoDb = require('../../../private/machinepack-arango');
 
-module.exports = function spawnOrLeaseConnection(datastore, meta) {
-  if (!_.isUndefined(meta) && _.has(meta, 'leasedConnection')) {
-    return setImmediate(() => meta.leasedConnection);
-  }
-
-  return spawnConnection(datastore);
-  // Otherwise spawn the connection
+module.exports = async function releaseConnection(connection) {
+  return ArangoDb.releaseConnection({
+    connection,
+  }).switch({
+    error: function error(err) {
+      return new Error(
+        `There was an error releasing the connection back into the pool.${
+          err.stack
+        }`,
+      );
+    },
+    badConnection: function badConnection() {
+      return new Error(
+        'Bad connection when trying to release an active connection.',
+      );
+    },
+    success: function success() {
+      return null;
+    },
+  });
 };

@@ -136,38 +136,42 @@ module.exports = require('machine').build({
     //  │ │├┬┘  │ │└─┐├┤   │  ├┤ ├─┤└─┐├┤  ││  │  │ │││││││├┤ │   │ ││ ││││
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
+
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
+
     let createdRecord = {};
     let session;
 
     try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
-
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Model the query OR INSERT USING THE  Query Builder! 👍🏽
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -å
 
       // Execute sql using the driver acquired session.
 
-      createdRecord = await session
-        .insert()
-        .into(Helpers.query.capitalize(statement.into))
-        .set(statement.valuesToSet)
-        .one();
+      const collection = dbConnection.collection(`${statement.tableName}`);
+
+      const opts = { returnNew: fetchRecords };
+      const result = await collection.save(statement.values, opts);
+
+      if (fetchRecords) {
+        createdRecord = result.new;
+      }
     } catch (err) {
       if (session) {
         // Close the Session.
-        await Helpers.connection.releaseSession(session);
+        Helpers.connection.releaseConnection(session);
       }
-      if (err.code === 5) {
+      if (err.code === 409) {
         return exits.notUnique(err);
       }
       return exits.badConnection(err);
     }
     // Close the Session.
-    await Helpers.connection.releaseSession(session);
+    Helpers.connection.releaseConnection(session);
 
     try {
       Helpers.query.processNativeRecord(createdRecord, WLModel, query.meta);

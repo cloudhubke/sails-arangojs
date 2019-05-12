@@ -67,6 +67,7 @@ module.exports = {
 
     // Not sure if we are supposed to close the connection and How
     // So we just return success
+    // ArangoDB manages the opening and closing of connections.   So this is a no op
 
     return exits.success({
       meta: inputs.meta,

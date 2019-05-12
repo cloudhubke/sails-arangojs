@@ -57,28 +57,9 @@ module.exports = function processNativeRecord(
   //   );
   // }
 
-  if (_.isUndefined(nativeRecord['@rid']) || !nativeRecord['@rid']) {
-    throw new Error(
-      'The @rid field is required in the returned properties of a record',
-    );
-  }
-
-  if (_.isObject(nativeRecord['@rid'])) {
-    nativeRecord.rid = `#${nativeRecord['@rid'].cluster}:${
-      nativeRecord['@rid'].position
-    }`;
-  }
-
   nativeRecord[pkColumnName] = `${nativeRecord[pkColumnName]}`;
   // Delete fields unnecessary
-
-  delete nativeRecord['@class'];
-  delete nativeRecord['@rid'];
-  delete nativeRecord['@version'];
-
-  delete nativeRecord['@CLASS'];
-  delete nativeRecord['@RID'];
-  delete nativeRecord['@VERSION'];
+  delete nativeRecord._rev;
 
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // FUTURE: if the nativeRecord does not have `@rid` or 'id, then throw a special error.
@@ -90,4 +71,5 @@ module.exports = function processNativeRecord(
   // Determine whether or not to use object ids.
 
   // Check out each known attribute...
+  return nativeRecord;
 };

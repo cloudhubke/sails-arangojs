@@ -4,7 +4,7 @@
 
 const _ = require('@sailshq/lodash');
 const flaverr = require('flaverr');
-const OrientDB = require('./private/machinepack-orient');
+const OrientDB = require('./private/machinepack-arango');
 const Helpers = require('./helpers');
 
 /**
@@ -26,7 +26,7 @@ const registeredDatastores = {};
 const registeredModels = {};
 
 /**
- * @bernardgaitho/sails-orientjs
+ * @bernardgaitho/sails-arangojs
  *
  * Expose the adapater definition.
  *
@@ -48,7 +48,7 @@ const registeredModels = {};
  */
 module.exports = {
   // The identity of this adapter, to be referenced by datastore configurations in a Sails app.
-  identity: 'sails-orientjs',
+  identity: 'sails-arangojs',
 
   // Waterline Adapter API Version
   //
@@ -753,7 +753,7 @@ module.exports = {
   drop(datastoreName, tableName, unused, done, meta) {
     // Look up the datastore entry (manager/driver/config).
     const datastore = registeredDatastores[datastoreName];
-    models = registeredModels[datastoreName];
+    const models = registeredModels[datastoreName];
 
     // Sanity check:
     if (_.isUndefined(datastore)) {

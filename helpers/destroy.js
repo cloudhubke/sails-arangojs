@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 //  ██████╗ ███████╗███████╗████████╗██████╗  ██████╗ ██╗   ██╗     █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗
 //  ██╔══██╗██╔════╝██╔════╝╚══██╔══╝██╔══██╗██╔═══██╗╚██╗ ██╔╝    ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║
 //  ██║  ██║█████╗  ███████╗   ██║   ██████╔╝██║   ██║ ╚████╔╝     ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║
@@ -120,48 +121,52 @@ module.exports = require('machine').build({
     // Spawn a new connection for running queries on.
 
     let session;
-    let toDestroy = [];
+    let result;
+    let removedRecords = [];
+
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
+
+    let collection;
 
     try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
+      // Check if collection exists
+      collection = dbConnection.collection(`${statement.tableName}`);
+      if (WLModel.classType === 'Edge') {
+        collection = dbConnection.edgeCollection(`${statement.tableName}`);
+      }
+      const collectionExists = await collection.exists();
 
-      let secondaryWhereClause = statement.whereClause;
+      if (!collectionExists) {
+        return exits.success();
+      }
+
+      let sql = `FOR record in ${statement.tableName}`;
+
+      if (statement.whereClause) {
+        sql = `${sql} FILTER ${statement.whereClause}`;
+      }
+
+      sql = `${sql} REMOVE record in ${statement.tableName}`;
 
       if (fetchRecords) {
-        let deffered = session
-          .select('*')
-          .from(`${Helpers.query.capitalize(statement.from)}`);
-        if (statement.whereClause) {
-          deffered = deffered.where(statement.whereClause);
-        }
-
-        toDestroy = await deffered.all();
-
-        const values = _.pluck(toDestroy, pkColumnName);
-
-        secondaryWhereClause = `${pkColumnName} IN [${values
-          .map(v => (Number(v) ? v : `'${v}'`))
-          .join(', ')}]`;
-      }
-      let deffered = session
-        .delete()
-        .from(Helpers.query.capitalize(statement.from));
-
-      if (secondaryWhereClause) {
-        deffered = deffered.where(secondaryWhereClause);
+        sql = `${sql}  LET removed = OLD RETURN removed`;
       }
 
-      await deffered.all();
+      result = await dbConnection.query(sql);
 
-      await Helpers.connection.releaseSession(session, leased);
+      if (fetchRecords) {
+        removedRecords = result._result;
+      }
+
+      Helpers.connection.releaseConnection(session, leased);
     } catch (error) {
       if (session) {
-        await Helpers.connection.releaseSession(session, leased);
+        await Helpers.connection.releaseConnection(session, leased);
       }
-      return exits.badConnection(error);
+      exits.badConnection(error);
     }
 
     if (!fetchRecords) {
@@ -169,12 +174,12 @@ module.exports = require('machine').build({
     }
 
     try {
-      _.each(toDestroy, (nativeRecord) => {
+      _.each(removedRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
       });
     } catch (e) {
       return exits.error(e);
     }
-    return exits.success({ records: toDestroy });
+    return exits.success({ records: removedRecords });
   },
 });

@@ -54,7 +54,6 @@ module.exports = require('machine').build({
 
   fn: async function count(inputs, exits) {
     // Dependencies
-    const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
 
     // Store the Query input for easier access
@@ -75,9 +74,6 @@ module.exports = require('machine').build({
     } catch (e) {
       return exits.error(e);
     }
-
-    // Set a flag if a leased connection from outside the adapter was used or not.
-    const leased = _.has(query.meta, 'leasedConnection');
 
     //  ╔═╗╔═╗╔╗╔╦  ╦╔═╗╦═╗╔╦╗  ┌┬┐┌─┐  ┌─┐┌┬┐┌─┐┌┬┐┌─┐┌┬┐┌─┐┌┐┌┌┬┐
     //  ║  ║ ║║║║╚╗╔╝║╣ ╠╦╝ ║    │ │ │  └─┐ │ ├─┤ │ ├┤ │││├┤ │││ │
@@ -102,32 +98,27 @@ module.exports = require('machine').build({
 
     let session;
     let result;
+
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
+
     try {
-      //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
-      //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
-      //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
-      //  ┌─┐┬─┐  ┬ ┬┌─┐┌─┐  ┬  ┌─┐┌─┐┌─┐┌─┐┌┬┐  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
-      //  │ │├┬┘  │ │└─┐├┤   │  ├┤ ├─┤└─┐├┤  ││  │  │ │││││││├┤ │   │ ││ ││││
-      //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
-      // Spawn a new connection for running queries on.
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
-
-      let deffered = session
-        .select('count(*)')
-        .from(Helpers.query.capitalize(statement.from));
+      let sql = `FOR record IN ${statement.tableName}`;
       if (statement.whereClause) {
-        deffered = deffered.where(statement.whereClause);
+        sql = `${sql} FILTER ${statement.whereClause}`;
       }
-      result = await deffered.scalar();
+      sql = `${sql} COLLECT WITH COUNT INTO length`;
+      sql = `${sql} RETURN length`;
+      result = await dbConnection.query(sql);
 
-      await Helpers.connection.releaseSession(session, leased);
+      Helpers.connection.releaseConnection(session);
     } catch (error) {
       return exits.badConnection(error);
     }
 
-    return exits.success(result);
+    const len = result._result ? result._result[0] : 0;
+    return exits.success(len);
   },
 });

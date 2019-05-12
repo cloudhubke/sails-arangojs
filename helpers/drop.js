@@ -61,31 +61,18 @@ module.exports = require('machine').build({
 
     // Set a flag if a leased connection from outside the adapter was used or not.
     const leased = _.has(inputs.meta, 'leasedConnection');
-    let tableName;
 
     const WLModel = inputs.models[inputs.tableName];
-
-    // Grab the pk column name (for use below)
-    let pkColumnName;
-    try {
-      pkColumnName = WLModel.attributes[WLModel.primaryKey].columnName;
-    } catch (e) {
-      return exits.error(e);
-    }
 
     let results;
     let session;
     try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
+      const { dbConnection } = Helpers.connection.getConnection(
         inputs.datastore,
         inputs.meta,
       );
-      //  ╔═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┌┬┐┌─┐┌┐ ┬  ┌─┐  ┌┐┌┌─┐┌┬┐┌─┐
-      //  ║╣ ╚═╗║  ╠═╣╠═╝║╣    │ ├─┤├┴┐│  ├┤   │││├─┤│││├┤
-      //  ╚═╝╚═╝╚═╝╩ ╩╩  ╚═╝   ┴ ┴ ┴└─┘┴─┘└─┘  ┘└┘┴ ┴┴ ┴└─┘
 
-      tableName = Helpers.schema.escapeTableName(inputs.tableName);
-      const className = tableName.replace(/`/g, '');
+      const { tableName } = inputs;
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Se cant DROP the entire class because this may  reorganize relationships.
@@ -94,71 +81,20 @@ module.exports = require('machine').build({
       // The PK field will be used to update, upsert data.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-      // Get class properties to drop;
-      const attributes = [];
-      _.each(WLModel.attributes, (value, key) => {
-        if (value.columnName !== pkColumnName) {
-          attributes.push(value.columnName);
-        }
-      });
-
-      // Determine whether the class exists in the database;
-
-      const databaseclasses = await session.class.list();
-      const classes = databaseclasses.map(c => c.name.toLowerCase());
-
-      if (!_.includes(classes, className.toLowerCase())) {
-        await Helpers.connection.releaseSession(session, leased);
-        return exits.success();
+      // Find if the collection exists
+      let collection = dbConnection.collection(`${tableName}`);
+      if (WLModel.classType === 'Edge') {
+        collection = dbConnection.edgeCollection(`${tableName}`);
       }
 
-      const classinfo = await session.class.get(`${className}`);
-      const classproperties = await classinfo.property.list();
+      const collectionExists = await collection.exists();
 
-      let properties = classproperties.map(p => p.name);
-
-      // Begin a batch to delete properties
-      let batch = '';
-      _.each(properties, (property) => {
-        batch = `${batch} DROP INDEX ${className}.${property} IF EXISTS;\n DROP PROPERTY ${className}.${property} FORCE;\n`;
-      });
-
-      // delete data apart from pk
-      properties = classproperties
-        .map(p => p.name)
-        .filter(p => p !== pkColumnName);
-
-      batch = `${batch}\nbegin;`;
-      _.each(properties, (property) => {
-        batch = `${batch} UPDATE ${className} REMOVE ${property};\n`;
-      });
-
-      batch = `${batch} commit;`;
-
-      console.log('====================================');
-      console.log(`DROP BATCH : ${className}`, batch);
-      console.log('====================================');
-
-      try {
-        results = await session.batch(batch).all();
-        console.log('====================================');
-        console.log('RES : ', results);
-        console.log('====================================');
-        await Helpers.connection.releaseSession(session, leased);
-      } catch (error) {
-        if (session) {
-          await Helpers.connection.releaseSession(session, leased);
-        }
-        if (error.code && (error.code === 5 || error.code === '5')) {
-          // console.log(`Error while dropping ${tableName}`, error.code);
-          console.log('====================================');
-          console.log('ERRORR: ', error);
-          console.log('====================================');
-          return exits.success();
-        }
-        return exits.badConnection(`Error while dropping ${tableName}${error}`);
+      if (collectionExists) {
+        // const collectioninfo = await collection.get();
+        // Drop it
+        results = await collection.drop();
       }
-      return exits.success();
+      return exits.success(results);
     } catch (error) {
       if (session) {
         await Helpers.connection.releaseSession(session, leased);

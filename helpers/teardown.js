@@ -46,7 +46,7 @@ module.exports = require('machine').build({
 
   fn: function teardown(inputs, exits) {
     // Dependencies
-    const OrientDB = require('../private/machinepack-orient');
+    const ArangoDb = require('../private/machinepack-arango');
 
     const datastore = inputs.datastores[inputs.identity];
     if (!datastore) {
@@ -69,7 +69,7 @@ module.exports = require('machine').build({
       );
     }
 
-    return OrientDB.destroyManager({ manager }, (err) => {
+    return ArangoDb.destroyManager({ manager }, (err) => {
       if (err) {
         return exits.error(err);
       }

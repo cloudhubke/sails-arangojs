@@ -61,8 +61,6 @@ module.exports = require('machine').build({
   },
 
   fn: async function define(inputs, exits) {
-    // Dependencies
-    const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
 
     const { model } = inputs;
@@ -78,86 +76,63 @@ module.exports = require('machine').build({
         }`,
       );
     }
-    // Set a flag if a leased connection from outside the adapter was used or not.
-    const leased = _.has(inputs.meta, 'leasedConnection');
 
     // Escape Table Name
-    let tableName;
-    let schema;
-    let results;
-    let session;
+    const { tableName } = inputs;
+    let result;
+
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      inputs.meta,
+    );
+
     try {
       //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
       //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
       //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
       // Spawn a new connection for running queries on.
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        inputs.meta,
-      );
-
-      tableName = Helpers.schema.escapeTableName(inputs.tableName);
-      schema = Helpers.schema.buildSchema(tableName, inputs.definition);
 
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // We are supposed to know whether the class exists in the db
       // If it does not, create it.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      let collection;
 
-      const databaseclasses = await session.class.list();
-      const classes = await databaseclasses.map(c => c.name);
+      if (model.classType === 'Edge') {
+        collection = dbConnection.edgeCollection(`${tableName}`);
+        const collectionExists = await collection.exists();
 
-      // Build Query
-
-      let batch = '';
-      if (_.includes(classes, tableName)) {
-        // Determine whether we're creating Vertex, Edge or Just a document
-
-        switch (model.classType) {
-          case 'Document':
-            batch = `CREATE CLASS ${Helpers.query.capitalize(tableName)};\n`;
-            break;
-          case 'Vertex':
-            batch = `CREATE CLASS ${Helpers.query.capitalize(
-              tableName,
-            )} EXTENDS V;\n`;
-            break;
-          case 'Edge':
-            batch = `CREATE CLASS ${Helpers.query.capitalize(
-              tableName,
-            )} EXTENDS E;\n`;
-            break;
-          default:
-            return exits.error(
-              `The classtype associated with model ${tableName} is not known. Should be one of Document/Vertex/Edge`,
-            );
+        if (collectionExists) {
+          Helpers.connection.releaseConnection(dbConnection);
+          return exits.success();
         }
       }
 
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // We should first find out if the cless exists.
-      // If the class exists, remove all class properties apart from pk, rid so as to recreate them afresh.
-      // The PK field will be used to update, upsert data.
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      collection = dbConnection.collection(`${tableName}`);
+      const collectionExists = await collection.exists();
 
-      batch = `${batch} ${schema};`;
-
-      // results = await session.batch(batch).all();
-
-      console.log('====================================');
-      console.log('BATCH : ', batch, results);
-      console.log('====================================');
-
-      Helpers.connection.releaseSession(session, leased);
-
-      return exits.success(results);
-    } catch (error) {
-      console.log('====================================');
-      console.log('SESSION ERROR: ', error);
-      console.log('====================================');
-      if (session) {
-        Helpers.connection.releaseSession(session, leased);
+      if (collectionExists) {
+        Helpers.connection.releaseConnection(dbConnection);
+        return exits.success();
       }
+
+      // Create a collection because it does not exist;
+      result = await collection.create();
+
+      await Helpers.schema.buildSchema(
+        tableName,
+        inputs.definition,
+        collection,
+      );
+
+      Helpers.connection.releaseConnection(dbConnection);
+
+      return exits.success(result);
+    } catch (error) {
+      if (dbConnection) {
+        Helpers.connection.releaseConnection(dbConnection);
+      }
+      return exits.error(error);
     }
   },
 });

@@ -1,9 +1,8 @@
 module.exports = {
   // Helpers for handling connections
   connection: {
-    spawnConnection: require('./connection/spawn-connection'),
-    spawnOrLeaseConnection: require('./connection/spawn-or-lease-connection'),
-    releaseSession: require('./connection/release-session'),
+    getConnection: require('./connection/get-connection'),
+    releaseConnection: require('./connection/release-connection'),
   },
   query: {
     preProcessRecord: require('./query/pre-process-record'),

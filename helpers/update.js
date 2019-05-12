@@ -75,6 +75,8 @@ module.exports = require('machine').build({
       return exits.invalidDatastore();
     }
 
+    const tableName = query.using;
+
     // Grab the pk column name (for use below)
     let pkColumnName;
     try {
@@ -82,10 +84,6 @@ module.exports = require('machine').build({
     } catch (e) {
       return exits.error(e);
     }
-
-    // Set a flag if a leased connection from outside the adapter was used or not.
-    const leased = _.has(query.meta, 'leasedConnection');
-
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
 
@@ -95,7 +93,9 @@ module.exports = require('machine').build({
     // Process each record to normalize output
 
     // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
-    const shouldUpdatePk = Boolean(query.valuesToSet[pkColumnName]);
+    const criteria = query.criteria ? query.criteria.where || {} : {};
+    const shouldUpdatePk = Boolean(query.valuesToSet[pkColumnName])
+      && Boolean(criteria[pkColumnName]);
 
     try {
       Helpers.query.preProcessRecord({
@@ -132,10 +132,6 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
-    const criteria = query.criteria.where || query.criteria;
-    const oldpk = criteria[pkColumnName] || '';
-    const newpk = statement.valuesToSet[pkColumnName] || '';
-
     //  ╔╦╗╔═╗╔╦╗╔═╗╦═╗╔╦╗╦╔╗╔╔═╗  ┬ ┬┬ ┬┬┌─┐┬ ┬  ┬  ┬┌─┐┬  ┬ ┬┌─┐┌─┐
     //   ║║║╣  ║ ║╣ ╠╦╝║║║║║║║║╣   │││├─┤││  ├─┤  └┐┌┘├─┤│  │ │├┤ └─┐
     //  ═╩╝╚═╝ ╩ ╚═╝╩╚═╩ ╩╩╝╚╝╚═╝  └┴┘┴ ┴┴└─┘┴ ┴   └┘ ┴ ┴┴─┘└─┘└─┘└─┘
@@ -154,40 +150,71 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    let session;
-    try {
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
 
+    let session;
+    let result;
+    let updatedRecords = [];
+
+    try {
       //  ╦═╗╦ ╦╔╗╔  ┬ ┬┌─┐┌┬┐┌─┐┌┬┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
 
-      // construc a query statement or use the query builder !! 👍🏽
-      //   let sql = `UPDATE ${Helpers.query.capitalize(WLModel.identity)} set`;
-      //   const vals = [];
-      //   _.each(statement.update, (value, key) => {
-      //     vals.push(`${key} = '${value}'`);
-      //   });
-      //   sql += ` ${vals.join(', ')};\n`;
+      if (shouldUpdatePk) {
+        // If Updating PK, remove record first, then reinsert
+        const collection = dbConnection.collection(`${tableName}`);
+        const oldrecord = await collection.document(
+          `${criteria[pkColumnName]}`,
+          {
+            graceful: true,
+          },
+        );
 
-      //   const results = await session.command(sql).all();
+        if (oldrecord && oldrecord[pkColumnName]) {
+          // remove the record
+          await collection.remove(`${criteria[pkColumnName]}`);
+        } else {
+          throw new Error('The document does not exist');
+        }
 
-      let defferedresult = session
-        .update(`${Helpers.query.capitalize(statement.model)}`)
-        .set(statement.valuesToSet);
-      if (statement.whereClause) {
-        defferedresult = defferedresult.where(statement.whereClause);
+        const opts = { returnNew: fetchRecords };
+        result = await collection.save(
+          { ...oldrecord, ...statement.valuesToSet },
+          opts,
+        );
+
+        if (fetchRecords) {
+          updatedRecords = [result.new];
+        }
+      } else {
+        let sql = `FOR record IN ${statement.tableName}`;
+        if (statement.whereClause) {
+          sql = `${sql} FILTER ${statement.whereClause}`;
+        }
+        sql = `${sql} UPDATE record WITH ${JSON.stringify(
+          statement.values,
+        )} IN ${statement.tableName}`;
+
+        if (fetchRecords) {
+          sql = `${sql} RETURN {new: NEW, old: OLD}`;
+        }
+
+        result = await dbConnection.query(sql);
+
+        if (fetchRecords) {
+          updatedRecords = result._result.map(r => r.new);
+        }
       }
-      await defferedresult.all();
     } catch (error) {
-      if (session) {
-        await Helpers.connection.releaseSession(session, leased);
+      if (dbConnection) {
+        Helpers.connection.releaseConnection(dbConnection);
       }
 
-      if (error.code === 5) {
+      if (error.code === 409) {
         return exits.notUnique(
           flaverr(
             {
@@ -203,7 +230,7 @@ module.exports = require('machine').build({
 
     // If `fetch` is NOT enabled, we're done.
     if (!fetchRecords) {
-      await Helpers.connection.releaseSession(session, leased);
+      Helpers.connection.releaseConnection(dbConnection);
       return exits.success();
     } // -•
 
@@ -214,30 +241,17 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
-    let updatedRecords = [];
+
     try {
-      // If new primary ke was set, update the where clause!
-      let newWhereClause = statement.whereClause;
-      if (shouldUpdatePk && oldpk) {
-        newWhereClause = `${statement.whereClause}`.replace(oldpk, newpk);
-      }
+      await Helpers.connection.releaseConnection(dbConnection);
+      const newrecords = updatedRecords.map(record => Helpers.query.processNativeRecord(record, WLModel, query.meta));
+      // Helpers.query.processNativeRecord(record.new, WLModel, query.meta);
+      // Helpers.query.processNativeRecord(record.old, WLModel, query.meta);
 
-      let defferedresults = session
-        .select()
-        .from(Helpers.query.capitalize(statement.model));
-      if (newWhereClause) {
-        defferedresults = defferedresults.where(newWhereClause);
-      }
-      updatedRecords = await defferedresults.all();
-
-      await Helpers.connection.releaseSession(session, leased);
-      _.each(updatedRecords, (record) => {
-        Helpers.query.processNativeRecord(record, WLModel, query.meta);
-      });
-      return exits.success({ records: updatedRecords });
+      return exits.success({ records: newrecords });
     } catch (e) {
       if (session) {
-        await Helpers.connection.releaseSession(session, leased);
+        await Helpers.connection.releaseConnection(session);
       }
       return exits.error(e);
     }

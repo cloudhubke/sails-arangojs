@@ -58,7 +58,8 @@ module.exports = {
     }
 
     return exits.success({
-      connection: inputs.manager,
+      dbConnection: inputs.manager.connection,
+      aql: inputs.manager.aql,
       meta: inputs.meta,
     });
   },

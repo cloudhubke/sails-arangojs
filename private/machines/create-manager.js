@@ -81,15 +81,17 @@ module.exports = {
   fn({ config /* meta */ }, exits) {
     const { Database, aql } = require('arangojs');
 
-    const db = new Database({
+    const dbConnection = new Database({
       url: `http://${config.host}:${config.port || 8529}`,
     });
-    db.useDatabase(`${config.database}`);
-    db.useBasicAuth(`${config.user}`, `${config.password}`);
-
+    dbConnection.useDatabase(`${config.database}`);
+    dbConnection.useBasicAuth(`${config.user}`, `${config.password || ''}`);
     try {
       return exits.success({
-        manager: db,
+        manager: {
+          dbConnection,
+          aql,
+        },
         meta: config,
       });
     } catch (error) {

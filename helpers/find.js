@@ -7,7 +7,7 @@
 //
 
 module.exports = require('machine').build({
-  friendlyName: 'Select',
+  friendlyName: 'Find Records/Documents',
 
   description: 'Find record(s) in the database.',
 
@@ -62,8 +62,6 @@ module.exports = require('machine').build({
     const { query } = inputs;
     query.meta = query.meta || {};
 
-    const leased = _.has(inputs.meta, 'leasedConnection');
-
     // Find the model definition
     const WLModel = inputs.models[query.using];
 
@@ -101,9 +99,13 @@ module.exports = require('machine').build({
     } catch (error) {
       return exits.error(error);
     }
-    let result = [];
-    let session;
 
+    const { dbConnection } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta,
+    );
+
+    let cursor;
     try {
       //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
       //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
@@ -112,36 +114,46 @@ module.exports = require('machine').build({
       //  │ │├┬┘  │ │└─┐├┤   │  ├┤ ├─┤└─┐├┤  ││  │  │ │││││││├┤ │   │ ││ ││││
       //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
       // Spawn a new connection for running queries on.
-      session = await Helpers.connection.spawnOrLeaseConnection(
-        inputs.datastore,
-        query.meta,
-      );
 
-      // Execute sql using the driver acquired session.
-      let deffered = session
-        .select(statement.selectClause)
-        .from(`${Helpers.query.capitalize(statement.from)}`);
+      // Execute sql using the driver acquired dbConnectio.
+      let sql = `FOR record in ${statement.tableName}`;
+
       if (statement.whereClause) {
-        deffered = deffered.where(statement.whereClause);
+        sql = `${sql} FILTER ${statement.whereClause}`;
       }
       if (statement.limit) {
-        deffered = deffered.limit(statement.limit);
+        if (statement.skip) {
+          sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
+        } else {
+          sql = `${sql} LIMIT ${statement.limit}`;
+        }
       }
 
-      if (statement.skip) {
-        deffered = deffered.skip(statement.skip);
+      if (statement.sortClause) {
+        sql = `${sql} SORT ${statement.sortClause}`;
       }
 
-      if (statement.sortClauseArray) {
-        deffered = deffered.order(statement.sortClauseArray);
-      }
+      sql = `${sql} return record`;
 
-      result = await deffered.all();
-      // Close Session
-      await Helpers.connection.releaseSession(session, leased);
+      // eslint-disable-next-line no-console
+      console.log('====================================');
+      // eslint-disable-next-line no-console
+      console.log(sql);
+      // eslint-disable-next-line no-console
+      console.log('====================================');
+
+      cursor = await dbConnection.query(`${sql}`);
+      // cursor = await dbConnection.query(`${sql}`);
+      // Close dbConnection
+
+      Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
-      if (session) {
-        await Helpers.connection.releaseSession(session, leased);
+      // eslint-disable-next-line no-console
+      if (error.code === 404) {
+        return exits.success([]);
+      }
+      if (dbConnection) {
+        Helpers.connection.releaseConnection(dbConnection);
       }
       return exits.badConnection(error);
     }
@@ -152,7 +164,7 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = result;
+    const selectRecords = cursor._result;
     try {
       _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);

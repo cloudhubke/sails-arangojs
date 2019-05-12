@@ -14,7 +14,6 @@
 //
 
 const _ = require('@sailshq/lodash');
-const uniqid = require('uniqid');
 
 /**
  * [exports description]
@@ -55,7 +54,7 @@ module.exports = function preProcessRecord(options) {
     );
   }
 
-  const { records, identity, model } = options;
+  const { records, model } = options;
 
   const primaryKeyColumnName = model.attributes[model.primaryKey].columnName;
   let newrecords = [];
@@ -65,7 +64,8 @@ module.exports = function preProcessRecord(options) {
       const pkValue = record[primaryKeyColumnName];
 
       if (!pkValue) {
-        record[primaryKeyColumnName] = uniqid(`${identity}-`);
+        // remove the field
+        delete record[primaryKeyColumnName];
       }
       return record;
     });
