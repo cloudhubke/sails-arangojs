@@ -134,14 +134,6 @@ module.exports = require('machine').build({
       }
 
       sql = `${sql} return record`;
-
-      // eslint-disable-next-line no-console
-      console.log('====================================');
-      // eslint-disable-next-line no-console
-      console.log(sql);
-      // eslint-disable-next-line no-console
-      console.log('====================================');
-
       cursor = await dbConnection.query(`${sql}`);
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
