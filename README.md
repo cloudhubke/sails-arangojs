@@ -1,8 +1,8 @@
 # sails-arangojs
 
-Provides easy access to `OrientDB` from Sails.js & Waterline.
+Provides easy access to `ArangoDB` from Sails.js & Waterline.
 
-This module is a Sails/Waterline community adapter. Its goal is to provide a set of declarative interfaces, conventions, and best-practices for integrating with the OrientDB database/service.
+This module is a Sails/Waterline community adapter. Its goal is to provide a set of declarative interfaces, conventions, and best-practices for integrating with the ArangoDB database/service.
 
 Strict adherence to an adapter specification enables the (re)use of built-in generic test suites, standardized documentation, reasonable expectations around the API for your users, and overall, a more pleasant development experience for everyone.
 
@@ -16,7 +16,7 @@ $ npm install sails-arangojs
 
 ### Updates done on waterline (waternile)
 
-Orient DB being a Graph/Document/Key-Value Database, small changes had to be done on the orm to accomodate this nature of the database. It also allows us to harness the powerful features of a Graph Database right away from sails. No changes were made on the hook-orm despite cloning it to another module (sails-orm-hook). This was done to bring on board waternile orm as a package.
+ArangoDB being a Graph/Document/Key-Value Database, small changes had to be done on the orm to accomodate this nature of the database. It also allows us to harness the powerful features of a Graph Database right away from sails. No changes were made on the hook-orm despite cloning it to another module (sails-orm-hook). This was done to bring on board waternile orm as a package.
 
 remove sails-hook-orm from your package.json to avoid conflict.
 
@@ -31,7 +31,7 @@ Then [connect the adapter](https://sailsjs.com/documentation/reference/configura
 ```
   default: {
     adapter: 'sails-arangojs',
-    url: 'orientdb://user:password@localhost:2424/db',
+    url: 'arangodb://user:password@localhost:2424/db',
   },
 ```
 
@@ -51,14 +51,14 @@ Visit [Models & ORM](https://sailsjs.com/docs/concepts/models-and-orm) in the do
 
 ### Additional Features
 
-When defining Models, you can specify the class of the model to be mapped on orientdb
+When defining Models, you can specify the class of the model to be mapped on arangodb
 
 ```
-  classType: 'Vertex', //Either of Document, Vertex, Edge (default is Document)
+  classType: 'Document', //Either of Document, Edge (default is Document)
   .
   .
   attributes: {
-       id: { type: 'string', autoIncrement: true },
+       id: { type: 'string' , columnName: '_key' },
   }
 ```
 

@@ -1,6 +1,6 @@
 /* eslint-disable no-use-before-define */
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Sync function that returns a friendly sql statement for easy manipulation in the OrientDb driver
+// Sync function that returns a friendly sql statement for easy manipulation in the ArangoJs driver
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const _ = require('@sailshq/lodash');

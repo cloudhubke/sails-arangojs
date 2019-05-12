@@ -13,7 +13,6 @@ const _ = require('@sailshq/lodash');
  * minus any database-specific eccentricities).
  *
  *
- * What do we do with @rid attribut of each record in orientDB?
  *
  * @param {Ref} nativeRecord
  * @param {Ref} WLModel

@@ -4,7 +4,7 @@
 
 const _ = require('@sailshq/lodash');
 const flaverr = require('flaverr');
-const OrientDB = require('./private/machinepack-arango');
+const ArangoDB = require('./private/machinepack-arango');
 const Helpers = require('./helpers');
 
 /**
@@ -144,12 +144,12 @@ module.exports = {
 
     // Validate models vs. adapter-specific restrictions (if relevant):
     // ============================================================================================
-    if (OrientDB.verifyModelDef) {
+    if (ArangoDB.verifyModelDef) {
       const modelIncompatibilitiesMap = {};
       try {
         _.each(models, (phModelInfo) => {
           try {
-            OrientDB.verifyModelDef({ modelDef: phModelInfo }).execSync();
+            ArangoDB.verifyModelDef({ modelDef: phModelInfo }).execSync();
           } catch (e) {
             switch (e.exit) {
               case 'invalid':
