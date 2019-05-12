@@ -78,6 +78,25 @@ $contains,
   $startsWith,
 \$endsWith,
 
+## Go Native
+
+If you want to write queries using the the ArangoJs Driver, the adapter exposes the Database connection instance just as you would get with const db = new Database();
+
+```
+const {dbConnection, aql} = Model.getDatastore().manager;
+
+// Then you can use the connection as
+
+const collection = dbConnection.collection("model");
+const data = { some: "data" };
+const info = await collection.save(data);
+
+//OR
+
+const cursor = await dbConnection.query('FOR record IN model return record');
+
+```
+
 ## Questions?
 
 See [Extending Sails > Adapters > Custom Adapters](https://sailsjs.com/documentation/concepts/extending-sails/adapters/custom-adapters) in the [Sails documentation](https://sailsjs.com/documentation), or check out [recommended support options](https://sailsjs.com/support).
