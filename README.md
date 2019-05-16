@@ -115,12 +115,53 @@ This adapter implements the following methods:
 | createEach        | Done   | DML       |
 | update            | Done   | DML       |
 | destroy           | Done   | DML       |
+| createEdge        | Done   | DML       |
 | find              | Done   | DQL       |
 | count             | Done   | DQL       |
 | sum               | Done   | DQL       |
 | avg               | Done   | DQL       |
 | define            | Done   | DDL       |
 | drop              | Done   | DDL       |
+
+## createEdge Method
+
+The following is an example of creating an edge.
+
+```
+
+   const edgeproperties = {
+        Year: 2008,
+        Month: 1,
+        Day: 1,
+        DayOfWeek: 2,
+        DepTime: 644,
+        ArrTime: 866,
+        DepTimeUTC: '2008-01-01T11:04:00.000Z',
+        ArrTimeUTC: '2008-01-01T13:06:00.000Z',
+        UniqueCarrier: '9E',
+        FlightNum: 2938,
+        TailNum: '87979E',
+        Distance: 444,
+      };
+
+      const from_id = 'airport/00M';
+      const to_id = 'airport/00R';
+
+      Flight.createEdge(
+        edgeproperties,
+        {
+          from: from_id,
+          to: to_id,
+        },
+        (err, edge) => {
+          if (err) {
+            return done(err);
+          }
+
+          assert.equal(edge._from, `${from_id}`);
+          assert.equal(edge._to, `${to_id}`);
+      })
+```
 
 ## License
 
