@@ -54,6 +54,23 @@ module.exports = function preProcessRecord(options) {
     );
   }
 
+  if (_.has(options, 'params') && _.isPlainObject(options.params)) {
+    const { params } = options;
+    const [fromCollection, fromDocument] = params.from.split('/');
+    const [toCollection, toDocument] = params.from.split('/');
+    if (!fromCollection || !fromDocument) {
+      throw new Error(
+        'Invalid option used in params argument. Missing `from` vertex or document.',
+      );
+    }
+
+    if (!toCollection || !toDocument) {
+      throw new Error(
+        'Invalid option used in params argument. Missing `to` vertex or document.',
+      );
+    }
+  }
+
   const { records, model } = options;
 
   const primaryKeyColumnName = model.attributes[model.primaryKey].columnName;

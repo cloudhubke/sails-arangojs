@@ -828,4 +828,41 @@ module.exports = {
       },
     });
   },
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // CREATE EDGE
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  createEdge(datastoreName, query, done) {
+    const datastore = registeredDatastores[datastoreName];
+    const models = registeredModels[datastoreName];
+
+    // Sanity check:
+    if (_.isUndefined(datastore)) {
+      return done(
+        new Error(
+          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
+        ),
+      );
+    }
+
+    return Helpers.createEdge({
+      datastore,
+      models,
+      query,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      invalidVertex: function error(err) {
+        return done(err);
+      },
+      notUnique: function error(err) {
+        return done(flaverr('E_UNIQUE', err));
+      },
+      success: function success(report) {
+        return done(undefined, report.record);
+      },
+    });
+  },
 };

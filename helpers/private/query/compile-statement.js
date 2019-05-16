@@ -251,14 +251,12 @@ module.exports = function compileStatement(options) {
 
   function getAndArrayStatement(arr) {
     const andst = [];
-    if (Array.isArray(arr) && arr.length > 1) {
+    if (Array.isArray(arr)) {
       _.each(arr, (obj) => {
         andst.push(getAndStatement(obj));
       });
     } else {
-      throw new Error(
-        'We expect an array of more than one objects on the OR criteria',
-      );
+      throw new Error('We expect an array in the AND criteria');
     }
     return andst.join(' AND ');
   }

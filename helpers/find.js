@@ -134,6 +134,7 @@ module.exports = require('machine').build({
       }
 
       sql = `${sql} return record`;
+
       cursor = await dbConnection.query(`${sql}`);
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
@@ -156,6 +157,8 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
+    // eslint-disable-next-line no-console
+
     const selectRecords = cursor._result;
     try {
       _.each(selectRecords, (nativeRecord) => {

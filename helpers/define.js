@@ -97,23 +97,24 @@ module.exports = require('machine').build({
       // If it does not, create it.
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       let collection;
+      let collectionExists;
+
+      collection = dbConnection.collection(`${tableName}`);
+      collectionExists = await collection.exists();
+
+      if (collectionExists) {
+        Helpers.connection.releaseConnection(dbConnection);
+        return exits.success();
+      }
 
       if (model.classType === 'Edge') {
         collection = dbConnection.edgeCollection(`${tableName}`);
-        const collectionExists = await collection.exists();
+        collectionExists = await collection.exists();
 
         if (collectionExists) {
           Helpers.connection.releaseConnection(dbConnection);
           return exits.success();
         }
-      }
-
-      collection = dbConnection.collection(`${tableName}`);
-      const collectionExists = await collection.exists();
-
-      if (collectionExists) {
-        Helpers.connection.releaseConnection(dbConnection);
-        return exits.success();
       }
 
       // Create a collection because it does not exist;

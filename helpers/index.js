@@ -14,4 +14,7 @@ module.exports = {
   drop: require('./drop'),
   define: require('./define'),
   setSequence: require('./set-sequence'),
+
+  // Graph Methods
+  createEdge: require('./create-edge'),
 };
