@@ -20,7 +20,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       definition,
       (attribute, name) => new Promise(async (resolv) => {
         // attribute.unique, allowNull, etc
-        if (attribute.unique && !attribute.primaryKey) {
+        if (attribute.unique && !attribute.primaryKey && attribute.required) {
           await collection.createHashIndex(`${name}`, { unique: true });
           resolv();
         }
