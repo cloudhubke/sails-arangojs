@@ -190,6 +190,19 @@ module.exports = require('machine').build({
         if (fetchRecords) {
           updatedRecords = [result.new];
         }
+      } else if (criteria[pkColumnName] || criteria._id) {
+        const collection = dbConnection.collection(`${tableName}`);
+        const opts = { returnNew: fetchRecords };
+
+        result = await collection.update(
+          criteria[pkColumnName] || criteria._id,
+          { ...statement.valuesToSet },
+          opts,
+        );
+
+        if (fetchRecords) {
+          updatedRecords = [result.new];
+        }
       } else {
         let sql = `FOR record IN ${statement.tableName}`;
         if (statement.whereClause) {
