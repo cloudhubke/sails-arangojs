@@ -165,7 +165,11 @@ module.exports = require('machine').build({
 
       // result = await dbConnection.query(sql);
 
-      const collection = dbConnection.collection(`${statement.tableName}`);
+      let collection = dbConnection.collection(`${statement.tableName}`);
+      if (WLModel.classType === 'Edge') {
+        collection = dbConnection.edgeCollection(`${statement.tableName}`);
+      }
+
 
       const opts = { returnNew: fetchRecords };
       result = await collection.save(statement.values, opts);
