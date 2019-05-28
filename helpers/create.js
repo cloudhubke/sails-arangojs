@@ -152,7 +152,10 @@ module.exports = require('machine').build({
 
       // Execute sql using the driver acquired session.
 
-      const collection = dbConnection.collection(`${statement.tableName}`);
+      let collection = dbConnection.collection(`${statement.tableName}`);
+      if (WLModel.classType === 'Edge') {
+        collection = dbConnection.edgeCollection(`${statement.tableName}`);
+      }
 
       const opts = { returnNew: fetchRecords };
       const result = await collection.save(statement.values, opts);
