@@ -141,7 +141,6 @@ module.exports = require('machine').build({
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
-      // eslint-disable-next-line no-console
       if (error.code === 404) {
         return exits.success([]);
       }
@@ -157,8 +156,6 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    // eslint-disable-next-line no-console
-
     const selectRecords = cursor._result;
     try {
       _.each(selectRecords, (nativeRecord) => {

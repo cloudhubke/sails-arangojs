@@ -17,4 +17,6 @@ module.exports = {
 
   // Graph Methods
   createEdge: require('./create-edge'),
+  getOutboundVerices: require('./get-outbound-vertices'),
+  getInboundVerices: require('./get-inbound-vertices'),
 };

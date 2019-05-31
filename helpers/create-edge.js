@@ -201,7 +201,7 @@ module.exports = require('machine').build({
       }
 
       const opts = { returnNew: fetchRecords };
-      const collection = dbConnection.collection(`${statement.tableName}`);
+      const collection = dbConnection.edgeCollection(`${statement.tableName}`);
       const result = await collection.save(
         { ...statement.values, _from: params.from, _to: params.to },
         opts,

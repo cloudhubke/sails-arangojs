@@ -8,7 +8,12 @@ const SqlString = require('sqlstring');
 
 module.exports = function compileStatement(options) {
   const {
-    model, method, numericAttrName, values, pkColumnName,
+    model,
+    method,
+    numericAttrName,
+    values,
+    pkColumnName,
+    edgeCollections,
   } = options;
 
   if (!pkColumnName) {
@@ -18,6 +23,26 @@ module.exports = function compileStatement(options) {
   }
 
   const passedcriteria = options.criteria || {};
+
+  const primarywhere = { ...(passedcriteria.where || {}) };
+
+  if (primarywhere[pkColumnName] && !primarywhere._id) {
+    primarywhere._id = `${model}/${primarywhere[pkColumnName]}`;
+  }
+
+  if (passedcriteria.whereVertex) {
+    if (_.isString(passedcriteria.whereVertex)) {
+      passedcriteria.whereVertex = {
+        [pkColumnName]: passedcriteria.whereVertex,
+      };
+    }
+  }
+
+  if (passedcriteria.whereEdge) {
+    if (_.isString(passedcriteria.whereEdge)) {
+      passedcriteria.whereEdge = { [pkColumnName]: passedcriteria.whereEdge };
+    }
+  }
 
   // Hold the final query value
 
@@ -51,16 +76,14 @@ module.exports = function compileStatement(options) {
     if (_.isObject(val)) {
       return JSON.stringify(val);
     }
-    if (Number(val)) {
-      return val;
-    }
     if (_.isString(val)) {
       return `${SqlString.escape(val)}`;
     }
+    if (Number(val)) {
+      return val;
+    }
     return val;
   }
-
-  const statement = passedcriteria.where;
 
   //   const statement = {
   //     FirstName: 'Ben',
@@ -83,6 +106,17 @@ module.exports = function compileStatement(options) {
       }
     } else {
       throw new Error('the IN statement expects an array of values.');
+    }
+
+    return str;
+  }
+
+  function getHasStatement(val) {
+    let str = '';
+    if (_.isString(val) || _.isNumber(val)) {
+      str = `${specialValue(val)}`;
+    } else {
+      throw new Error('the HAS statement expects a number or string.');
     }
 
     return str;
@@ -171,6 +205,9 @@ module.exports = function compileStatement(options) {
         case 'in':
           str = getInStatement(value);
           return;
+        case '$has':
+          str = getHasStatement(value);
+          return;
         case '$nin':
           str = getNotInStatement(value);
           return;
@@ -221,6 +258,11 @@ module.exports = function compileStatement(options) {
       }
 
       if (_.isObject(value)) {
+        if (_.has(value, '$has')) {
+          criteria.push(`${getComparison(value)} IN record.${key} `);
+          return;
+        }
+
         criteria.push(`record.${key} ${getComparison(value)}`);
         return;
       }
@@ -298,6 +340,16 @@ module.exports = function compileStatement(options) {
     return null;
   }
 
+  function getEdgeCollections() {
+    if (Array.isArray(edgeCollections)) {
+      return edgeCollections.map(n => n).join(', ');
+    }
+    if (edgeCollections) {
+      return edgeCollections;
+    }
+    return null;
+  }
+
   // Check for sort
   let sortClauseArray = [];
   if (passedcriteria.sort) {
@@ -318,7 +370,9 @@ module.exports = function compileStatement(options) {
     return str;
   }
 
-  const compiledcriteria = getAndStatement(statement);
+  const compiledwhere = getAndStatement(passedcriteria.where || {});
+  const compiledwherevertex = getAndStatement(passedcriteria.whereVertex || {});
+  const compiledwhereedge = getAndStatement(passedcriteria.whereEdge || {});
 
   const obj = {
     ...passedcriteria,
@@ -330,10 +384,14 @@ module.exports = function compileStatement(options) {
     selectClause: hasSelectFields()
       ? selectAttributes(passedcriteria.select).join(', ')
       : '*',
-    whereClause: compiledcriteria,
+    whereClause: compiledwhere,
+    primarywhere,
+    whereVertexClause: compiledwherevertex.replace('record.', 'vertex.'),
+    whereEdgeClause: compiledwhereedge.replace('record.', 'edge.'),
     sortClause: sortClauseArray.join(', '),
     sortClauseArray,
     numericAttrName: getNumericAttrName(),
+    edgeCollections: getEdgeCollections(),
     values: values || {},
   };
 

@@ -115,13 +115,20 @@ This adapter implements the following methods:
 | createEach        | Done   | DML       |
 | update            | Done   | DML       |
 | destroy           | Done   | DML       |
-| createEdge        | Done   | DML       |
 | find              | Done   | DQL       |
 | count             | Done   | DQL       |
 | sum               | Done   | DQL       |
 | avg               | Done   | DQL       |
 | define            | Done   | DDL       |
 | drop              | Done   | DDL       |
+
+graph databases methods:
+
+| Method              | Status | Category |
+| :------------------ | :----- | :------- |
+| createEdge          | Done   | DML      |
+| getOutboundVertices | Done   | DQL      |
+| getInboundVertices  | Done   | DQL      |
 
 ## createEdge Method
 
@@ -162,6 +169,23 @@ The following is an example of creating an edge.
           assert.equal(edge._to, `${to_id}`);
       })
 ```
+
+## getOutboundVertices && getInboundVertices Methods
+
+The following is an example of getting vertices connecting to a node
+
+```
+     //Flights connecting from an airport
+     const airports = await Airport.getOutboundVertices(['flights], 'airport/00M');
+
+     // or
+
+    //Flights connecting to an airport
+    const airports = await Airport.getInboundVertices(['flights], 'airport/00M');
+
+```
+
+the above will return an array of nodes and edges. [{node: {...}, edge:{...}}, ...]
 
 ## Testing
 
