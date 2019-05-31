@@ -185,7 +185,9 @@ The following is an example of getting vertices connecting to a node
 
 ```
 
-the above will return an array of nodes and edges. [{node: {...}, edge:{...}}, ...]
+the above will return an array of nodes and edges. [{vertex: {...}, edge:{...}}, ...]
+
+You can filter Vertices and Edges using .whereVertex({...}) and whereEdge({...}) methods.
 
 ## Testing
 
