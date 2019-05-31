@@ -80,7 +80,7 @@ $contains,
 
 \$has
 
-$has is used to query fields of Array<string> or Array<number> example {Roles:{$has:'Admin'}} will get users that has a role of admin supposing the `Roles` field has a format of ['Admin', 'Owner' ...]
+\$has is used to query fields of `Array<string> or Array<number>` example {Roles:{\$has:'Admin'}} will get users that has a role of admin supposing the `Roles` field has a format of ['Admin', 'Owner' ...]
 
 ## Go Native
 
