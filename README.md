@@ -78,6 +78,10 @@ $contains,
   $startsWith,
 \$endsWith,
 
+\$has
+
+$has is used to query fields of Array<string> or Array<number> example {Roles:{$has:'Admin'}} will get users that has a role of admin supposing the `Roles` field has a format of ['Admin', 'Owner' ...]
+
 ## Go Native
 
 If you want to write queries using the the ArangoJs Driver, the adapter exposes the Database connection instance just as you would get with const db = new Database();
