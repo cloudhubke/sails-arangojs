@@ -164,11 +164,11 @@ module.exports = require('machine').build({
       return exits.badConnection(error);
     }
 
-    result = result.map(({ vertex, edge }) => ({
+    const newresult = result.map(({ vertex, edge }) => ({
       vertex: Helpers.query.processNativeRecord(vertex, WLModel, query.meta),
       edge: Helpers.query.processNativeRecord(edge, WLModel, query.meta),
     }));
 
-    return exits.success({ record: result });
+    return exits.success({ record: newresult });
   },
 });

@@ -57,6 +57,7 @@ module.exports = function processNativeRecord(
   // }
 
   nativeRecord[pkColumnName] = `${nativeRecord[pkColumnName]}`;
+  nativeRecord[WLModel.primaryKey] = `${nativeRecord[pkColumnName]}`;
   // Delete fields unnecessary
   delete nativeRecord._rev;
 
