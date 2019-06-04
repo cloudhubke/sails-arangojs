@@ -137,44 +137,67 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta,
-    );
+    const {
+      dbConnection,
+      graph,
+      graphEnabled,
+    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
+
+    let collections = [];
 
     let createdRecord = {};
-    let session;
+    let collection;
+
+    if (graphEnabled) {
+      collections = await graph.listVertexCollections();
+    }
 
     try {
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // Model the query OR INSERT USING THE  Query Builder! 👍🏽
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -å
 
-      // Execute sql using the driver acquired session.
+      // Execute sql using the driver acquired graph.
 
-      let collection = dbConnection.collection(`${statement.tableName}`);
-      if (WLModel.classType === 'Edge') {
-        collection = dbConnection.edgeCollection(`${statement.tableName}`);
-      }
+      if (_.includes(collections, statement.tableName)) {
+        // This is a graph member!
 
-      const opts = { returnNew: fetchRecords };
-      const result = await collection.save(statement.values, opts);
+        collection = graph.vertexCollection(`${statement.tableName}`);
 
-      if (fetchRecords) {
+        if (WLModel.classType === 'Edge') {
+          collection = graph.edgeCollection(`${statement.tableName}`);
+        }
+
+        const result = await collection.save(statement.values);
+
+        if (fetchRecords) {
+          createdRecord = await collection.document(result[pkColumnName]);
+        }
+      } else {
+        collection = dbConnection.collection(`${statement.tableName}`);
+
+        if (WLModel.classType === 'Edge') {
+          collection = dbConnection.edgeCollection(`${statement.tableName}`);
+        }
+
+        const opts = { returnNew: fetchRecords };
+        const result = await collection.save(statement.values, opts);
         createdRecord = result.new;
       }
     } catch (err) {
-      if (session) {
+      if (graph) {
         // Close the Session.
-        Helpers.connection.releaseConnection(session);
+        Helpers.connection.releaseConnection(graph);
       }
       if (err.code === 409) {
         return exits.notUnique(err);
       }
       return exits.badConnection(err);
     }
-    // Close the Session.
-    Helpers.connection.releaseConnection(session);
+    if (!fetchRecords) {
+      Helpers.connection.releaseConnection(dbConnection);
+      return exits.success();
+    }
 
     try {
       Helpers.query.processNativeRecord(createdRecord, WLModel, query.meta);

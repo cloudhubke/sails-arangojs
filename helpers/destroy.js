@@ -101,6 +101,8 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
+    const where = query.criteria.where || {};
+
     //  ╔╦╗╔═╗╔╦╗╔═╗╦═╗╔╦╗╦╔╗╔╔═╗  ┬ ┬┬ ┬┬┌─┐┬ ┬  ┬  ┬┌─┐┬  ┬ ┬┌─┐┌─┐
     //   ║║║╣  ║ ║╣ ╠╦╝║║║║║║║║╣   │││├─┤││  ├─┤  └┐┌┘├─┤│  │ │├┤ └─┐
     //  ═╩╝╚═╝ ╩ ╚═╝╩╚═╩ ╩╩╝╚╝╚═╝  └┴┘┴ ┴┴└─┘┴ ┴   └┘ ┴ ┴┴─┘└─┘└─┘└─┘
@@ -123,41 +125,79 @@ module.exports = require('machine').build({
     let result;
     let removedRecords = [];
 
-    const { dbConnection } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta,
-    );
+    const {
+      dbConnection,
+      graph,
+      graphEnabled,
+    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
+    let collections = [];
     let collection;
+
+    if (graphEnabled) {
+      collections = await graph.listVertexCollections();
+    }
 
     try {
       // Check if collection exists
-      collection = dbConnection.collection(`${statement.tableName}`);
-      if (WLModel.classType === 'Edge') {
-        collection = dbConnection.edgeCollection(`${statement.tableName}`);
-      }
-      const collectionExists = await collection.exists();
 
-      if (!collectionExists) {
-        return exits.success();
-      }
+      if (_.includes(collections, statement.tableName)) {
+        // This is a graph member! Collection  must be removed via key
 
-      let sql = `FOR record in ${statement.tableName}`;
+        collection = graph.vertexCollection(`${statement.tableName}`);
 
-      if (statement.whereClause) {
-        sql = `${sql} FILTER ${statement.whereClause}`;
-      }
+        if (WLModel.classType === 'Edge') {
+          collection = graph.edgeCollection(`${statement.tableName}`);
+        }
 
-      sql = `${sql} REMOVE record in ${statement.tableName}`;
+        let ids = where[pkColumnName];
 
-      if (fetchRecords) {
-        sql = `${sql}  LET removed = OLD RETURN removed`;
-      }
+        if (!ids) {
+          return exits.badConnection(
+            new Error(
+              `Please provide the ${
+                statement.tableName
+              }'s ${pkColumnName} or _id for destroy function. It is null or undefined`,
+            ),
+          );
+        }
 
-      result = await dbConnection.query(sql);
+        if (where[pkColumnName].in && Array.isArray(where[pkColumnName].in)) {
+          ids = where[pkColumnName].in;
+        } else {
+          ids = [where[pkColumnName]];
+        }
 
-      if (fetchRecords) {
-        removedRecords = result._result;
+        if (fetchRecords) {
+          removedRecords = await collection.document(ids);
+        }
+
+        const results = ids.map(
+          id => new Promise(async (resolve) => {
+            result = await collection.remove(id);
+            resolve(id);
+          }),
+        );
+
+        await Promise.all(results);
+      } else {
+        let sql = `FOR record in ${statement.tableName}`;
+
+        if (statement.whereClause) {
+          sql = `${sql} FILTER ${statement.whereClause}`;
+        }
+
+        sql = `${sql} REMOVE record in ${statement.tableName}`;
+
+        if (fetchRecords) {
+          sql = `${sql}  LET removed = OLD RETURN removed`;
+        }
+
+        result = await dbConnection.query(sql);
+
+        if (fetchRecords) {
+          removedRecords = result._result;
+        }
       }
 
       Helpers.connection.releaseConnection(session, leased);

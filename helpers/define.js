@@ -77,6 +77,12 @@ module.exports = require('machine').build({
       );
     }
 
+    // const sleep = () => new Promise((resolve) => {
+    //   setTimeout(() => {
+    //     resolve();
+    //   }, 50);
+    // });
+
     // Escape Table Name
     const { tableName } = inputs;
     let result;
@@ -108,6 +114,10 @@ module.exports = require('machine').build({
       }
 
       if (model.classType === 'Edge') {
+        // Sleep for one second to allow vertices to create.
+
+        //       await sleep();
+
         collection = dbConnection.edgeCollection(`${tableName}`);
         collectionExists = await collection.exists();
 
@@ -115,6 +125,8 @@ module.exports = require('machine').build({
           Helpers.connection.releaseConnection(dbConnection);
           return exits.success();
         }
+
+        // Look for edge definitions in the Edge model. If its not in there, register it.
       }
 
       // Create a collection because it does not exist;

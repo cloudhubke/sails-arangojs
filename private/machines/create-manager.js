@@ -78,7 +78,7 @@ module.exports = {
     },
   },
 
-  fn({ config /* meta */ }, exits) {
+  async fn({ config /* meta */ }, exits) {
     const { Database, aql } = require('arangojs');
 
     const dbConnection = new Database({
@@ -86,10 +86,27 @@ module.exports = {
     });
     dbConnection.useDatabase(`${config.database}`);
     dbConnection.useBasicAuth(`${config.user}`, `${config.password || ''}`);
+
     try {
+      // Check whether a graph exist. of Not, create the graph
+
+      const graph = dbConnection.graph(`${config.database}`);
+
+      if (config.graph) {
+        const exists = await graph.exists();
+        if (!exists) {
+          // create graph
+          await graph.create({
+            edgeDefinitions: [],
+          });
+        }
+      }
+
       return exits.success({
         manager: {
           dbConnection,
+          graphEnabled: config.graph,
+          graph,
           aql,
         },
         meta: config,

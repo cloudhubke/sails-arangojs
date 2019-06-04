@@ -54,8 +54,6 @@ module.exports = require('machine').build({
   },
 
   fn: async function getOutboundVertices(inputs, exits) {
-    // Dependencies
-    const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
 
     // Store the Query input for easier access
@@ -164,10 +162,16 @@ module.exports = require('machine').build({
       return exits.badConnection(error);
     }
 
-    const newresult = result.map(({ vertex, edge }) => ({
-      vertex: Helpers.query.processNativeRecord(vertex, WLModel, query.meta),
-      edge: Helpers.query.processNativeRecord(edge, WLModel, query.meta),
-    }));
+    const newresult = result
+      .map(({ vertex, edge }) => ({
+        vertex: vertex
+          ? Helpers.query.processNativeRecord(vertex, WLModel, query.meta)
+          : null,
+        edge: edge
+          ? Helpers.query.processNativeRecord(edge, WLModel, query.meta)
+          : null,
+      }))
+      .filter(r => r.vertex !== null && r.edge !== null);
 
     return exits.success({ record: newresult });
   },

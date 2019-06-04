@@ -33,7 +33,10 @@ Then [connect the adapter](https://sailsjs.com/documentation/reference/configura
     adapter: 'sails-arangojs',
     url: 'arangodb://user:password@localhost:2424/db',
   },
+  graph: true,
 ```
+
+When graph is true, make sure migrations are not `alter`
 
 Under config.models, make it look like below if you are using sails-arangojs as ther default adapter
 
@@ -41,8 +44,11 @@ Under config.models, make it look like below if you are using sails-arangojs as 
  attributes: {
     createdAt: { type: 'number', autoCreatedAt: true },
     updatedAt: { type: 'number', autoUpdatedAt: true },
-    id: { type: 'string', autoIncrement: true },
- }
+    id: { type: 'string', columnName: '_key' },
+    _id: { type: 'string' },
+ },
+
+
 ```
 
 ## Usage
@@ -87,7 +93,7 @@ $contains,
 If you want to write queries using the the ArangoJs Driver, the adapter exposes the Database connection instance just as you would get with const db = new Database();
 
 ```
-const {dbConnection, aql} = Model.getDatastore().manager;
+const {dbConnection, aql, graph, foxx} = Model.getDatastore().manager;
 
 // Then you can use the connection as
 

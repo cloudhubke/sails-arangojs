@@ -25,9 +25,13 @@ module.exports = function getConnection({ manager }) {
 
   if (manager) {
     // manager returns connection and aql
-    const { dbConnection, aql } = manager;
+    const {
+      dbConnection, aql, graph, graphEnabled,
+    } = manager;
     return {
       dbConnection,
+      graphEnabled,
+      graph,
       aql,
     };
   }

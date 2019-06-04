@@ -187,14 +187,23 @@ module.exports = {
 
     await Helpers.normalizeDatastoreConfig({ config: datastoreConfig });
 
-    await Helpers.registerDataStore({
+    return Helpers.registerDataStore({
       datastores: registeredDatastores,
       identity: datastoreConfig.identity,
       config: datastoreConfig,
       models,
       modelDefinitions: registeredModels,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      badConfiguration: function error(err) {
+        return done(err);
+      },
+      success: function success() {
+        return done();
+      },
     });
-    return done(undefined, datastoreConfig);
   },
 
   /**

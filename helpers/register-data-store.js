@@ -18,8 +18,6 @@ module.exports = require('machine').build({
 
   description: 'Register a new datastore for making connections.',
 
-  sync: true,
-
   inputs: {
     identity: {
       description: 'A unique identitifer for the connection.',
@@ -70,7 +68,7 @@ module.exports = require('machine').build({
     },
   },
 
-  fn: function registerDataStore(
+  fn: async function registerDataStore(
     {
       datastores, identity, config, models, modelDefinitions,
     },
@@ -165,7 +163,7 @@ module.exports = require('machine').build({
           `Failed to connect with the given datastore configuration.  Details:\n\`\`\`\n${report}`,
         );
       },
-      success(report) {
+      success: async (report) => {
         try {
           const { manager } = report;
 
@@ -209,6 +207,7 @@ module.exports = require('machine').build({
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
           const dbSchema = {};
+          const definitionsarray = [];
           _.each(models, (modelinfo) => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
             if (modelDefinitions[modelinfo.identity]) {
@@ -227,7 +226,7 @@ module.exports = require('machine').build({
               );
             }
 
-            dbSchema[modelinfo.tableName] = {
+            const definition = {
               classType: modelinfo.classType,
               primaryKey: modelinfo.primaryKey,
               attributes: modelinfo.definition,
@@ -235,6 +234,13 @@ module.exports = require('machine').build({
               tableName: modelinfo.tableName,
               identity: modelinfo.identity,
             };
+
+            if (modelinfo.classType === 'Edge') {
+              definition.edgeDefinition = modelinfo.edgeDefinition || {};
+            }
+
+            dbSchema[modelinfo.tableName] = definition;
+            definitionsarray.push({ ...definition });
 
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             // The below code would be unnecessary if `modelinfo.identity` were passed in the define method.
@@ -245,13 +251,84 @@ module.exports = require('machine').build({
             // console.log('\n\nphModelInfo:',util.inspect(phModelInfo,{depth:5}));
           }); // </each phModel>
 
+          // We are going to create the graph vertices, edges and edgedefinitions
+
+          const { graph, graphEnabled } = manager;
+
+          if (graphEnabled) {
+            const collections = await graph.listVertexCollections();
+            const graphinfo = definitionsarray.map(
+              model => new Promise(async (resolve) => {
+                let collection = await graph.vertexCollection(
+                  `${model.tableName}`,
+                );
+
+                if (model.classType === 'Edge') {
+                  collection = graph.edgeCollection(`${model.tableName}`);
+
+                  const collectionExists = await collection.exists();
+
+                  if (!collectionExists) {
+                    await collection.create();
+                  }
+
+                  // Check Edge definitions in the edge
+                  const def = model.edgeDefinition || {};
+
+                  const fromExists = _.includes(
+                    definitionsarray.map(d => d.tableName),
+                    def.from,
+                  );
+                  const toExists = _.includes(
+                    definitionsarray.map(d => d.tableName),
+                    def.to,
+                  );
+
+                  if (!fromExists || !toExists) {
+                    return exits.error(
+                      `The edgeDefinitions for the ${
+                        model.tableName
+                      } are wrong`,
+                    );
+                  }
+
+                  // create edge definition
+
+                  try {
+                    await graph.addEdgeDefinition({
+                      collection: `${model.tableName}`,
+                      from: [`${def.from}`],
+                      to: [`${def.to}`],
+                    });
+                  } catch (error) {
+                    // eslint-disable-next-line no-console
+                  }
+                  // console.log('====================================');
+                  // console.log(await graph.get());
+                  // console.log('====================================');
+                } else {
+                  const collectionExists = await collection.exists();
+                  if (!collectionExists) {
+                    await collection.create();
+                  }
+
+                  if (!_.includes(collections, model.tableName)) {
+                    await graph.addVertexCollection(`${model.tableName}`);
+                  }
+                }
+                return resolve(model);
+              }),
+            );
+
+            await Promise.all(graphinfo);
+          }
+
           modelDefinitions[identity] = dbSchema;
+          return exits.success({ datastores, modelDefinitions, config });
         } catch (e) {
           return exits.error(e);
         }
-
         // Inform Waterline that the datastore was registered successfully.
-        return exits.success({ datastores, modelDefinitions, config });
       }, // •-success>
     }); // createManager()>
   },

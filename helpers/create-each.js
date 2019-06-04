@@ -148,13 +148,21 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta,
-    );
+    const {
+      dbConnection,
+      graph,
+      graphEnabled,
+    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
+    let collections = [];
+    let collection;
     let result;
+
     try {
+      if (graphEnabled) {
+        collections = await graph.listVertexCollections();
+      }
+
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
       // construct the query statement or better use the Query constructor 👍🏽
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -165,13 +173,23 @@ module.exports = require('machine').build({
 
       // result = await dbConnection.query(sql);
 
-      let collection = dbConnection.collection(`${statement.tableName}`);
-      if (WLModel.classType === 'Edge') {
-        collection = dbConnection.edgeCollection(`${statement.tableName}`);
+      if (_.includes(collections, statement.tableName)) {
+        // This is a graph member!
+
+        collection = graph.vertexCollection(`${statement.tableName}`);
+
+        if (WLModel.classType === 'Edge') {
+          collection = graph.edgeCollection(`${statement.tableName}`);
+        }
+      } else {
+        collection = dbConnection.collection(`${statement.tableName}`);
+
+        if (WLModel.classType === 'Edge') {
+          collection = dbConnection.edgeCollection(`${statement.tableName}`);
+        }
       }
 
-
-      const opts = { returnNew: fetchRecords };
+      const opts = { returnNew: fetchRecords, overwrite: true };
       result = await collection.save(statement.values, opts);
     } catch (error) {
       if (dbConnection) {

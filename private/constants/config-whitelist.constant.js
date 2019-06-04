@@ -6,19 +6,45 @@
 //
 // > http://mongodb.github.io/node-mongodb-native/2.2/reference/connecting/connection-settings/
 module.exports = [
-
+  // graph options
+  'graph',
   // SSL Options:
-  'ssl', 'sslValidate', 'sslCA', 'sslCert', 'sslKey', 'sslPass',
+  'ssl',
+  'sslValidate',
+  'sslCA',
+  'sslCert',
+  'sslKey',
+  'sslPass',
 
   // Connection Options:
-  'poolSize', 'autoReconnect', 'noDelay', 'keepAlive', 'connectTimeoutMS',
-  'socketTimeoutMS', 'reconnectTries', 'reconnectInterval',
+  'poolSize',
+  'autoReconnect',
+  'noDelay',
+  'keepAlive',
+  'connectTimeoutMS',
+  'socketTimeoutMS',
+  'reconnectTries',
+  'reconnectInterval',
 
   // Other Options:
-  'ha', 'haInterval', 'replicaSet', 'secondaryAcceptableLatencyMS',
-  'acceptableLatencyMS', 'connectWithNoPrimary', 'authSource', 'w',
-  'wtimeout', 'j', 'forceServerObjectId', 'serializeFunctions',
-  'ignoreUndefined', 'raw', 'promoteLongs', 'bufferMaxEntries',
-  'readPreference', 'pkFactory', 'readConcern', 'appname',
-
+  'ha',
+  'haInterval',
+  'replicaSet',
+  'secondaryAcceptableLatencyMS',
+  'acceptableLatencyMS',
+  'connectWithNoPrimary',
+  'authSource',
+  'w',
+  'wtimeout',
+  'j',
+  'forceServerObjectId',
+  'serializeFunctions',
+  'ignoreUndefined',
+  'raw',
+  'promoteLongs',
+  'bufferMaxEntries',
+  'readPreference',
+  'pkFactory',
+  'readConcern',
+  'appname',
 ];
