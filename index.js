@@ -437,6 +437,57 @@ module.exports = {
   },
 
   /**
+
+   * upsert matching records.
+   *
+   * > Note that depending on the value of `query.meta.fetch`,
+   * > you may be expected to return the array of physical records
+   * > that were upsertd as the second argument to the callback.
+   * > (Otherwise, exclude the 2nd argument or send back `undefined`.)
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   * @param  {String}       datastoreName The name of the datastore to perform the query on.
+   * @param  {Dictionary}   query         The stage-3 query to perform.
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   * @param  {Function}     done            Callback
+   *               @param {Error?}
+   *               @param {Array?}
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   */
+  upsert(datastoreName, query, done) {
+    // Look up the datastore entry (manager/driver/config).
+    const datastore = registeredDatastores[datastoreName];
+
+    // Sanity check:
+    if (_.isUndefined(datastore)) {
+      return done(
+        new Error(
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
+        ),
+      );
+    }
+    const models = registeredModels[datastoreName];
+
+    return Helpers.upsert({
+      datastore,
+      models,
+      query,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      notUnique: function error(errInfo) {
+        return done(flaverr('E_UNIQUE', errInfo));
+      },
+      success: function success(report) {
+        if (report) {
+          return done(undefined, report.records);
+        }
+        return done();
+      },
+    });
+  },
+
+  /**
    *  ╔╦╗╔═╗╔═╗╔╦╗╦═╗╔═╗╦ ╦
    *   ║║║╣ ╚═╗ ║ ╠╦╝║ ║╚╦╝
    *  ═╩╝╚═╝╚═╝ ╩ ╩╚═╚═╝ ╩

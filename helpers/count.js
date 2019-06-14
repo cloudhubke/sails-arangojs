@@ -111,6 +111,7 @@ module.exports = require('machine').build({
       }
       sql = `${sql} COLLECT WITH COUNT INTO length`;
       sql = `${sql} RETURN length`;
+
       result = await dbConnection.query(sql);
 
       Helpers.connection.releaseConnection(session);

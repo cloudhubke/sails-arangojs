@@ -6,6 +6,7 @@ module.exports = {
   create: require('./create'),
   createEach: require('./create-each'),
   update: require('./update'),
+  upsert: require('./upsert'),
   destroy: require('./destroy'),
   count: require('./count'),
   sum: require('./sum'),

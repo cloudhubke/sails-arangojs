@@ -300,12 +300,7 @@ module.exports = require('machine').build({
                       from: [`${def.from}`],
                       to: [`${def.to}`],
                     });
-                  } catch (error) {
-                    // eslint-disable-next-line no-console
-                  }
-                  // console.log('====================================');
-                  // console.log(await graph.get());
-                  // console.log('====================================');
+                  } catch (error) {}
                 } else {
                   const collectionExists = await collection.exists();
                   if (!collectionExists) {

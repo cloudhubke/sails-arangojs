@@ -5,6 +5,7 @@
 
 const _ = require('@sailshq/lodash');
 const SqlString = require('sqlstring');
+const normalizeUpdateValues = require('./normalizeUpdateValues');
 
 module.exports = function compileStatement(options) {
   const {
@@ -395,8 +396,17 @@ module.exports = function compileStatement(options) {
     values: values || {},
   };
 
-  if (method === 'update') {
-    obj.valuesToSet = values || {};
+  if (method === 'update' || method === 'upsert') {
+    obj.criteria = normalizeUpdateValues({
+      ...passedcriteria.where,
+    });
+    obj.insertvalues = normalizeUpdateValues({
+      ...passedcriteria.where,
+      ...(values || {}),
+      createdAt: new Date().getTime(),
+    });
+    obj.values = normalizeUpdateValues(values || {});
+    obj.valuesToSet = normalizeUpdateValues(values || {});
   }
 
   if (method === 'create' || method === 'createEach') {

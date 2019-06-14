@@ -7,9 +7,9 @@
 //
 
 module.exports = require('machine').build({
-  friendlyName: 'Update',
+  friendlyName: 'Upsert',
 
-  description: 'Update record(s) in the database based on a query criteria.',
+  description: 'Upsert record(s) in the database based on a query criteria.',
 
   inputs: {
     datastore: {
@@ -37,7 +37,7 @@ module.exports = require('machine').build({
 
   exits: {
     success: {
-      description: 'The records were successfully updated.',
+      description: 'The records were successfully upsertd.',
       outputVariableName: 'records',
       outputType: 'ref',
     },
@@ -58,7 +58,7 @@ module.exports = require('machine').build({
     },
   },
 
-  fn: async function update(inputs, exits) {
+  fn: async function upsert(inputs, exits) {
     // Dependencies
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
@@ -94,8 +94,6 @@ module.exports = require('machine').build({
 
     // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
     const criteria = query.criteria ? query.criteria.where || {} : {};
-    const shouldUpdatePk = Boolean(query.valuesToSet[pkColumnName])
-      && Boolean(criteria[pkColumnName]);
 
     try {
       Helpers.query.preProcessRecord({
@@ -104,9 +102,7 @@ module.exports = require('machine').build({
         model: WLModel,
       });
 
-      if (!shouldUpdatePk) {
-        delete query.valuesToSet[pkColumnName];
-      }
+      delete query.valuesToSet[pkColumnName];
     } catch (e) {
       return exits.error(e);
     }
@@ -124,7 +120,7 @@ module.exports = require('machine').build({
       statement = Helpers.query.compileStatement({
         pkColumnName,
         model: query.using,
-        method: 'update',
+        method: 'upsert',
         criteria: query.criteria,
         values: query.valuesToSet,
       });
@@ -164,76 +160,32 @@ module.exports = require('machine').build({
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
 
-      if (shouldUpdatePk) {
-        // If Updating PK, remove record first, then reinsert
-        const collection = dbConnection.collection(`${tableName}`);
-        const oldrecord = await collection.document(
-          `${criteria[pkColumnName]}`,
-          {
-            graceful: true,
-          },
-        );
+      const updatecriteria = JSON.stringify(statement.criteria)
+        .replace(/"'/g, '')
+        .replace(/'"/g, '')
+        .replace(/\\/g, '');
+      const upsertvalues = JSON.stringify(statement.values)
+        .replace(/"'/g, '')
+        .replace(/'"/g, '')
+        .replace(/\\/g, '');
+      const insertvalues = JSON.stringify(statement.insertvalues)
+        .replace(/"'/g, '')
+        .replace(/'"/g, '')
+        .replace(/\\/g, '');
 
-        if (oldrecord && oldrecord[pkColumnName]) {
-          // remove the record
-          await collection.remove(`${criteria[pkColumnName]}`);
-        } else {
-          throw new Error('The document does not exist');
-        }
+      let sql = `
+      UPSERT ${updatecriteria}
+      INSERT ${insertvalues}
+      UPDATE ${upsertvalues} IN ${statement.tableName}`;
 
-        const opts = { returnNew: fetchRecords };
-        result = await collection.save(
-          { ...oldrecord, ...statement.valuesToSet },
-          opts,
-        );
+      sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
+      if (fetchRecords) {
+        sql = `${sql} RETURN {new: NEW, old: OLD}`;
+      }
 
-        if (fetchRecords) {
-          updatedRecords = [result.new];
-        }
-      } else if (criteria[pkColumnName] || criteria._id) {
-        const updatevalues = JSON.stringify(statement.values)
-          .replace(/"'/g, '')
-          .replace(/'"/g, '')
-          .replace(/\\/g, '');
-
-        let sql = `FOR record in ${statement.tableName}`;
-        sql = `${sql} UPDATE {_key: '${
-          criteria[pkColumnName]
-        }'} WITH ${updatevalues} IN ${statement.tableName}`;
-
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
-        if (fetchRecords) {
-          sql = `${sql} RETURN {new: NEW, old: OLD}`;
-        }
-
-        result = await dbConnection.query(sql);
-
-        if (fetchRecords) {
-          updatedRecords = result._result.map(r => r.new);
-        }
-      } else {
-        const updatevalues = JSON.stringify(statement.values)
-          .replace(/"'/g, '')
-          .replace(/'"/g, '')
-          .replace(/\\/g, '');
-
-        let sql = `FOR record IN ${statement.tableName}`;
-        if (statement.whereClause) {
-          sql = `${sql} FILTER ${statement.whereClause}`;
-        }
-        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${
-          statement.tableName
-        }`;
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
-        if (fetchRecords) {
-          sql = `${sql} RETURN {new: NEW, old: OLD}`;
-        }
-
-        result = await dbConnection.query(sql);
-
-        if (fetchRecords) {
-          updatedRecords = result._result.map(r => r.new);
-        }
+      result = await dbConnection.query(sql);
+      if (fetchRecords) {
+        updatedRecords = result._result.map(r => r.new);
       }
     } catch (error) {
       if (dbConnection) {
@@ -244,7 +196,7 @@ module.exports = require('machine').build({
         return exits.notUnique(
           flaverr(
             {
-              name: 'update error',
+              name: 'upsert error',
               code: 'E_UNIQUE',
             },
             error,

@@ -88,6 +88,29 @@ $contains,
 
 \$has is used to query fields of `Array<string> or Array<number>` example {Roles:{\$has:'Admin'}} will get users that has a role of Admin supposing the `Roles` field has a format of ['Admin', 'Owner' ...]
 
+### Update
+
+The following key words are implemented in the update query
+
+```
+      $inc - Increase or decrease a value
+
+      $pop - Remove last item of array
+
+      $shift  - Remove first item of array
+
+      $unshift - Add Item in the front of an array
+
+      $unshiftset - Add Item in the front of an array if it does not exist ih the array
+
+      $push - Add Item at the end of an array
+
+      $pushset -  Add Item at the end of an array if it does not exist in the array
+
+      $pull -  Remove items from an array, accepts arrray
+
+```
+
 ## Go Native
 
 If you want to write queries using the the ArangoJs Driver, the adapter exposes the Database connection instance just as you would get with const db = new Database();
@@ -137,6 +160,7 @@ graph databases methods:
 | Method              | Status | Category |
 | :------------------ | :----- | :------- |
 | createEdge          | Done   | DML      |
+| upsert              | Done   | DML      |
 | getOutboundVertices | Done   | DQL      |
 | getInboundVertices  | Done   | DQL      |
 
@@ -178,6 +202,16 @@ The following is an example of creating an edge.
           assert.equal(edge._from, `${from_id}`);
           assert.equal(edge._to, `${to_id}`);
       })
+```
+
+## upsert Method
+
+The following example looks for record in primary key `NBO` if it does not exist, creates it otherwise updates the AirportName.
+Returns array of updated records.
+
+```
+  const nairobiairport = await Airport.upsert({id: 'NBO'}).set({AirportName: 'Nairobi International Airport'}).fetch();
+
 ```
 
 ## getOutboundVertices && getInboundVertices Methods
