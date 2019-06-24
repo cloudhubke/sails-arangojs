@@ -194,7 +194,8 @@ module.exports = require('machine').build({
         const updatevalues = JSON.stringify(statement.values)
           .replace(/"'/g, '')
           .replace(/'"/g, '')
-          .replace(/\\/g, '');
+          .replace(/\\/g, '')
+          .replace('OLD', 'record');
 
         let sql = `FOR record in ${statement.tableName}`;
         sql = `${sql} UPDATE {_key: '${
@@ -215,7 +216,8 @@ module.exports = require('machine').build({
         const updatevalues = JSON.stringify(statement.values)
           .replace(/"'/g, '')
           .replace(/'"/g, '')
-          .replace(/\\/g, '');
+          .replace(/\\/g, '')
+          .replace('OLD', 'record');
 
         let sql = `FOR record IN ${statement.tableName}`;
         if (statement.whereClause) {
