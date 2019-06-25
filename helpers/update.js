@@ -214,6 +214,7 @@ module.exports = require('machine').build({
         }
       } else {
         const updatevalues = JSON.stringify(statement.values)
+          .replace(/\\"/g, '')
           .replace(/"'/g, '')
           .replace(/'"/g, '')
           .replace(/\\/g, '')

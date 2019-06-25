@@ -8,7 +8,7 @@ const SqlString = require('sqlstring');
 const normalizeUpdateValues = (values) => {
   function specialValue(val) {
     if (_.isObject(val)) {
-      return JSON.stringify(val);
+      return val;
     }
     if (_.isString(val)) {
       return `${SqlString.escape(val)}`;
@@ -103,6 +103,18 @@ const normalizeUpdateValues = (values) => {
     return st;
   };
 
+  const getAndOrValues = (andorvalues) => {
+    let st = {};
+    if (_.isArray(andorvalues)) {
+      _.each(andorvalues, (val, index) => {
+        st = { ...st, ...val };
+      });
+    } else {
+      throw new Error('The Values of the `$and` statement must be an oject');
+    }
+    return st;
+  };
+
   let newvalues = {};
 
   _.each(values, (value, key) => {
@@ -130,6 +142,12 @@ const normalizeUpdateValues = (values) => {
         break;
       case '$pull':
         newvalues = { ...newvalues, ...getPullValues(value) };
+        break;
+      case 'and':
+        newvalues = { ...newvalues, ...getAndOrValues(value) };
+        break;
+      case '$and':
+        newvalues = { ...newvalues, ...getAndOrValues(value) };
         break;
       default:
         newvalues = { ...newvalues, [key]: value };

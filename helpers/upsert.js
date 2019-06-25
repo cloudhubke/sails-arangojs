@@ -161,20 +161,24 @@ module.exports = require('machine').build({
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
 
       const updatecriteria = JSON.stringify(statement.criteria)
+        .replace(/\\"/g, '')
         .replace(/"'/g, '')
         .replace(/'"/g, '')
         .replace(/\\/g, '');
       const upsertvalues = JSON.stringify(statement.values)
+        .replace(/\\"/g, '')
         .replace(/"'/g, '')
         .replace(/'"/g, '')
         .replace(/\\/g, '');
       const insertvalues = JSON.stringify(statement.insertvalues)
+        .replace(/\\"/g, '')
         .replace(/"'/g, '')
         .replace(/'"/g, '')
         .replace(/\\/g, '');
 
       let sql = `
       UPSERT ${updatecriteria}
+      
       INSERT ${insertvalues}
       UPDATE ${upsertvalues} IN ${statement.tableName}`;
 
