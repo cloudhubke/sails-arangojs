@@ -77,6 +77,7 @@ module.exports = require('machine').build({
     // Dependencies
     const _ = require('@sailshq/lodash');
     const ArangoDb = require('../private/machinepack-arango');
+    const graphHelper = require('./private/graphHelper');
     // var Helpers = require('./private');
 
     // Validate that the datastore isn't already initialized
@@ -227,6 +228,7 @@ module.exports = require('machine').build({
             }
 
             const definition = {
+              indexes: modelinfo.indexes,
               classType: modelinfo.classType,
               primaryKey: modelinfo.primaryKey,
               attributes: modelinfo.definition,
@@ -252,71 +254,7 @@ module.exports = require('machine').build({
           }); // </each phModel>
 
           // We are going to create the graph vertices, edges and edgedefinitions
-
-          const { graph, graphEnabled } = manager;
-
-          if (graphEnabled) {
-            const collections = await graph.listVertexCollections();
-            const graphinfo = definitionsarray.map(
-              model => new Promise(async (resolve) => {
-                let collection = await graph.vertexCollection(
-                  `${model.tableName}`,
-                );
-
-                if (model.classType === 'Edge') {
-                  collection = graph.edgeCollection(`${model.tableName}`);
-
-                  const collectionExists = await collection.exists();
-
-                  if (!collectionExists) {
-                    await collection.create();
-                  }
-
-                  // Check Edge definitions in the edge
-                  const def = model.edgeDefinition || {};
-
-                  const fromExists = _.includes(
-                    definitionsarray.map(d => d.tableName),
-                    def.from,
-                  );
-                  const toExists = _.includes(
-                    definitionsarray.map(d => d.tableName),
-                    def.to,
-                  );
-
-                  if (!fromExists || !toExists) {
-                    return exits.error(
-                      `The edgeDefinitions for the ${
-                        model.tableName
-                      } are wrong`,
-                    );
-                  }
-
-                  // create edge definition
-
-                  try {
-                    await graph.addEdgeDefinition({
-                      collection: `${model.tableName}`,
-                      from: [`${def.from}`],
-                      to: [`${def.to}`],
-                    });
-                  } catch (error) {}
-                } else {
-                  const collectionExists = await collection.exists();
-                  if (!collectionExists) {
-                    await collection.create();
-                  }
-
-                  if (!_.includes(collections, model.tableName)) {
-                    await graph.addVertexCollection(`${model.tableName}`);
-                  }
-                }
-                return resolve(model);
-              }),
-            );
-
-            await Promise.all(graphinfo);
-          }
+          await graphHelper.constructGraph(manager, definitionsarray, exits);
 
           modelDefinitions[identity] = dbSchema;
           return exits.success({ datastores, modelDefinitions, config });

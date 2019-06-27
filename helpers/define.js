@@ -122,6 +122,19 @@ module.exports = require('machine').build({
         collectionExists = await collection.exists();
 
         if (collectionExists) {
+          // Try recreating Indexes
+          await Helpers.schema.buildSchema(
+            tableName,
+            inputs.definition,
+            collection,
+          );
+          await Helpers.schema.buildIndexes(
+            inputs.indexes,
+            tableName,
+            inputs.definition,
+            collection,
+          );
+
           Helpers.connection.releaseConnection(dbConnection);
           return exits.success();
         }

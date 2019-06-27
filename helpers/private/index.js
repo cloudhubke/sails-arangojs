@@ -15,6 +15,7 @@ module.exports = {
   // Helpers for dealing with underlying database schema
   schema: {
     buildSchema: require('./schema/build-schema'),
+    buildIndexes: require('./schema/build-indexes'),
     escapeTableName: require('./schema/escape-table-name'),
   },
 };

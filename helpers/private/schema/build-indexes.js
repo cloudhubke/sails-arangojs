@@ -10,33 +10,37 @@
 const _ = require('@sailshq/lodash');
 const flaverr = require('flaverr');
 
-module.exports = async function buildSchema(tableName, definition, collection) {
+module.exports = async function buildIndexes(
+  indexes,
+  tableName,
+  definition,
+  collection,
+) {
   if (!definition || !tableName) {
     throw new Error('Build Schema/Table Name requires a valid definition.');
   }
 
   try {
-    const indexes = _.map(
-      definition,
-      (attribute, name) => new Promise(async (resolv) => {
+    const indexfields = _.map(
+      indexes,
+      obj => new Promise(async (resolv) => {
+        // const indexName = [...obj.fields].join('_');
         // attribute.unique, allowNull, etc
-        if (attribute.unique && !attribute.primaryKey) {
-          await collection.createHashIndex(`${name}`, {
-            unique: true,
-            sparse: !attribute.required,
-          });
-          resolv();
-        }
+
+        await collection.createHashIndex(obj.fields, {
+          unique: true,
+          sparse: Boolean(obj.sparse),
+        });
         resolv();
       }),
     );
 
-    return Promise.all(indexes).then(() => true);
+    return Promise.all(indexfields).then(() => true);
   } catch (error) {
     flaverr(
       {
         code: 'E_BULDING_INDEXES',
-        message: `Could not build indexes for ${tableName}`,
+        message: `Could not build model indexes for ${tableName}`,
       },
       error,
     );
