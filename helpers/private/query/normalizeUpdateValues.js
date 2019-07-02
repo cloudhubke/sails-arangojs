@@ -8,7 +8,10 @@ const SqlString = require('sqlstring');
 const normalizeUpdateValues = (values) => {
   function specialValue(val) {
     if (_.isObject(val)) {
-      return val;
+      return JSON.stringify(val)
+        .replace(/"'/g, '')
+        .replace(/'"/g, '')
+        .replace(/\\/g, '');
     }
     if (_.isString(val)) {
       return `${SqlString.escape(val)}`;

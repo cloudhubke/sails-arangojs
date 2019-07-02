@@ -190,17 +190,17 @@ module.exports = require('machine').build({
         if (fetchRecords) {
           updatedRecords = [result.new];
         }
-      } else if (criteria[pkColumnName] || criteria._id) {
+      } else if (statement.primarywhere._id) {
         const updatevalues = JSON.stringify(statement.values)
           .replace(/"'/g, '')
           .replace(/'"/g, '')
           .replace(/\\/g, '')
           .replace('OLD', 'record');
 
-        let sql = `FOR record in ${statement.tableName}`;
-        sql = `${sql} UPDATE {_key: '${
-          criteria[pkColumnName]
-        }'} WITH ${updatevalues} IN ${statement.tableName}`;
+        let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;
+        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${
+          statement.tableName
+        }`;
 
         sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
         if (fetchRecords) {
