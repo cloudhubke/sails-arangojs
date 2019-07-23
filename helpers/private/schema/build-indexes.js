@@ -24,13 +24,21 @@ module.exports = async function buildIndexes(
     const indexfields = _.map(
       indexes,
       obj => new Promise(async (resolv) => {
-        // const indexName = [...obj.fields].join('_');
-        // attribute.unique, allowNull, etc
+        if (obj.fields) {
+          await collection.createHashIndex(obj.fields, {
+            unique: true,
+            sparse: Boolean(obj.sparse),
+          });
+        }
 
-        await collection.createHashIndex(obj.fields, {
-          unique: true,
-          sparse: Boolean(obj.sparse),
-        });
+        if (obj.geo) {
+          await collection.createGeoIndex(obj.geo);
+        }
+
+        if (obj.geoJson) {
+          await collection.createGeoIndex(obj.geoJson, { geoJson: true });
+        }
+
         resolv();
       }),
     );

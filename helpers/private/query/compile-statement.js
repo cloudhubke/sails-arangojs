@@ -15,6 +15,7 @@ module.exports = function compileStatement(options) {
     values,
     pkColumnName,
     edgeCollections,
+    distanceCriteria,
   } = options;
 
   if (!pkColumnName) {
@@ -321,14 +322,14 @@ module.exports = function compileStatement(options) {
 
   function selectAttributes(vals) {
     if (vals && Array.isArray(vals)) {
-      let fields = [...vals, '@rid'];
+      let fields = [...vals];
       if (!_.includes(fields, pkColumnName)) {
-        fields = [...vals, '@rid', pkColumnName];
+        fields = [...vals, pkColumnName];
       }
       return fields;
     }
 
-    return ['@rid', pkColumnName];
+    return [pkColumnName];
   }
 
   function getNumericAttrName() {
@@ -349,6 +350,42 @@ module.exports = function compileStatement(options) {
       return edgeCollections;
     }
     return null;
+  }
+
+  function getGeoAttrName() {
+    let attrName;
+    if (distanceCriteria) {
+      _.each(distanceCriteria, (value, key) => {
+        if (key !== 'radius') {
+          attrName = key;
+        }
+      });
+    }
+    return attrName;
+  }
+
+  function getGeoRadius() {
+    let radius = 0;
+    if (distanceCriteria) {
+      _.each(distanceCriteria, (value, key) => {
+        if (key === 'radius') {
+          radius = Number(value || 0);
+        }
+      });
+    }
+    return radius;
+  }
+
+  function getDistanceCriteria() {
+    let criteria = '';
+    if (distanceCriteria) {
+      _.each(distanceCriteria, (value, key) => {
+        if (key !== 'radius') {
+          criteria = `${value.longitude}, ${value.latitude}`;
+        }
+      });
+    }
+    return criteria;
   }
 
   // Check for sort
@@ -393,6 +430,9 @@ module.exports = function compileStatement(options) {
     sortClauseArray,
     numericAttrName: getNumericAttrName(),
     edgeCollections: getEdgeCollections(),
+    geoAttrName: getGeoAttrName(),
+    geoRadius: getGeoRadius(),
+    distanceCriteria: getDistanceCriteria(),
     values: values || {},
   };
 

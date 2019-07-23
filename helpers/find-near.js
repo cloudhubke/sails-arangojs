@@ -53,7 +53,7 @@ module.exports = require('machine').build({
     },
   },
 
-  fn: async function find(inputs, exits) {
+  fn: async function findNear(inputs, exits) {
     // Dependencies
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
@@ -93,8 +93,9 @@ module.exports = require('machine').build({
       statement = Helpers.query.compileStatement({
         pkColumnName,
         model: query.using,
-        method: 'find',
+        method: 'findNear',
         criteria: query.criteria,
+        distanceCriteria: query.distanceCriteria,
       });
     } catch (error) {
       return exits.error(error);
@@ -107,45 +108,50 @@ module.exports = require('machine').build({
 
     let cursor;
     try {
-      //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
-      //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
-      //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
-      //  ┌─┐┬─┐  ┬ ┬┌─┐┌─┐  ┬  ┌─┐┌─┐┌─┐┌─┐┌┬┐  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
-      //  │ │├┬┘  │ │└─┐├┤   │  ├┤ ├─┤└─┐├┤  ││  │  │ │││││││├┤ │   │ ││ ││││
-      //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
-      // Spawn a new connection for running queries on.
+      // const collection = dbConnection.collection(`${statement.tableName}`);
 
-      // Execute sql using the driver acquired dbConnectio.
+      // const indexes = await collection.indexes();
+
+      // const geoIndexes = (indexes || [])
+      //   .filter(i => i.type === 'geo')
+      //   .map(i => i.fields.reverse().map(f => `record.${f}`))
+
+      // const geoJsonIndexes = (indexes || [])
+      //   .filter(i => i.type === 'geo')
+      //   .map(i => i.fields.reverse().map(f => `record.${f}`))
+      //   .join(' , ');
+
+      const { geoAttrName } = statement;
+
       let sql = `FOR record in ${statement.tableName}`;
 
-      if (statement.whereClause) {
-        sql = `${sql} FILTER ${statement.whereClause}`;
-      }
-      if (statement.limit) {
-        if (statement.skip) {
-          sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
-        } else {
-          sql = `${sql} LIMIT ${statement.limit}`;
-        }
+      if (statement.distanceCriteria) {
+        sql = `${sql} let distance =  GEO_DISTANCE([${
+          statement.distanceCriteria
+        }], record.${geoAttrName}) sort distance ASC`;
       }
 
-      if (statement.sortClause) {
-        sql = `${sql} SORT ${statement.sortClause}`;
+      if (statement.geoRadius > 0) {
+        sql = `${sql} FILTER distance <= ${statement.geoRadius}`;
+      }
+
+      if (statement.limit) {
+        sql = `${sql} LIMIT ${statement.limit}`;
       }
 
       if (statement.select.length > 0) {
         sql = `${sql} return {${statement.select
           .map(f => `${f}: record.${f}`)
-          .join(' , ')}}`;
+          .join(' , ')}, distance: distance}`;
       }
 
       if (statement.select.length === 0) {
-        sql = `${sql} return record`;
+        sql = `${sql} return {record: record, distance: distance}`;
       }
 
+      console.log('SQL ', sql);
+
       cursor = await dbConnection.query(`${sql}`);
-      // cursor = await dbConnection.query(`${sql}`);
-      // Close dbConnection
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
@@ -164,7 +170,7 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = cursor._result;
+    const selectRecords = cursor._result.map(r => (r.record ? { ...r.record, distance: r.distance } : r));
     try {
       _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);

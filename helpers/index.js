@@ -3,6 +3,7 @@ module.exports = {
   registerDataStore: require('./register-data-store'),
   teardown: require('./teardown'),
   select: require('./find'),
+  findNear: require('./find-near'),
   create: require('./create'),
   createEach: require('./create-each'),
   update: require('./update'),
