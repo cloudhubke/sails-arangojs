@@ -139,17 +139,15 @@ module.exports = require('machine').build({
         sql = `${sql} LIMIT ${statement.limit}`;
       }
 
-      if (statement.select.length > 0) {
+      if (statement.select.length > 1) {
         sql = `${sql} return {${statement.select
           .map(f => `${f}: record.${f}`)
           .join(' , ')}, distance: distance}`;
       }
 
-      if (statement.select.length === 0) {
+      if (statement.select.length === 1) {
         sql = `${sql} return {record: record, distance: distance}`;
       }
-
-      console.log('SQL ', sql);
 
       cursor = await dbConnection.query(`${sql}`);
 

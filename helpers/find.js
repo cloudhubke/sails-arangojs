@@ -133,13 +133,13 @@ module.exports = require('machine').build({
         sql = `${sql} SORT ${statement.sortClause}`;
       }
 
-      if (statement.select.length > 0) {
+      if (statement.select.length > 1) {
         sql = `${sql} return {${statement.select
           .map(f => `${f}: record.${f}`)
           .join(' , ')}}`;
       }
 
-      if (statement.select.length === 0) {
+      if (statement.select.length === 1) {
         sql = `${sql} return record`;
       }
 
