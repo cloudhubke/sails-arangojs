@@ -21,4 +21,5 @@ module.exports = {
   createEdge: require('./create-edge'),
   getOutboundVerices: require('./get-outbound-vertices'),
   getInboundVerices: require('./get-inbound-vertices'),
+  aggregate: require('./aggregate'),
 };

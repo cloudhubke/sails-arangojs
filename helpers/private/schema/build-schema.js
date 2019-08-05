@@ -15,12 +15,16 @@ module.exports = async function buildSchema(tableName, definition, collection) {
     throw new Error('Build Schema/Table Name requires a valid definition.');
   }
 
+  const pk = definition.primaryKey;
+
   try {
     const indexes = _.map(
-      definition,
+      definition.attributes,
       (attribute, name) => new Promise(async (resolv) => {
+        const autoMigrations = attribute.autoMigrations || {};
+        const unique = Boolean(autoMigrations.unique);
         // attribute.unique, allowNull, etc
-        if (attribute.unique && !attribute.primaryKey) {
+        if (attribute && unique && name !== pk) {
           await collection.createHashIndex(`${name}`, {
             unique: true,
             sparse: !attribute.required,
