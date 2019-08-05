@@ -181,16 +181,25 @@ module.exports = require('machine').build({
         if (WLModel.classType === 'Edge') {
           collection = graph.edgeCollection(`${statement.tableName}`);
         }
+
+        const results = [...(statement.values || [])].map(
+          value => new Promise(async (resolve) => {
+            const record = await collection.save(value);
+            resolve({ new: record });
+          }),
+        );
+
+        result = await Promise.all(results);
       } else {
         collection = dbConnection.collection(`${statement.tableName}`);
 
         if (WLModel.classType === 'Edge') {
           collection = dbConnection.edgeCollection(`${statement.tableName}`);
         }
-      }
+        const opts = { returnNew: fetchRecords, overwrite: true };
 
-      const opts = { returnNew: fetchRecords, overwrite: true };
-      result = await collection.save(statement.values, opts);
+        result = await collection.save(statement.values, opts);
+      }
     } catch (error) {
       if (dbConnection) {
         Helpers.connection.releaseConnection(dbConnection);
@@ -212,6 +221,11 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
+
+    console.log('====================================');
+    console.log('RES', result);
+    console.log('====================================');
+
     const createdRecords = result.map(r => r.new);
     try {
       _.each(createdRecords, (record) => {
