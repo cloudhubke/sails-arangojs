@@ -6,6 +6,7 @@
 const _ = require('@sailshq/lodash');
 const SqlString = require('sqlstring');
 const normalizeUpdateValues = require('./normalizeUpdateValues');
+const stringifyUpdateValues = require('./stringifyUpdateValues');
 
 const getFilterStatement = require('./helpers/getFilterStatement');
 
@@ -207,14 +208,14 @@ module.exports = function compileStatement(options) {
     values: values || {},
   };
 
-  if (method === 'update' || method === 'upsert') {
-    obj.criteria = normalizeUpdateValues(
+  if (method === 'upsert' || method === 'update') {
+    obj.criteria = stringifyUpdateValues(
       {
         ...passedcriteria.where,
       },
       method,
     );
-    obj.insertvalues = normalizeUpdateValues(
+    obj.insertvalues = stringifyUpdateValues(
       {
         ...passedcriteria.where,
         ...(values || {}),
@@ -222,7 +223,9 @@ module.exports = function compileStatement(options) {
       },
       method,
     );
-    obj.values = normalizeUpdateValues(values || {}, method);
+
+    obj.values = stringifyUpdateValues(values || {}, method);
+
     obj.valuesToSet = normalizeUpdateValues(values || {}, method);
   }
 

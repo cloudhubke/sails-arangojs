@@ -196,6 +196,7 @@ module.exports = require('machine').build({
         }
 
         const opts = { returnNew: fetchRecords };
+
         result = await collection.save(
           { ...oldrecord, ...statement.valuesToSet },
           opts,
