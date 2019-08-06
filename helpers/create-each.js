@@ -222,10 +222,6 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
-    console.log('====================================');
-    console.log('RES', result);
-    console.log('====================================');
-
     const createdRecords = result.map(r => r.new);
     try {
       _.each(createdRecords, (record) => {

@@ -6,6 +6,19 @@
 //   ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 //
 
+function stringify(obj_from_json) {
+  if (typeof obj_from_json !== 'object' || Array.isArray(obj_from_json)) {
+    // not an object, stringify using native function
+    return JSON.stringify(obj_from_json);
+  }
+  // Implements recursive object serialization according to JSON spec
+  // but without quotes around the keys.
+  const props = Object.keys(obj_from_json)
+    .map(key => `${key}:${stringify(obj_from_json[key])}`)
+    .join(',');
+  return `{${props}}`;
+}
+
 module.exports = require('machine').build({
   friendlyName: 'Update',
 
@@ -163,6 +176,7 @@ module.exports = require('machine').build({
       //  ╦═╗╦ ╦╔╗╔  ┬ ┬┌─┐┌┬┐┌─┐┌┬┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
+      const updatevalues = `${statement.values}`.replace('OLD', 'record');
 
       if (shouldUpdatePk) {
         // If Updating PK, remove record first, then reinsert
@@ -191,12 +205,6 @@ module.exports = require('machine').build({
           updatedRecords = [result.new];
         }
       } else if (statement.primarywhere._id) {
-        const updatevalues = JSON.stringify(statement.values)
-          .replace(/"'/g, '')
-          .replace(/'"/g, '')
-          .replace(/\\/g, '')
-          .replace('OLD', 'record');
-
         let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;
         sql = `${sql} UPDATE record WITH ${updatevalues} IN ${
           statement.tableName
@@ -213,13 +221,6 @@ module.exports = require('machine').build({
           updatedRecords = result._result.map(r => r.new);
         }
       } else {
-        const updatevalues = JSON.stringify(statement.values)
-          .replace(/\\"/g, '')
-          .replace(/"'/g, '')
-          .replace(/'"/g, '')
-          .replace(/\\/g, '')
-          .replace('OLD', 'record');
-
         let sql = `FOR record IN ${statement.tableName}`;
         if (statement.whereClause) {
           sql = `${sql} FILTER ${statement.whereClause}`;
