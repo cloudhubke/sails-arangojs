@@ -18,7 +18,7 @@ function stringify(obj_from_json) {
   return `{${props}}`;
 }
 
-const normalizeUpdateValues = (values) => {
+const normalizeUpdateValues = (values, method) => {
   function specialValue(val) {
     if (_.isObject(val)) {
       return stringify(val).replace(/\'/g, '');
@@ -112,6 +112,29 @@ const normalizeUpdateValues = (values) => {
 
   let newvalues = [];
 
+  const getAndOrValues = (andorvalues) => {
+    let st = [];
+    if (_.isArray(andorvalues)) {
+      _.each(andorvalues, (val) => {
+        _.each(val, (value, key) => {
+          if (method === 'upsert') {
+            if (_.includes(key, '.')) {
+              throw new Error(
+                '\n\n\nThe the upsert statement cannot include deep nested search\n\n\n',
+              );
+            }
+          }
+          st = [...st, `${key}: ${specialValue(value)}`];
+        });
+      });
+    } else {
+      throw new Error(
+        'The Values of the `$and` statement must be an array of objects',
+      );
+    }
+    return st;
+  };
+
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
       if (_.keys(value).length > 1) {
@@ -163,7 +186,17 @@ const normalizeUpdateValues = (values) => {
         }
       });
     } else {
-      newvalues = [...newvalues, `${key}: ${specialValue(value)}`];
+      switch (key) {
+        case 'and':
+          newvalues = [...newvalues, ...getAndOrValues(value)];
+          break;
+        case '$and':
+          newvalues = [...newvalues, ...getAndOrValues(value)];
+          break;
+        default:
+          newvalues = [...newvalues, `${key}: ${specialValue(value)}`];
+          break;
+      }
     }
   });
   return `{${newvalues.join(', ')}}`;

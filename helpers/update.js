@@ -176,7 +176,7 @@ module.exports = require('machine').build({
       //  ╦═╗╦ ╦╔╗╔  ┬ ┬┌─┐┌┬┐┌─┐┌┬┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
-      const updatevalues = `${statement.values}`.replace('OLD', 'record');
+      const updatevalues = `${statement.values}`.replace(/OLD/g, 'record');
 
       if (shouldUpdatePk) {
         // If Updating PK, remove record first, then reinsert

@@ -115,6 +115,7 @@ module.exports = require('machine').build({
     // build a SQL query.
     // See: https://github.com/treelinehq/waterline-query-docs for more info
     // on Waterline Query Statements.
+
     let statement;
     try {
       statement = Helpers.query.compileStatement({

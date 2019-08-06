@@ -208,16 +208,22 @@ module.exports = function compileStatement(options) {
   };
 
   if (method === 'update' || method === 'upsert') {
-    obj.criteria = normalizeUpdateValues({
-      ...passedcriteria.where,
-    });
-    obj.insertvalues = normalizeUpdateValues({
-      ...passedcriteria.where,
-      ...(values || {}),
-      createdAt: new Date().getTime(),
-    });
-    obj.values = normalizeUpdateValues(values || {});
-    obj.valuesToSet = normalizeUpdateValues(values || {});
+    obj.criteria = normalizeUpdateValues(
+      {
+        ...passedcriteria.where,
+      },
+      method,
+    );
+    obj.insertvalues = normalizeUpdateValues(
+      {
+        ...passedcriteria.where,
+        ...(values || {}),
+        createdAt: new Date().getTime(),
+      },
+      method,
+    );
+    obj.values = normalizeUpdateValues(values || {}, method);
+    obj.valuesToSet = normalizeUpdateValues(values || {}, method);
   }
 
   if (method === 'create' || method === 'createEach') {
