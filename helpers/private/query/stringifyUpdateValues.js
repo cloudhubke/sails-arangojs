@@ -12,6 +12,11 @@ function stringify(obj_from_json) {
   }
   // Implements recursive object serialization according to JSON spec
   // but without quotes around the keys.
+
+  if (obj_from_json === null || obj_from_json === undefined) {
+    return null;
+  }
+
   const props = Object.keys(obj_from_json)
     .map(key => `${key}:${stringify(obj_from_json[key])}`)
     .join(',');

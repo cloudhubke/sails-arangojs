@@ -1,6 +1,24 @@
 const _ = require('@sailshq/lodash');
 const getFilterStatement = require('./getFilterStatement');
 
+function stringify(obj_from_json) {
+  if (typeof obj_from_json !== 'object' || Array.isArray(obj_from_json)) {
+    // not an object, stringify using native function
+    return JSON.stringify(obj_from_json);
+  }
+  // Implements recursive object serialization according to JSON spec
+  // but without quotes around the keys.
+
+  if (obj_from_json === null || obj_from_json === undefined) {
+    return null;
+  }
+
+  const props = Object.keys(obj_from_json)
+    .map(key => `${key}:${stringify(obj_from_json[key])}`)
+    .join(',');
+  return `{${props}}`;
+}
+
 const func = (f, value) => {
   switch (f) {
     case '$floor':
@@ -58,6 +76,10 @@ const getCollectStatement = (collect) => {
         return `${key} = ${`record.${value}`}`;
       }
       case 'object': {
+        if (key.includes('$')) {
+          const fld = `${key}`.replace('$', '');
+          return `INTO ${fld} = ${collectFn(value)}`;
+        }
         return `${key} = ${collectFn(value)}`;
       }
       default:
@@ -73,7 +95,8 @@ const getCollectStatement = (collect) => {
       st = statements.filter(s => !!s).join(', ');
     }
   });
-  return st;
+
+  return st.replace(', INTO', ' INTO');
 };
 
 const getAggregateStatement = (collect) => {
@@ -141,13 +164,14 @@ const getReturnModifiers = (values) => {
       .map(v => (v.includes('$') ? `${v}`.replace('$', '') : `${v}`))
       .join(', ');
   };
-
+  let str = '';
   _.each(values, (value, key) => {
     if (key === '$concat') {
-      return `CONCAT(${getConcatStatements(value)})`;
+      str = `${str} CONCAT(${getConcatStatements(value)})`;
     }
-    return '';
   });
+
+  return str;
 };
 
 const getReturnStatement = (values) => {
@@ -166,7 +190,7 @@ const getReturnStatement = (values) => {
     }
   });
 
-  return `${JSON.stringify(values)}`.replace(/"/g, '');
+  return `${JSON.stringify(values)}`.replace(/\\"/g, "'").replace(/"/g, '');
 };
 
 module.exports = ({ aggregateCriteria, pkColumnName, model }) => {

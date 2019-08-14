@@ -93,7 +93,7 @@ module.exports = ({ pkColumnName }) => {
           str = `<= ${value}`;
           return;
         case '$ne':
-          str = `!+ ${value}`;
+          str = `!= ${specialValue(value)}`;
           return;
 
         case '>':

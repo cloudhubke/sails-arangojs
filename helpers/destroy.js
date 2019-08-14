@@ -168,6 +168,12 @@ module.exports = require('machine').build({
           ids = [where[pkColumnName]];
         }
 
+        if (where[pkColumnName].$in && Array.isArray(where[pkColumnName].$in)) {
+          ids = where[pkColumnName].$in;
+        } else {
+          ids = [where[pkColumnName]];
+        }
+
         if (fetchRecords) {
           removedRecords = await collection.document(ids);
         }

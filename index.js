@@ -324,7 +324,10 @@ module.exports = {
         return done(flaverr('E_UNIQUE', err));
       },
       success: function success(report) {
-        return done(undefined, report.record);
+        if (report) {
+          return done(undefined, report.record);
+        }
+        return done(undefined);
       },
     });
   },
@@ -948,7 +951,10 @@ module.exports = {
         return done(flaverr('E_UNIQUE', err));
       },
       success: function success(report) {
-        return done(undefined, report.record);
+        if (report) {
+          return done(undefined, report.record);
+        }
+        return done(undefined);
       },
     });
   },
