@@ -6,6 +6,12 @@ module.exports = {
     const { graph, graphEnabled } = manager;
 
     if (graphEnabled) {
+      const graphInfo = await graph.get();
+
+      const edgeDefinitions = (graphInfo.edgeDefinitions || []).map(
+        ed => ed.collection,
+      );
+
       const collections = await graph.listVertexCollections();
       const graphinfo = definitionsarray.map(
         model => new Promise(async (resolve) => {
@@ -36,33 +42,49 @@ module.exports = {
             // Check Edge definitions in the edge
             const def = model.edgeDefinition || {};
 
-            const fromExists = _.includes(
-              definitionsarray.map(d => d.tableName),
-              def.from,
-            );
-            const toExists = _.includes(
-              definitionsarray.map(d => d.tableName),
-              def.to,
-            );
-
-            if (!fromExists || !toExists) {
-              return exits.error(
-                `The edgeDefinitions for the ${model.tableName} are wrong`,
+            _.each(def.from, (f) => {
+              const fromExists = _.includes(
+                definitionsarray.map(d => d.tableName),
+                f,
               );
-            }
+              if (!fromExists) {
+                return exits.error(
+                  `\n\nThe edgeDefinitions for the ${model.tableName} are wrong. Model ${f} is not defined\n\n`,
+                );
+              }
+            });
+
+            _.each(def.to, (t) => {
+              const toExists = _.includes(
+                definitionsarray.map(d => d.tableName),
+                t,
+              );
+              if (!toExists) {
+                return exits.error(
+                  `\n\nThe edgeDefinitions for the ${model.tableName} are wrong. Model ${t} is not defined\n\n`,
+                );
+              }
+            });
 
             // create edge definition
 
             try {
-              if (!collectionExists) {
+              if (_.includes(edgeDefinitions, model.tableName)) {
+                await graph.replaceEdgeDefinition({
+                  collection: `${model.tableName}`,
+                  from: def.from,
+                  to: def.to,
+                });
+              } else {
                 await graph.addEdgeDefinition({
                   collection: `${model.tableName}`,
-                  from: [`${def.from}`],
-                  to: [`${def.to}`],
+                  from: def.from,
+                  to: def.to,
                 });
               }
             } catch (error) {
-              return exits.error(`Error creating edge definition${error}`);
+              // return exits.error(`Error creating edge definition${error}`);
+              console.log(`Error creating edge definition ${error}`);
             }
           } else {
             const collectionExists = await collection.exists();
@@ -83,7 +105,13 @@ module.exports = {
             );
 
             if (!_.includes(collections, model.tableName)) {
-              await graph.addVertexCollection(`${model.tableName}`);
+              try {
+                await graph.addVertexCollection(`${model.tableName}`);
+              } catch (error) {
+                console.log(
+                  `Error adding vertex collection ${model.tableName} to graph ${error}`,
+                );
+              }
             }
           }
           return resolve(model);
