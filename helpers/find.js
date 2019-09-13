@@ -144,10 +144,6 @@ module.exports = require('machine').build({
         sql = `${sql} return record`;
       }
 
-      console.log('====================================');
-      console.log(sql);
-      console.log('====================================');
-
       cursor = await dbConnection.query(`${sql}`);
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
