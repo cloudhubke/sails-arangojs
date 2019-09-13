@@ -118,30 +118,35 @@ module.exports = require('machine').build({
       // Execute sql using the driver acquired dbConnectio.
       let sql = `FOR record in ${statement.tableName}`;
 
-      if (statement.whereClause) {
-        sql = `${sql} FILTER ${statement.whereClause}`;
-      }
-      if (statement.limit) {
-        if (statement.skip) {
-          sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
-        } else {
-          sql = `${sql} LIMIT ${statement.limit}`;
+      _.each(query.criteria, (value, key) => {
+        if (key === 'where' && statement.whereClause) {
+          sql = `${sql} FILTER ${statement.whereClause}`;
         }
-      }
 
-      if (statement.sortClause) {
-        sql = `${sql} SORT ${statement.sortClause}`;
-      }
+        if (key === 'sort' && statement.sortClause) {
+          sql = `${sql} SORT ${statement.sortClause}`;
+        }
+
+        if (key === 'limit' && statement.limit) {
+          if (statement.skip) {
+            sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
+          } else {
+            sql = `${sql} LIMIT ${statement.limit}`;
+          }
+        }
+      });
 
       if (statement.select.length > 1) {
         sql = `${sql} return {${statement.select
           .map(f => `${f}: record.${f}`)
           .join(' , ')}}`;
-      }
-
-      if (statement.select.length === 1) {
+      } else {
         sql = `${sql} return record`;
       }
+
+      console.log('====================================');
+      console.log(sql);
+      console.log('====================================');
 
       cursor = await dbConnection.query(`${sql}`);
       // cursor = await dbConnection.query(`${sql}`);

@@ -54,6 +54,7 @@ module.exports = require('machine').build({
   },
 
   fn: async function getOutboundVertices(inputs, exits) {
+    const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
 
     // Store the Query input for easier access
@@ -126,9 +127,7 @@ module.exports = require('machine').build({
 
       let sql = '';
 
-      sql = `FOR vertex, edge, path IN OUTBOUND '${where._id}' ${
-        statement.edgeCollections
-      }`;
+      sql = `FOR vertex, edge, path IN OUTBOUND '${where._id}' ${statement.edgeCollections}`;
       if (statement.whereVertexClause || statement.whereEdgeClause) {
         const arr = [statement.whereVertexClause, statement.whereEdgeClause]
           .filter(a => !!a)
@@ -136,17 +135,20 @@ module.exports = require('machine').build({
 
         sql = `${sql} FILTER ${arr}`;
       }
-      if (statement.limit) {
-        if (statement.skip) {
-          sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
-        } else {
-          sql = `${sql} LIMIT ${statement.limit}`;
-        }
-      }
 
-      if (statement.sortClause) {
-        sql = `${sql} SORT ${statement.sortClause}`;
-      }
+      _.each(query.criteria, (value, key) => {
+        if (key === 'limit' && statement.limit) {
+          if (statement.skip) {
+            sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
+          } else {
+            sql = `${sql} LIMIT ${statement.limit}`;
+          }
+        }
+
+        if (key === 'sort' && statement.sortClause) {
+          sql = `${sql} SORT ${statement.sortClause}`;
+        }
+      });
 
       sql = `${sql} RETURN {vertex, edge }`;
 

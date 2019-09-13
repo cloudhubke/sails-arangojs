@@ -126,9 +126,7 @@ module.exports = require('machine').build({
       let sql = `FOR record in ${statement.tableName}`;
 
       if (statement.distanceCriteria) {
-        sql = `${sql} let distance =  GEO_DISTANCE([${
-          statement.distanceCriteria
-        }], record.${geoAttrName}) sort distance ASC`;
+        sql = `${sql} let distance =  GEO_DISTANCE([${statement.distanceCriteria}], record.${geoAttrName}) sort distance ASC`;
       }
 
       if (statement.geoRadius > 0) {
