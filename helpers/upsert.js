@@ -75,8 +75,6 @@ module.exports = require('machine').build({
       return exits.invalidDatastore();
     }
 
-    const tableName = query.using;
-
     // Grab the pk column name (for use below)
     let pkColumnName;
     try {
@@ -86,14 +84,12 @@ module.exports = require('machine').build({
     }
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let mergeObjects = false;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
     //  ╩  ╩╚═╚═╝  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┴└─└─┘└─┘└─┘┴└──┴┘└─┘
     // Process each record to normalize output
-
-    // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
-    const criteria = query.criteria ? query.criteria.where || {} : {};
 
     try {
       Helpers.query.preProcessRecord({
@@ -139,6 +135,10 @@ module.exports = require('machine').build({
       fetchRecords = true;
     }
 
+    if (_.has(query.meta, 'mergeObjects') && !query.meta.mergeObjects) {
+      mergeObjects = false;
+    }
+
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
     //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
     //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
@@ -172,7 +172,10 @@ module.exports = require('machine').build({
       INSERT ${insertvalues}
       UPDATE ${upsertvalues} IN ${statement.tableName}`;
 
-      sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
+      sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+        mergeObjects ? 'true' : 'false'
+      } }`;
+
       if (fetchRecords) {
         sql = `${sql} RETURN {new: NEW, old: OLD}`;
       }

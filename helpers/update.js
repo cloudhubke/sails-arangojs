@@ -99,6 +99,7 @@ module.exports = require('machine').build({
     }
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let mergeObjects = true;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
@@ -155,6 +156,10 @@ module.exports = require('machine').build({
       fetchRecords = true;
     }
 
+    if (_.has(query.meta, 'mergeObjects') && !query.meta.mergeObjects) {
+      mergeObjects = false;
+    }
+
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
     //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
     //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
@@ -207,11 +212,11 @@ module.exports = require('machine').build({
         }
       } else if (statement.primarywhere._id) {
         let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;
-        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${
-          statement.tableName
-        }`;
+        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${statement.tableName}`;
 
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
+        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+          mergeObjects ? 'true' : 'false'
+        } }`;
         if (fetchRecords) {
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
@@ -226,14 +231,13 @@ module.exports = require('machine').build({
         if (statement.whereClause) {
           sql = `${sql} FILTER ${statement.whereClause}`;
         }
-        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${
-          statement.tableName
-        }`;
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true }`;
+        sql = `${sql} UPDATE record WITH ${updatevalues} IN ${statement.tableName}`;
+        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+          mergeObjects ? 'true' : 'false'
+        } }`;
         if (fetchRecords) {
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
-
         result = await dbConnection.query(sql);
 
         if (fetchRecords) {

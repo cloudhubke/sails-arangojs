@@ -142,6 +142,14 @@ const stringifyUpdateValues = (values, method) => {
 
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
+      if (_.isEmpty(value)) {
+        if (_.isArray(value)) {
+          newvalues = [...newvalues, `${key}: []`];
+        } else {
+          newvalues = [...newvalues, `${key}: {}`];
+        }
+      }
+
       _.each(value, (v, k) => {
         switch (k) {
           case '$inc':
