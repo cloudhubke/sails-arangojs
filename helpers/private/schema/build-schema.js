@@ -21,18 +21,18 @@ module.exports = async function buildSchema(tableName, definition, collection) {
     const indexes = _.map(
       definition.attributes,
       (attribute, name) => new Promise(async (resolv) => {
-        const autoMigrations = attribute.autoMigrations || {};
-        const unique = Boolean(autoMigrations.unique);
-        // attribute.unique, allowNull, etc
-        if (attribute && unique && name !== pk) {
-          await collection.createHashIndex(`${name}`, {
-            unique: true,
-            sparse: Boolean(attribute.required),
-          });
+          const autoMigrations = attribute.autoMigrations || {};
+          const unique = Boolean(autoMigrations.unique);
+          // attribute.unique, allowNull, etc
+          if (attribute && unique && name !== pk) {
+            await collection.createHashIndex(`${name}`, {
+              unique: true,
+              sparse: Boolean(!attribute.required),
+            });
+            resolv();
+          }
           resolv();
-        }
-        resolv();
-      }),
+        }),
     );
 
     return Promise.all(indexes).then(() => true);
