@@ -27,7 +27,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         if (attribute && unique && name !== pk) {
           await collection.createHashIndex(`${name}`, {
             unique: true,
-            sparse: !attribute.required,
+            sparse: Boolean(attribute.required),
           });
           resolv();
         }

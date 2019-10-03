@@ -1048,4 +1048,60 @@ module.exports = {
       },
     });
   },
+
+  /**
+   *  ╔═╗╦═╗╔═╗╔═╗╔╦╗╔═╗
+   *  ║  ╠╦╝║╣ ╠═╣ ║ ║╣
+   *  ╚═╝╩╚═╚═╝╩ ╩ ╩ ╚═╝
+   * Create a new record.
+   *
+   * (e.g. add a new row to a SQL table, or a new document to a MongoDB collection.)
+   *
+   * > Note that depending on the value of `query.meta.fetch`,
+   * > you may be expected to return the physical record that was
+   * > created (a dictionary) as the second argument to the callback.
+   * > (Otherwise, exclude the 2nd argument or send back `undefined`.)
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   * @param  {String}       datastoreName The name of the datastore to perform the query on.
+   * @param  {Dictionary}   query         The stage-3 query to perform.
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   * @param  {Function}     done          Callback
+   *               @param {Error?}
+   *               @param {Dictionary?}
+   * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   */
+  normalize(datastoreName, query, done) {
+    // Look up the datastore entry (manager/driver/config).
+    const dsEntry = registeredDatastores[datastoreName];
+
+    // Sanity check:
+    if (_.isUndefined(dsEntry)) {
+      return done(
+        new Error(
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
+        ),
+      );
+    }
+    const datastore = registeredDatastores[datastoreName];
+    const models = registeredModels[datastoreName];
+
+    return Helpers.normalize({
+      datastore,
+      models,
+      query,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      notUnique: function error(err) {
+        return done(flaverr('E_UNIQUE', err));
+      },
+      success: function success(report) {
+        if (report) {
+          return done(undefined, report.record);
+        }
+        return done(undefined);
+      },
+    });
+  },
 };
