@@ -182,15 +182,11 @@ module.exports = require('machine').build({
           collection = graph.edgeCollection(`${statement.tableName}`);
         }
 
-        console.log('====================================');
-        console.log('st', statement.values);
-        console.log('====================================');
-
         const results = [...(statement.values || [])].map(
           value => new Promise(async (resolve) => {
-            const record = await collection.save(value);
-            resolve({ new: record });
-          }),
+              const record = await collection.save(value);
+              resolve({ new: record });
+            }),
         );
 
         result = await Promise.all(results);
