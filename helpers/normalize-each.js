@@ -1,5 +1,3 @@
-/*eslint-disable */
-
 //   ██████╗██████╗ ███████╗ █████╗ ████████╗███████╗    ███████╗ █████╗  ██████╗██╗  ██╗
 //  ██╔════╝██╔══██╗██╔════╝██╔══██╗╚══██╔══╝██╔════╝    ██╔════╝██╔══██╗██╔════╝██║  ██║
 //  ██║     ██████╔╝█████╗  ███████║   ██║   █████╗      █████╗  ███████║██║     ███████║
@@ -92,9 +90,6 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
-    // Set a flag to determine if records are being returned
-    let fetchRecords = false;
-
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
     //  ╩  ╩╚═╚═╝  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┴└─└─┘└─┘└─┘┴└──┴┘└─┘
@@ -132,16 +127,6 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
-    //  ╔╦╗╔═╗╔╦╗╔═╗╦═╗╔╦╗╦╔╗╔╔═╗  ┬ ┬┬ ┬┬┌─┐┬ ┬  ┬  ┬┌─┐┬  ┬ ┬┌─┐┌─┐
-    //   ║║║╣  ║ ║╣ ╠╦╝║║║║║║║║╣   │││├─┤││  ├─┤  └┐┌┘├─┤│  │ │├┤ └─┐
-    //  ═╩╝╚═╝ ╩ ╚═╝╩╚═╩ ╩╩╝╚╝╚═╝  └┴┘┴ ┴┴└─┘┴ ┴   └┘ ┴ ┴┴─┘└─┘└─┘└─┘
-    //  ┌┬┐┌─┐  ┬─┐┌─┐┌┬┐┬ ┬┬─┐┌┐┌
-    //   │ │ │  ├┬┘├┤  │ │ │├┬┘│││
-    //   ┴ └─┘  ┴└─└─┘ ┴ └─┘┴└─┘└┘
-    if (_.has(query.meta, 'fetch') && query.meta.fetch) {
-      fetchRecords = true;
-    }
-
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
     //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
     //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
@@ -150,42 +135,13 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection, Transaction } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta
-    );
-
     let result;
 
     try {
-      result = await Transaction({
-        action: function(params) {
-          const col = db._collection(params.collection);
-          const results = col.insert(params.values, params.options);
-
-          return results;
-        },
-        writes: [`${statement.tableName}`],
-        params: {
-          collection: `${statement.tableName}`,
-          values: statement.values || [],
-          options: { returnNew: fetchRecords, overwrite: true },
-        },
-      });
+      result = statement.values || [];
     } catch (error) {
-      if (dbConnection) {
-        Helpers.connection.releaseConnection(dbConnection);
-      }
       return exits.error(error);
     }
-
-    // If `fetch` is NOT enabled, we're done.
-
-    if (!fetchRecords) {
-      Helpers.connection.releaseConnection(dbConnection);
-      return exits.success();
-    }
-
     // Otherwise, IWMIH we'll be sending back records:
     // ============================================
 
@@ -194,14 +150,16 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
-    const createdRecords = result.map(r => r.new);
-    try {
-      _.each(createdRecords, record => {
-        Helpers.query.processNativeRecord(record, WLModel, query.meta);
-      });
-    } catch (e) {
-      return exits.error(e);
-    }
+    const createdRecords = result;
+    // try {
+    //   _.each(createdRecords, (record) => {
+    //     delete record._id;
+    //     delete record._key;
+    //     delete record._rev;
+    //   });
+    // } catch (e) {
+    //   return exits.error(e);
+    // }
     return exits.success({ records: createdRecords });
   },
 });

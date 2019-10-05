@@ -20,19 +20,18 @@ module.exports = function getConnection({ manager }) {
   // This is a no-op that just sends back the manager and `meta` that were passed in.
   assert(
     manager && manager.dbConnection,
-    'The datastore does not have a DB connection manager',
+    'The datastore does not have a DB connection manager'
   );
 
   if (manager) {
     // manager returns connection and aql
-    const {
-      dbConnection, aql, graph, graphEnabled,
-    } = manager;
+    const { dbConnection, aql, graph, graphEnabled, Transaction } = manager;
     return {
       dbConnection,
       graphEnabled,
       graph,
       aql,
+      Transaction,
     };
   }
 
@@ -41,6 +40,6 @@ module.exports = function getConnection({ manager }) {
       code: 'E_GETTING_COMMECTION',
       message: 'There are no active connections to the database',
     },
-    new Error('Error getting an active connection'),
+    new Error('Error getting an active connection')
   );
 };

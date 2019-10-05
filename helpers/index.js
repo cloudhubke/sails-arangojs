@@ -23,4 +23,5 @@ module.exports = {
   getInboundVerices: require('./get-inbound-vertices'),
   aggregate: require('./aggregate'),
   normalize: require('./normalize'),
+  normalizeEach: require('./normalize-each'),
 };

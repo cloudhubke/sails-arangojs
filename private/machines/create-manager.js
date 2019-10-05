@@ -125,11 +125,11 @@ module.exports = {
 
           const returnFunction = func;
 
-          return returnFunction();
+          return returnFunction(params);
         });
 
         return dbConnection.transaction(
-          { read: [...reads], write: [] },
+          { read: [...reads], write: [...writes] },
           `${fanction}`.replace('func;', String(action)),
           { ...params }
         );

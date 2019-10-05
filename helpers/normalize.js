@@ -141,11 +141,6 @@ module.exports = require('machine').build({
       );
     }
 
-    delete normalizedRecord.id;
-    delete normalizedRecord._id;
-    delete normalizedRecord._key;
-    delete normalizedRecord._rev;
-
     return exits.success({ record: normalizedRecord });
   },
 });
