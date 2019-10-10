@@ -137,8 +137,13 @@ module.exports = require('machine').build({
       Helpers.query.processNativeRecord(normalizedRecord, WLModel, query.meta);
     } catch (error) {
       return exits.invalidDatastore(
-        'Records could not math with your model attributes ',
+        'Records could not math with your model attributes',
       );
+    }
+
+    if (!normalizedRecord.id || normalizedRecord.id === 'undefined') {
+      delete normalizedRecord.id;
+      delete normalizedRecord._key;
     }
 
     return exits.success({ record: normalizedRecord });

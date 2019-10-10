@@ -150,16 +150,19 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
-    const createdRecords = result;
-    // try {
-    //   _.each(createdRecords, (record) => {
-    //     delete record._id;
-    //     delete record._key;
-    //     delete record._rev;
-    //   });
-    // } catch (e) {
-    //   return exits.error(e);
-    // }
+    let createdRecords = result;
+    try {
+      createdRecords = [...createdRecords].map(record => {
+        const rec = { ...record };
+        if (!rec.id || rec.id === 'undefined') {
+          delete rec.id;
+          delete rec._key;
+        }
+        return rec;
+      });
+    } catch (e) {
+      return exits.error(e);
+    }
     return exits.success({ records: createdRecords });
   },
 });
