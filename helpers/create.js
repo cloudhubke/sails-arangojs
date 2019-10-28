@@ -189,10 +189,11 @@ module.exports = require('machine').build({
         // Close the Session.
         Helpers.connection.releaseConnection(graph);
       }
+
       if (err.code === 409) {
         return exits.notUnique(err);
       }
-      return exits.badConnection(err);
+      return exits.badConnection(new Error(`\n\n Error ${err} \n\n`));
     }
     if (!fetchRecords) {
       Helpers.connection.releaseConnection(dbConnection);

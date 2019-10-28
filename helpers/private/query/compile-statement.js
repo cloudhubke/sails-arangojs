@@ -230,7 +230,7 @@ module.exports = function compileStatement(options) {
   }
 
   if (method === 'create' || method === 'createEach') {
-    obj.valuesToSet = values || [];
+    obj.values = values || [];
   }
 
   if (method === 'aggregate') {
