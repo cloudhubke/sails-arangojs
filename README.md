@@ -32,8 +32,8 @@ Then [connect the adapter](https://sailsjs.com/documentation/reference/configura
   default: {
     adapter: 'sails-arangojs',
     url: 'arangodb://user:password@localhost:2424/db',
+    graph: true,
   },
-  graph: true,
 ```
 
 When graph is true, make sure migrations are not `alter`
@@ -60,12 +60,23 @@ Visit [Models & ORM](https://sailsjs.com/docs/concepts/models-and-orm) in the do
 When defining Models, you can specify the class of the model to be mapped on arangodb
 
 ```
-  classType: 'Document', //Either of Document, Edge (default is Document)
+  classType: 'Vertex', //Either 'Verte'x or 'Edge' (defaults to 'Vertex')
   .
   .
   attributes: {
        id: { type: 'string' , columnName: '_key' },
   }
+```
+
+For Edge Models, add an edgeDefinition field, specifying the _from and _to vertex collections
+
+```
+      classType: 'Edge',
+      
+      edgeDefinition: {
+            from: ['vertex1'],
+            to: ['vertex2']
+      },
 ```
 
 ### Query Language
