@@ -4,7 +4,6 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const _ = require('@sailshq/lodash');
-const SqlString = require('sqlstring');
 const normalizeUpdateValues = require('./normalizeUpdateValues');
 const stringifyUpdateValues = require('./stringifyUpdateValues');
 
@@ -24,7 +23,7 @@ module.exports = function compileStatement(options) {
 
   if (!pkColumnName) {
     throw new Error(
-      'SQL Statement cannot compile because the pkColumnName is not passed',
+      'SQL Statement cannot compile because the pkColumnName is not passed'
     );
   }
 
@@ -213,7 +212,7 @@ module.exports = function compileStatement(options) {
       {
         ...passedcriteria.where,
       },
-      method,
+      method
     );
     obj.insertvalues = stringifyUpdateValues(
       {
@@ -221,7 +220,7 @@ module.exports = function compileStatement(options) {
         ...(values || {}),
         createdAt: new Date().getTime(),
       },
-      method,
+      method
     );
 
     obj.values = stringifyUpdateValues(values || {}, method);

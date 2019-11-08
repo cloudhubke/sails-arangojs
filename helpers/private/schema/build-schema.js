@@ -17,10 +17,40 @@ module.exports = async function buildSchema(tableName, definition, collection) {
 
   const pk = definition.primaryKey;
 
+  if (_.isObject(definition) && !definition.attributes) {
+    try {
+      const indexes = _.map(
+        definition,
+        (attribute, name) => new Promise(async resolv => {
+            const unique = Boolean(attribute.unique);
+            // attribute.unique, allowNull, etc
+            if (attribute && unique && !attribute.primaryKey) {
+              await collection.createHashIndex(`${name}`, {
+                unique: true,
+                sparse: Boolean(!attribute.required),
+              });
+              resolv();
+            }
+            resolv();
+          })
+      );
+
+      return Promise.all(indexes).then(() => true);
+    } catch (error) {
+      flaverr(
+        {
+          code: 'E_BULDING_INDEXES',
+          message: `Could not build indexes for ${tableName}`,
+        },
+        error
+      );
+    }
+  }
+
   try {
     const indexes = _.map(
       definition.attributes,
-      (attribute, name) => new Promise(async (resolv) => {
+      (attribute, name) => new Promise(async resolv => {
           const autoMigrations = attribute.autoMigrations || {};
           const unique = Boolean(autoMigrations.unique);
           // attribute.unique, allowNull, etc
@@ -32,7 +62,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             resolv();
           }
           resolv();
-        }),
+        })
     );
 
     return Promise.all(indexes).then(() => true);
@@ -42,7 +72,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         code: 'E_BULDING_INDEXES',
         message: `Could not build indexes for ${tableName}`,
       },
-      error,
+      error
     );
   }
   // Build up a string of column attributes

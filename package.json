@@ -59,11 +59,7 @@
   "waterlineAdapter": {
     "type": "sails-arangojs",
     "interfaces": [
-      "semantic",
-      "queryable",
-      "migratable",
-      "sql",
-      "graph"
+      "queryable"
     ],
     "features": [
       "unique"

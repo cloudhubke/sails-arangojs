@@ -26,7 +26,7 @@ function stringify(obj_from_json) {
 const stringifyUpdateValues = (values, method) => {
   function specialValue(val) {
     if (_.isObject(val)) {
-      return stringify(val).replace(/\'/g, '');
+      return stringify(val).replace(/'/g, '');
     }
     if (_.isString(val)) {
       return `${SqlString.escape(val)}`;
@@ -41,7 +41,7 @@ const stringifyUpdateValues = (values, method) => {
     let st = '';
     if (!_.isNumber(incvalue)) {
       throw new Error(
-        'Increment values in the `$inc` statement must be numbers',
+        'Increment values in the `$inc` statement must be numbers'
       );
     } else {
       st = `OLD.${key}+${incvalue}`;
@@ -59,7 +59,7 @@ const stringifyUpdateValues = (values, method) => {
       }
     } else {
       throw new Error(
-        'The Values of the `$inc` statement must be a valid value',
+        'The Values of the `$inc` statement must be a valid value'
       );
     }
     return st;
@@ -71,7 +71,7 @@ const stringifyUpdateValues = (values, method) => {
       st = `UNSHIFT(OLD.${key}, ${specialValue(value)}, ${unique})`;
     } else {
       throw new Error(
-        'The Values of the `$inc` statement must be a valid value',
+        'The Values of the `$inc` statement must be a valid value'
       );
     }
     return st;
@@ -83,7 +83,7 @@ const stringifyUpdateValues = (values, method) => {
       st = `POP(OLD.${key}`;
     } else {
       throw new Error(
-        'The Values of the `$inc` statement must be a valid value',
+        'The Values of the `$inc` statement must be a valid value'
       );
     }
     return st;
@@ -95,7 +95,7 @@ const stringifyUpdateValues = (values, method) => {
       st = `POP(OLD.${key}`;
     } else {
       throw new Error(
-        'The Values of the `$inc` statement must be a valid value',
+        'The Values of the `$inc` statement must be a valid value'
       );
     }
 
@@ -108,7 +108,7 @@ const stringifyUpdateValues = (values, method) => {
       st = `REMOVE_VALUES(OLD.${key}, ${specialValue(value)})`;
     } else {
       throw new Error(
-        'The Values of the `$pull` statement must be an Array oject',
+        'The Values of the `$pull` statement must be an Array oject'
       );
     }
 
@@ -117,15 +117,15 @@ const stringifyUpdateValues = (values, method) => {
 
   let newvalues = [];
 
-  const getAndOrValues = (andorvalues) => {
+  const getAndOrValues = andorvalues => {
     let st = [];
     if (_.isArray(andorvalues)) {
-      _.each(andorvalues, (val) => {
+      _.each(andorvalues, val => {
         _.each(val, (value, key) => {
           if (method === 'upsert') {
             if (_.includes(key, '.')) {
               throw new Error(
-                '\n\n\nThe the upsert statement cannot include deep nested search\n\n\n',
+                '\n\n\nThe the upsert statement cannot include deep nested search\n\n\n'
               );
             }
           }
@@ -134,7 +134,7 @@ const stringifyUpdateValues = (values, method) => {
       });
     } else {
       throw new Error(
-        'The Values of the `$and` statement must be an array of objects',
+        'The Values of the `$and` statement must be an array of objects'
       );
     }
     return st;

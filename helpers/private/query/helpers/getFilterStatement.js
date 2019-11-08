@@ -1,4 +1,5 @@
 const SqlString = require('sqlstring');
+const _ = require('@sailshq/lodash');
 
 module.exports = ({ pkColumnName }) => {
   function specialValue(val, key) {
@@ -67,7 +68,7 @@ module.exports = ({ pkColumnName }) => {
       btwn.push(arr[1]);
     } else {
       throw new Error(
-        'An array of two values is expected in the BETWEEN criteria',
+        'An array of two values is expected in the BETWEEN criteria'
       );
     }
     return `BETWEEN ${btwn.join(' AND ')}`;
@@ -154,11 +155,13 @@ module.exports = ({ pkColumnName }) => {
     }
     _.each(obj, (value, key) => {
       if (key.toLowerCase() === '$or' || key.toLowerCase() === 'or') {
+        // eslint-disable-next-line no-use-before-define
         criteria.push(`(${getOrStatement(value)})`);
         return;
       }
 
       if (key.toLowerCase() === 'and' || key.toLowerCase() === '$and') {
+        // eslint-disable-next-line no-use-before-define
         criteria.push(`(${getAndArrayStatement(value)})`);
         return;
       }
@@ -180,12 +183,12 @@ module.exports = ({ pkColumnName }) => {
       }
 
       if (_.isObject(value)) {
-        if (_.has(value, '$has')) {
+        if (_.has(value, '$has') || _.has(value, 'has')) {
           criteria.push(`${getComparison(value)} IN record.${key} `);
           return;
         }
 
-        if (_.has(value, '$like')) {
+        if (_.has(value, '$like') || _.has(value, 'like')) {
           criteria.push(`LOWER(record.${key}) ${getComparison(value)}`);
           return;
         }
@@ -207,12 +210,12 @@ module.exports = ({ pkColumnName }) => {
   function getOrStatement(arr) {
     const orst = [];
     if (Array.isArray(arr) && arr.length > 1) {
-      _.each(arr, (obj) => {
+      _.each(arr, obj => {
         orst.push(getAndStatement(obj));
       });
     } else {
       throw new Error(
-        'We expect an array of more than one objects on the OR criteria',
+        'We expect an array of more than one objects on the OR criteria'
       );
     }
     return orst.join(' OR ');
@@ -221,7 +224,7 @@ module.exports = ({ pkColumnName }) => {
   function getAndArrayStatement(arr) {
     const andst = [];
     if (Array.isArray(arr)) {
-      _.each(arr, (obj) => {
+      _.each(arr, obj => {
         andst.push(getAndStatement(obj));
       });
     } else {

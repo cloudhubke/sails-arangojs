@@ -68,7 +68,7 @@ module.exports = require('machine').build({
   fn: async function create(inputs, exits) {
     const { query } = inputs;
     // Dependencies
-    const _ = require('@sailshq/lodash');
+
     const Helpers = require('./private');
 
     // Store the Query input for easier access
@@ -152,7 +152,7 @@ module.exports = require('machine').build({
 
     let createdRecords = result;
     try {
-      createdRecords = [...createdRecords].map(record => {
+      createdRecords = [...createdRecords].map((record) => {
         const rec = { ...record };
         if (!rec.id || rec.id === 'undefined') {
           delete rec.id;

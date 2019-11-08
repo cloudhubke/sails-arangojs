@@ -204,7 +204,7 @@ module.exports = require('machine').build({
       Helpers.query.processNativeRecord(createdRecord, WLModel, query.meta);
     } catch (error) {
       return exits.invalidDatastore(
-        'Records could not math with your model attributes ',
+        'Records could not math with your model attributes '
       );
     }
 

@@ -1,3 +1,4 @@
+/* eslint-disable operator-linebreak */
 //  ██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗     █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗
 //  ██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝    ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║
 //  ██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗      ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║
@@ -6,6 +7,7 @@
 //   ╚═════╝ ╚═╝     ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 //
 
+// eslint-disable-next-line no-unused-vars
 function stringify(obj_from_json) {
   if (typeof obj_from_json !== 'object' || Array.isArray(obj_from_json)) {
     // not an object, stringify using native function
@@ -108,8 +110,9 @@ module.exports = require('machine').build({
 
     // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
     const criteria = query.criteria ? query.criteria.where || {} : {};
-    const shouldUpdatePk = Boolean(query.valuesToSet[pkColumnName])
-      && Boolean(criteria[pkColumnName]);
+    const shouldUpdatePk =
+      Boolean(query.valuesToSet[pkColumnName]) &&
+      Boolean(criteria[pkColumnName]);
 
     try {
       Helpers.query.preProcessRecord({
@@ -170,7 +173,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     let session;
@@ -183,6 +186,8 @@ module.exports = require('machine').build({
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
       const updatevalues = `${statement.values}`.replace(/OLD/g, 'record');
 
+      // eslint-disable-next-line no-console
+
       if (shouldUpdatePk) {
         // If Updating PK, remove record first, then reinsert
         const collection = dbConnection.collection(`${tableName}`);
@@ -190,7 +195,7 @@ module.exports = require('machine').build({
           `${criteria[pkColumnName]}`,
           {
             graceful: true,
-          },
+          }
         );
 
         if (oldrecord && oldrecord[pkColumnName]) {
@@ -204,7 +209,7 @@ module.exports = require('machine').build({
 
         result = await collection.save(
           { ...oldrecord, ...statement.valuesToSet },
-          opts,
+          opts
         );
 
         if (fetchRecords) {
@@ -248,6 +253,8 @@ module.exports = require('machine').build({
       if (dbConnection) {
         Helpers.connection.releaseConnection(dbConnection);
       }
+      // eslint-disable-next-line no-console
+      console.log('ERRRRRR', error);
 
       if (error.code === 409) {
         return exits.notUnique(
@@ -256,8 +263,8 @@ module.exports = require('machine').build({
               name: 'update error',
               code: 'E_UNIQUE',
             },
-            error,
-          ),
+            error
+          )
         );
       }
       return exits.badConnection(error);
@@ -279,7 +286,12 @@ module.exports = require('machine').build({
 
     try {
       await Helpers.connection.releaseConnection(dbConnection);
-      const newrecords = updatedRecords.map(record => Helpers.query.processNativeRecord(record, WLModel, query.meta));
+      const newrecords = updatedRecords.map(
+        record =>
+          // eslint-disable-next-line implicit-arrow-linebreak
+          Helpers.query.processNativeRecord(record, WLModel, query.meta)
+        // eslint-disable-next-line function-paren-newline
+      );
       // Helpers.query.processNativeRecord(record.new, WLModel, query.meta);
       // Helpers.query.processNativeRecord(record.old, WLModel, query.meta);
 

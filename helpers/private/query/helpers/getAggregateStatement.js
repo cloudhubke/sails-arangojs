@@ -1,6 +1,7 @@
 const _ = require('@sailshq/lodash');
 const getFilterStatement = require('./getFilterStatement');
 
+// eslint-disable-next-line no-unused-vars
 function stringify(obj_from_json) {
   if (typeof obj_from_json !== 'object' || Array.isArray(obj_from_json)) {
     // not an object, stringify using native function
@@ -46,7 +47,7 @@ const func = (f, value) => {
   }
 };
 
-const aggregateFn = (object) => {
+const aggregateFn = object => {
   let st = '';
   _.each(object, (value, key) => {
     st = func(key, value);
@@ -54,7 +55,7 @@ const aggregateFn = (object) => {
   return st ? `${st}` : '';
 };
 
-const collectFn = (object) => {
+const collectFn = object => {
   const coll = {};
   _.each(object, (value, key) => {
     coll[key] = `record.${value}`;
@@ -63,7 +64,7 @@ const collectFn = (object) => {
   return `${JSON.stringify(coll)}`.replace(/"/g, '');
 };
 
-const getCollectStatement = (collect) => {
+const getCollectStatement = collect => {
   if (!_.isPlainObject(collect)) {
     return new Error('\n\n Aggregate $collect attribute must be an object');
   }
@@ -99,7 +100,7 @@ const getCollectStatement = (collect) => {
   return st.replace(', INTO', ' INTO');
 };
 
-const getAggregateStatement = (collect) => {
+const getAggregateStatement = collect => {
   if (!_.isPlainObject(collect)) {
     return new Error('\n\n Aggregate $aggregate attribute must be an object');
   }
@@ -127,7 +128,7 @@ const getAggregateStatement = (collect) => {
   return statements.filter(s => !!s).join(', ');
 };
 
-const getSortStatement = (values) => {
+const getSortStatement = values => {
   if (!_.isPlainObject(values)) {
     return new Error('\n\n Aggregate $return attribute must be an object');
   }
@@ -136,7 +137,7 @@ const getSortStatement = (values) => {
   const getStatemements = (key, value) => {
     if (!_.includes(['ASC', 'DESC'], value)) {
       return new Error(
-        '\n\n Aggregate $sort attribute must be have either ASC or DESC',
+        '\n\n Aggregate $sort attribute must be have either ASC or DESC'
       );
     }
 
@@ -150,12 +151,12 @@ const getSortStatement = (values) => {
   return statements.filter(s => !!s).join(', ');
 };
 
-const getReturnModifiers = (values) => {
+const getReturnModifiers = values => {
   if (!_.isPlainObject(values)) {
     return new Error('\n\n Aggregate $return attribute must be an object');
   }
 
-  const getConcatStatements = (value) => {
+  const getConcatStatements = value => {
     if (!_.isArray(value)) {
       return new Error('\n\n $contact attribute must be an object \n\n');
     }
@@ -174,7 +175,7 @@ const getReturnModifiers = (values) => {
   return str;
 };
 
-const getReturnStatement = (values) => {
+const getReturnStatement = values => {
   if (!_.isPlainObject(values)) {
     return new Error('\n\n Aggregate $return attribute must be an object');
   }

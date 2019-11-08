@@ -1,7 +1,7 @@
 const _ = require('@sailshq/lodash');
 const SqlString = require('sqlstring');
 
-const normalizeUpdateValues = (values) => {
+const normalizeUpdateValues = values => {
   function specialValue(val) {
     if (_.isObject(val)) {
       return JSON.stringify(val)
@@ -18,13 +18,13 @@ const normalizeUpdateValues = (values) => {
     return val;
   }
 
-  const getIncreaseValues = (incvalues) => {
+  const getIncreaseValues = incvalues => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
         if (!_.isNumber(incvalue)) {
           throw new Error(
-            'Increment values in the `$inc` statement must be numbers',
+            'Increment values in the `$inc` statement must be numbers'
           );
         } else {
           st[key] = `'OLD.${key}+${incvalue}'`;
@@ -60,7 +60,7 @@ const normalizeUpdateValues = (values) => {
     return st;
   };
 
-  const getPopValues = (incvalues) => {
+  const getPopValues = incvalues => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -72,7 +72,7 @@ const normalizeUpdateValues = (values) => {
     return st;
   };
 
-  const getShiftValues = (incvalues) => {
+  const getShiftValues = incvalues => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -84,7 +84,7 @@ const normalizeUpdateValues = (values) => {
     return st;
   };
 
-  const getPullValues = (incvalues) => {
+  const getPullValues = incvalues => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -92,7 +92,7 @@ const normalizeUpdateValues = (values) => {
           st[key] = `'REMOVE_VALUES(OLD.${key}, ${specialValue(incvalue)})'`;
         } else {
           throw new Error(
-            'The Values of the `$pull` statement must be an Array oject',
+            'The Values of the `$pull` statement must be an Array oject'
           );
         }
       });
@@ -102,10 +102,10 @@ const normalizeUpdateValues = (values) => {
     return st;
   };
 
-  const getAndOrValues = (andorvalues) => {
+  const getAndOrValues = andorvalues => {
     let st = {};
     if (_.isArray(andorvalues)) {
-      _.each(andorvalues, (val, index) => {
+      _.each(andorvalues, val => {
         st = { ...st, ...val };
       });
     } else {

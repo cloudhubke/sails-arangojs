@@ -60,7 +60,6 @@ module.exports = require('machine').build({
 
   fn: async function normalize(inputs, exits) {
     // Dependencies
-    const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
     // Store the Query input for easier access
     const { query } = inputs;
@@ -81,7 +80,6 @@ module.exports = require('machine').build({
     }
 
     // Set a flag to determine if records are being returned
-    const fetchRecords = false;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
