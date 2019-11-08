@@ -1,4 +1,3 @@
-/* eslint-disable operator-linebreak */
 //  ██╗   ██╗██████╗ ██████╗  █████╗ ████████╗███████╗     █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗
 //  ██║   ██║██╔══██╗██╔══██╗██╔══██╗╚══██╔══╝██╔════╝    ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║
 //  ██║   ██║██████╔╝██║  ██║███████║   ██║   █████╗      ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║
@@ -110,7 +109,9 @@ module.exports = require('machine').build({
 
     // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
     const criteria = query.criteria ? query.criteria.where || {} : {};
+    // eslint-disable-next-line operator-linebreak
     const shouldUpdatePk =
+      // eslint-disable-next-line operator-linebreak
       Boolean(query.valuesToSet[pkColumnName]) &&
       Boolean(criteria[pkColumnName]);
 
@@ -186,8 +187,6 @@ module.exports = require('machine').build({
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
       const updatevalues = `${statement.values}`.replace(/OLD/g, 'record');
 
-      // eslint-disable-next-line no-console
-
       if (shouldUpdatePk) {
         // If Updating PK, remove record first, then reinsert
         const collection = dbConnection.collection(`${tableName}`);
@@ -253,8 +252,6 @@ module.exports = require('machine').build({
       if (dbConnection) {
         Helpers.connection.releaseConnection(dbConnection);
       }
-      // eslint-disable-next-line no-console
-      console.log('ERRRRRR', error);
 
       if (error.code === 409) {
         return exits.notUnique(

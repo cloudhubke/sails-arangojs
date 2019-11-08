@@ -4,6 +4,7 @@
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 const _ = require('@sailshq/lodash');
+
 const normalizeUpdateValues = require('./normalizeUpdateValues');
 const stringifyUpdateValues = require('./stringifyUpdateValues');
 
@@ -93,7 +94,36 @@ module.exports = function compileStatement(options) {
 
   function selectAttributes(vals) {
     if (vals && Array.isArray(vals)) {
-      let fields = [...vals];
+      let fields = [...vals].filter(f => {
+        const arr = [
+          'sort',
+          'limit',
+          'skip',
+          'select',
+          'filter',
+          'like',
+          'not',
+          'in',
+          'for',
+          'return',
+          'search',
+          'let',
+          'collect',
+          'remove',
+          'update',
+          'replace',
+          'insert',
+          'upsert',
+          'with',
+          'all',
+          'distinct',
+          'outbound',
+          'any',
+          'into',
+          'none',
+        ];
+        return !_.includes(arr, f);
+      });
       if (!_.includes(fields, pkColumnName)) {
         fields = [...vals, pkColumnName];
       }

@@ -69,10 +69,8 @@ module.exports = require('machine').build({
   },
 
   fn: async function registerDataStore(
-    {
-      datastores, identity, config, models, modelDefinitions,
-    },
-    exits,
+    { datastores, identity, config, models, modelDefinitions },
+    exits
   ) {
     // Dependencies
     const _ = require('@sailshq/lodash');
@@ -83,7 +81,7 @@ module.exports = require('machine').build({
     // Validate that the datastore isn't already initialized
     if (datastores[identity]) {
       return exits.badConfiguration(
-        new Error(`Datastore \`${identity}\` is already registered.`),
+        new Error(`Datastore \`${identity}\` is already registered.`)
       );
     }
 
@@ -97,15 +95,15 @@ module.exports = require('machine').build({
     // Validate that the connection has a host and database property
     if (!hasURL && !config.host) {
       return exits.badConfiguration(
-        new Error(`Datastore  \`${identity}\` config is missing a host value.`),
+        new Error(`Datastore  \`${identity}\` config is missing a host value.`)
       );
     }
 
     if (!hasURL && !config.database) {
       return exits.badConfiguration(
         new Error(
-          `Datastore  \`${identity}\` config is missing a value for the database name.`,
-        ),
+          `Datastore  \`${identity}\` config is missing a value for the database name.`
+        )
       );
     }
 
@@ -151,20 +149,20 @@ module.exports = require('machine').build({
     }).switch({
       error(err) {
         return exits.error(
-          `Consistency violation: Unexpected error creating db connection manager:\n\`\`\`\n${err}`,
+          `Consistency violation: Unexpected error creating db connection manager:\n\`\`\`\n${err}`
         );
       },
       malformed(report) {
         return exits.badConfiguration(
-          `The given connection URL is not valid for this database adapter.  Details:\n\`\`\`\n${report}`,
+          `The given connection URL is not valid for this database adapter.  Details:\n\`\`\`\n${report}`
         );
       },
       failed(report) {
         return exits.badConfiguration(
-          `Failed to connect with the given datastore configuration.  Details:\n\`\`\`\n${report}`,
+          `Failed to connect with the given datastore configuration.  Details:\n\`\`\`\n${report}`
         );
       },
-      success: async (report) => {
+      success: async report => {
         try {
           const { manager } = report;
 
@@ -209,21 +207,17 @@ module.exports = require('machine').build({
 
           const dbSchema = {};
           const definitionsarray = [];
-          _.each(models, (modelinfo) => {
+          _.each(models, modelinfo => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
             if (modelDefinitions[modelinfo.identity]) {
               throw new Error(
-                `Consistency violation: Cannot register model: \`${
-                  modelinfo.identity
-                }\`, because it is already registered with this adapter!  This could be due to an unexpected race condition in userland code (e.g. attempting to initialize multiple ORM instances at the same time), or it could be due to a bug in this adapter.  (If you get stumped, reach out at http://sailsjs.com/support.)`,
+                `Consistency violation: Cannot register model: \`${modelinfo.identity}\`, because it is already registered with this adapter!  This could be due to an unexpected race condition in userland code (e.g. attempting to initialize multiple ORM instances at the same time), or it could be due to a bug in this adapter.  (If you get stumped, reach out at http://sailsjs.com/support.)`
               );
             }
 
             if (!modelinfo.classType) {
               throw new Error(
-                `The classType must be defined in the model: \`${
-                  modelinfo.identity
-                }\`, Please define a valid classTYpe for each model. Should be one of Vertex/Document/Edge  (If you get stumped, reach out at http://github.com/gaithoben/sails-arangojs.)`,
+                `The classType must be defined in the model: \`${modelinfo.identity}\`, Please define a valid classTYpe for each model. Should be one of Vertex/Document/Edge  (If you get stumped, reach out at http://github.com/gaithoben/sails-arangojs.)`
               );
             }
 
@@ -250,7 +244,7 @@ module.exports = require('machine').build({
             // So lets create schema with Key type `tableName` because its passed on define method
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-            // console.log('\n\nphModelInfo:',util.inspect(phModelInfo,{depth:5}));
+            // .log('\n\nphModelInfo:',util.inspect(phModelInfo,{depth:5}));
           }); // </each phModel>
 
           // We are going to create the graph vertices, edges and edgedefinitions
