@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gaithoben/sails-arangojs.git"
+    "url": "https://github.com/cloudhubke/sails-arangojs.git"
   },
   "keywords": [
     "sails-arangojs",
@@ -36,9 +36,9 @@
   ],
   "author": "Bernard Gaitho <gaithoben@gmail.com> (http://github.com/gaithoben)",
   "bugs": {
-    "url": "https://github.com/gaithoben/sails-arangojs/issues"
+    "url": "https://github.com/cloudhubke/sails-arangojs/issues"
   },
-  "homepage": "https://github.com/gaithoben/sails-arangojs#readme",
+  "homepage": "https://github.com/cloudhubke/sails-arangojs#readme",
   "license": "MIT",
   "dependencies": {
     "@sailshq/lodash": "^3.10.2",
