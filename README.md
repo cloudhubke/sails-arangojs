@@ -5,10 +5,8 @@
   </a>
 </p>
 <h1 align="center">
-  cloudhub-components
+  Sails-ArangoJs
 </h1>
-
-Various components to use in react projects
 
 # sails-arangojs
 
