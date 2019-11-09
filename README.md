@@ -1,3 +1,15 @@
+<!-- AUTO-GENERATED-CONTENT:START (STARTER) -->
+<p align="center">
+  <a href="https://cloudhub-components.netlify.co.ke">
+    <img alt="Gatsby" src="https://sails-arangojs.netlify.com/static/logo-c4416d49bc581833470a04b7153efcbb.png" width="250" />
+  </a>
+</p>
+<h1 align="center">
+  cloudhub-components
+</h1>
+
+Various components to use in react projects
+
 # sails-arangojs
 
 Provides easy access to `ArangoDB` from Sails.js & Waterline.
