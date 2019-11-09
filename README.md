@@ -1,7 +1,7 @@
 <!-- AUTO-GENERATED-CONTENT:START (STARTER) -->
 <p align="center">
-  <a href="https://cloudhub-components.netlify.co.ke">
-    <img alt="Gatsby" src="https://sails-arangojs.netlify.com/static/logo-c4416d49bc581833470a04b7153efcbb.png" width="250" />
+  <a href="https://sails-arangojs.netlify.co.ke">
+    <img alt="Gatsby" src="https://cloudhub-components.netlify.com/static/logo-c4416d49bc581833470a04b7153efcbb.png" width="250" />
   </a>
 </p>
 <h1 align="center">
