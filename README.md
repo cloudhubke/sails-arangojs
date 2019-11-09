@@ -8,8 +8,6 @@
   Sails-ArangoJs
 </h1>
 
-# sails-arangojs
-
 Provides easy access to `ArangoDB` from Sails.js & Waterline.
 
 This module is a Sails/Waterline community adapter. Its goal is to provide a set of declarative interfaces, conventions, and best-practices for integrating with the ArangoDB database/service.
