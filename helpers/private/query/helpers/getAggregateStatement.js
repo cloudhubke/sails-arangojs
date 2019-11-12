@@ -21,34 +21,10 @@ function stringify(obj_from_json) {
 }
 
 const func = (f, value) => {
-  switch (f) {
-    case '$floor':
-      return value.includes('$')
-        ? `FLOOR(${`${value}`.replace('$', '')})`
-        : `FLOOR(record.${value})`;
-    case '$sum':
-      return value.includes('$')
-        ? `SUM(${`${value}`.replace('$', '')})`
-        : `SUM(record.${value})`;
-    case '$avg':
-      return value.includes('$')
-        ? `AVG(${`${value}`.replace('$', '')})`
-        : `AVG(record.${value})`;
-    case '$min':
-      return value.includes('$')
-        ? `MIN(${`${value}`.replace('$', '')})`
-        : `MIN(record.${value})`;
-    case '$max':
-      return value.includes('$')
-        ? `MAX(${`${value}`.replace('$', '')})`
-        : `MAX(record.${value})`;
-    case '$length':
-      return value.includes('$')
-        ? `LENGTH(${`${value}`.replace('$', '')})`
-        : `LENGTH(record.${value})`;
-    default:
-      return '';
-  }
+  const arangofunc = `${f}`.replace(/\$/, '').toLocaleUpperCase();
+  const val = `${value}`.replace('$', '');
+
+  return `${arangofunc}(record.${val})`;
 };
 
 const aggregateFn = object => {
@@ -60,12 +36,18 @@ const aggregateFn = object => {
 };
 
 const collectFn = object => {
-  const coll = {};
+  let st = '';
   _.each(object, (value, key) => {
-    coll[key] = `record.${value}`;
+    if (`${key}`.includes('$')) {
+      st = func(key, value);
+    } else {
+      throw new Error(
+        '\n\nCollect objects requires special dollar sign keys\n\n'
+      );
+    }
   });
 
-  return `${JSON.stringify(coll)}`.replace(/"/g, '');
+  return `${JSON.stringify(st)}`.replace(/"/g, '');
 };
 
 const getCollectStatement = collect => {
@@ -81,10 +63,6 @@ const getCollectStatement = collect => {
         return `${key} = ${`record.${value}`}`;
       }
       case 'object': {
-        if (key.includes('$')) {
-          const fld = `${key}`.replace('$', '');
-          return `INTO ${fld} = ${collectFn(value)}`;
-        }
         return `${key} = ${collectFn(value)}`;
       }
       default:
@@ -93,15 +71,30 @@ const getCollectStatement = collect => {
   };
 
   _.each(collect, (value, key) => {
-    if (key === '$into') {
-      st = `${statements.filter(s => !!s).join(', ')} INTO ${value}`;
-    } else {
-      statements.push(getStatemements(key, value));
-      st = statements.filter(s => !!s).join(', ');
-    }
+    statements.push(getStatemements(key, value));
+    st = statements.filter(s => !!s).join(', ');
   });
 
-  return st.replace(', INTO', ' INTO');
+  return st;
+};
+
+const getIntoStatement = value => {
+  let statements = [];
+  let st = '';
+
+  if (_.isString(value)) {
+    st = `record.${value}`;
+  }
+
+  if (_.isObject(value)) {
+    _.each(value, (val, key) => {
+      statements = [...statements, `${key}: record.${val}`.replace(/"/g, '')];
+    });
+
+    st = `{${statements.join(', ')}}`;
+  }
+
+  return st;
 };
 
 const getAggregateStatement = collect => {
@@ -185,7 +178,7 @@ const getReturnStatement = values => {
   }
   const statement = values;
 
-  const getStatemements = value => (`${value}`.includes("$") ? `${value}`.replace("$", "") : `${value}`);
+  const getStatemements = value => (`${value}`.includes('$') ? `${value}`.replace('$', '') : `${value}`);
 
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
@@ -207,6 +200,8 @@ module.exports = ({ aggregateCriteria, pkColumnName, model }) => {
 
   let filterstatement = '';
   let collectstatement = '';
+  let intostatement = '';
+  let withcountintostatement = '';
   let aggregatestatement = '';
   let returnstatement = '';
   let sortstatement = '';
@@ -225,6 +220,15 @@ module.exports = ({ aggregateCriteria, pkColumnName, model }) => {
       }
     }
 
+    if (key === '$intogroup') {
+      intostatement = getIntoStatement(value || {});
+      if (intostatement) {
+        intostatement = `INTO group = ${intostatement}\n`;
+      }
+    }
+    if (key === '$withcountinto') {
+      withcountintostatement = `WITH COUNT INTO ${value}\n`;
+    }
     if (key === '$aggregate') {
       aggregatestatement = getAggregateStatement(value || {});
       if (aggregatestatement) {
@@ -246,9 +250,13 @@ module.exports = ({ aggregateCriteria, pkColumnName, model }) => {
     }
   });
 
-  return `FOR record in ${model} \n ${filterstatement}
+  const statement = `FOR record in ${model} \n ${filterstatement}
   ${collectstatement}
+  ${intostatement}
+  ${withcountintostatement}
   ${aggregatestatement}
   ${sortstatement}
   ${returnstatement}`;
+
+  return statement;
 };
