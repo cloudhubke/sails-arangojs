@@ -110,6 +110,7 @@ module.exports = {
         reads = [],
         writes = [],
         params = {},
+        ...options
       }) => {
         const fanction = String(function(params) {
           // This code will be executed inside ArangoDB!
@@ -131,7 +132,8 @@ module.exports = {
         return dbConnection.transaction(
           { read: [...reads], write: [...writes] },
           `${fanction}`.replace('func;', String(action)),
-          { ...params }
+          { ...params },
+          { ...options }
         );
       };
 

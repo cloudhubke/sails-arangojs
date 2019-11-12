@@ -42,6 +42,10 @@ const func = (f, value) => {
       return value.includes('$')
         ? `MAX(${`${value}`.replace('$', '')})`
         : `MAX(record.${value})`;
+    case '$length':
+      return value.includes('$')
+        ? `LENGTH(${`${value}`.replace('$', '')})`
+        : `LENGTH(record.${value})`;
     default:
       return '';
   }
@@ -181,7 +185,7 @@ const getReturnStatement = values => {
   }
   const statement = values;
 
-  const getStatemements = value => (`${value}`.includes('$') ? `${value}`.replace('$', '') : `${value}`);
+  const getStatemements = value => (`${value}`.includes("$") ? `${value}`.replace("$", "") : `${value}`);
 
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
