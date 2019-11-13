@@ -123,15 +123,15 @@ module.exports = {
     if (!datastoreName) {
       return done(
         new Error(
-          'Consistency violation: A datastore should contain an "identity" property: a special identifier that uniquely identifies it across this app.  This should have been provided by Waterline core!  If you are seeing this message, there could be a bug in Waterline, or the datastore could have become corrupted by userland code, or other code in this adapter.  If you determine that this is a Waterline bug, please report this at https://sailsjs.com/bugs.',
-        ),
+          'Consistency violation: A datastore should contain an "identity" property: a special identifier that uniquely identifies it across this app.  This should have been provided by Waterline core!  If you are seeing this message, there could be a bug in Waterline, or the datastore could have become corrupted by userland code, or other code in this adapter.  If you determine that this is a Waterline bug, please report this at https://sailsjs.com/bugs.'
+        )
       );
     }
     if (registeredDatastores[datastoreName]) {
       return done(
         new Error(
-          `Consistency violation: Cannot register datastore: \`${datastoreName}\`, because it is already registered with this adapter!  This could be due to an unexpected race condition in userland code (e.g. attempting to initialize Waterline more than once), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot register datastore: \`${datastoreName}\`, because it is already registered with this adapter!  This could be due to an unexpected race condition in userland code (e.g. attempting to initialize Waterline more than once), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -147,7 +147,7 @@ module.exports = {
     if (ArangoDB.verifyModelDef) {
       const modelIncompatibilitiesMap = {};
       try {
-        _.each(models, (phModelInfo) => {
+        _.each(models, phModelInfo => {
           try {
             ArangoDB.verifyModelDef({ modelDef: phModelInfo }).execSync();
           } catch (e) {
@@ -173,10 +173,10 @@ module.exports = {
               `${numNotCompatible} model(s) are not compatible with this adapter:\n${_.reduce(
                 modelIncompatibilitiesMap,
                 (memo, incompatibility, modelIdentity) => `${memo}• \`${modelIdentity}\`  :: ${incompatibility}\n`,
-                '',
-              )}`,
-            ),
-          ),
+                ''
+              )}`
+            )
+          )
         );
       } // -•
     } // >-•   </verify model definitions, if relevant>
@@ -230,22 +230,22 @@ module.exports = {
     if (!datastoreName) {
       return done(
         new Error(
-          `Consistency violation: Internal error in Waterline: Adapter received unexpected falsey datastore name (\`${datastoreName}\`)!  Can't look up a DS entry from this adapter with that...  (Please report this error at http://sailsjs.com/bugs.)`,
-        ),
+          `Consistency violation: Internal error in Waterline: Adapter received unexpected falsey datastore name (\`${datastoreName}\`)!  Can't look up a DS entry from this adapter with that...  (Please report this error at http://sailsjs.com/bugs.)`
+        )
       );
     }
     if (_.isUndefined(dsEntry)) {
       return done(
         new Error(
-          `Consistency violation: Attempting to tear down a datastore (\`${datastoreName}\`) which is not currently registered with this adapter.  This is usually due to a race condition in userland code (e.g. attempting to tear down the same ORM instance more than once), or it could be due to a bug in this adapter.  (If you get stumped, reach out at http://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Attempting to tear down a datastore (\`${datastoreName}\`) which is not currently registered with this adapter.  This is usually due to a race condition in userland code (e.g. attempting to tear down the same ORM instance more than once), or it could be due to a bug in this adapter.  (If you get stumped, reach out at http://sailsjs.com/support.)`
+        )
       );
     }
     if (!dsEntry.manager) {
       return done(
         new Error(
-          'Consistency violation: Missing manager for this datastore. (This datastore may already be in the process of being destroyed.)',
-        ),
+          'Consistency violation: Missing manager for this datastore. (This datastore may already be in the process of being destroyed.)'
+        )
       );
     }
 
@@ -305,8 +305,8 @@ module.exports = {
     if (_.isUndefined(dsEntry)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     const datastore = registeredDatastores[datastoreName];
@@ -359,8 +359,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -413,8 +413,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     const models = registeredModels[datastoreName];
@@ -464,8 +464,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     const models = registeredModels[datastoreName];
@@ -518,8 +518,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -575,12 +575,39 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
     return Helpers.select({
+      datastore,
+      models,
+      query,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      success: function success(report) {
+        return done(undefined, report.records);
+      },
+    });
+  },
+
+  sample(datastoreName, query, done) {
+    const datastore = registeredDatastores[datastoreName];
+    const models = registeredModels[datastoreName];
+
+    // Sanity check:
+    if (_.isUndefined(datastore)) {
+      return done(
+        new Error(
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
+      );
+    }
+
+    return Helpers.sample({
       datastore,
       models,
       query,
@@ -602,8 +629,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -644,8 +671,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -685,8 +712,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -725,8 +752,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -794,8 +821,8 @@ module.exports = {
     if (_.isUndefined(model)) {
       return done(
         new Error(
-          `The model with tableName (\`${tableName}\`) has not been defined. Could not get the classType for the model associated with ${tableName})`,
-        ),
+          `The model with tableName (\`${tableName}\`) has not been defined. Could not get the classType for the model associated with ${tableName})`
+        )
       );
     }
 
@@ -803,8 +830,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -849,8 +876,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -900,8 +927,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     return Helpers.setSequence({
@@ -931,8 +958,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -970,8 +997,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -1000,8 +1027,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -1030,8 +1057,8 @@ module.exports = {
     if (_.isUndefined(datastore)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastore}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
 
@@ -1060,8 +1087,8 @@ module.exports = {
     if (_.isUndefined(dsEntry)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     const datastore = registeredDatastores[datastoreName];
@@ -1098,8 +1125,8 @@ module.exports = {
     if (_.isUndefined(dsEntry)) {
       return done(
         new Error(
-          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`,
-        ),
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
       );
     }
     const datastore = registeredDatastores[datastoreName];

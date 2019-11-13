@@ -68,9 +68,9 @@ module.exports = function compileStatement(options) {
 
   // Validate Criteria Input contains a WHERE clause
   if (
-    passedcriteria
-    && _.keys(passedcriteria).length
-    && !_.has(passedcriteria, 'where')
+    passedcriteria &&
+    _.keys(passedcriteria).length &&
+    !_.has(passedcriteria, 'where')
   ) {
     throw new Error('Criteria must contain a WHERE clause.');
   }
@@ -79,8 +79,8 @@ module.exports = function compileStatement(options) {
 
   function hasSelectFields() {
     if (
-      _.isEqual(passedcriteria.select, ['*'])
-      || _.isEqual(passedcriteria.select, '*')
+      _.isEqual(passedcriteria.select, ['*']) ||
+      _.isEqual(passedcriteria.select, '*')
     ) {
       return false;
     }
@@ -216,7 +216,9 @@ module.exports = function compileStatement(options) {
   const obj = {
     ...passedcriteria,
     method,
-    select: selectAttributes(passedcriteria.select),
+    select: hasSelectFields()
+      ? selectAttributes(passedcriteria.select)
+      : ['_key'],
     from: model,
     tableName: model,
     model,
