@@ -20,19 +20,38 @@ function stringify(obj_from_json) {
   return `{${props}}`;
 }
 
-const func = (f, value) => {
-  const arangofunc = `${f}`.replace(/\$/, '').toLocaleUpperCase();
-  const val = `${value}`.replace('$', '');
+const getConcatStatements = value => {
+  if (!_.isArray(value)) {
+    return new Error('\n\n $contact attribute must be an array object \n\n');
+  }
 
-  return `${arangofunc}(record.${val})`;
+  return value
+    .map(v => {
+      if (
+        !`${v}`.includes('$')
+        && !`${v}`.includes("'")
+        && !`${v}`.includes('"')
+      ) {
+        return `record.${v}`;
+      }
+      return `${v}`.replace('$', '');
+    })
+    .join(', ');
 };
 
-const aggregateFn = object => {
-  let st = '';
-  _.each(object, (value, key) => {
-    st = func(key, value);
-  });
-  return st ? `${st}` : '';
+const func = (f, value) => {
+  const arangofunc = `${f}`.replace(/\$/, '').toLocaleUpperCase();
+
+  if (arangofunc === 'CONCAT') {
+    return `CONCAT(${getConcatStatements(value)})`;
+  }
+
+  const val = `${value}`.replace('$', '');
+
+  if (_.includes(value, '$')) {
+    return `${arangofunc}(${val})`;
+  }
+  return `${arangofunc}(record.${val})`;
 };
 
 const collectFn = object => {
@@ -52,7 +71,7 @@ const collectFn = object => {
 
 const getCollectStatement = collect => {
   if (!_.isPlainObject(collect)) {
-    return new Error('\n\n Aggregate $collect attribute must be an object');
+    return new Error('\n\n $aggregate && $collect attribute must be an object');
   }
   const statements = [];
   let st = '';
@@ -60,6 +79,9 @@ const getCollectStatement = collect => {
   const getStatemements = (key, value) => {
     switch (typeof value) {
       case 'string': {
+        if (`${value}`.includes('$')) {
+          return `${key} = ${`${value}`}`;
+        }
         return `${key} = ${`record.${value}`}`;
       }
       case 'object': {
@@ -97,34 +119,6 @@ const getIntoStatement = value => {
   return st;
 };
 
-const getAggregateStatement = collect => {
-  if (!_.isPlainObject(collect)) {
-    return new Error('\n\n Aggregate $aggregate attribute must be an object');
-  }
-  const statements = [];
-
-  const getStatemements = (key, value) => {
-    switch (typeof value) {
-      case 'string': {
-        return value.includes('$')
-          ? `${key} = ${`${value}`.replace('$', '')}`
-          : `${key} = ${`record.${value}`}`;
-      }
-      case 'object': {
-        return `${key} = ${aggregateFn(value)}`;
-      }
-      default:
-        return '';
-    }
-  };
-
-  _.each(collect, (value, key) => {
-    statements.push(getStatemements(key, value));
-  });
-
-  return statements.filter(s => !!s).join(', ');
-};
-
 const getSortStatement = values => {
   if (!_.isPlainObject(values)) {
     return new Error('\n\n Aggregate $return attribute must be an object');
@@ -152,21 +146,9 @@ const getReturnModifiers = values => {
   if (!_.isPlainObject(values)) {
     return new Error('\n\n Aggregate $return attribute must be an object');
   }
-
-  const getConcatStatements = value => {
-    if (!_.isArray(value)) {
-      return new Error('\n\n $contact attribute must be an object \n\n');
-    }
-
-    return value
-      .map(v => (v.includes('$') ? `${v}`.replace('$', '') : `${v}`))
-      .join(', ');
-  };
   let str = '';
   _.each(values, (value, key) => {
-    if (key === '$concat') {
-      str = `${str} CONCAT(${getConcatStatements(value)})`;
-    }
+    str = func(key, value);
   });
 
   return str;
@@ -178,7 +160,7 @@ const getReturnStatement = values => {
   }
   const statement = values;
 
-  const getStatemements = value => (`${value}`.includes('$') ? `${value}`.replace('$', '') : `${value}`);
+  const getStatemements = value => (`${value}`.includes('$') ? `${value}`.replace('$', '') : `record.${value}`);
 
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
@@ -192,71 +174,96 @@ const getReturnStatement = values => {
 };
 
 module.exports = ({ aggregateCriteria, pkColumnName, model }) => {
-  if (!_.isPlainObject(aggregateCriteria)) {
+  if (!_.isPlainObject(aggregateCriteria) && !_.isArray(aggregateCriteria)) {
     return new Error('\n\n Aggregate collection attribute must be an object');
   }
 
   const { getAndStatement } = getFilterStatement({ pkColumnName });
 
-  let filterstatement = '';
-  let collectstatement = '';
-  let intostatement = '';
-  let withcountintostatement = '';
-  let aggregatestatement = '';
-  let returnstatement = '';
-  let sortstatement = '';
+  const aqlstatements = [];
+  let criteriaarray = [];
 
-  _.each(aggregateCriteria, (value, key) => {
+  if (_.isPlainObject(aggregateCriteria)) {
+    _.each(aggregateCriteria, (value, key) => {
+      const cObj = {};
+      cObj[`${key}`] = value;
+      criteriaarray = [...criteriaarray, cObj];
+    });
+  } else {
+    criteriaarray = [...aggregateCriteria];
+  }
+
+  const getAqlStatement = ({ value, key }) => {
+    let aqlstatement = '';
+
     if (key === '$filter') {
-      filterstatement = getAndStatement(value || {});
-      if (filterstatement) {
-        filterstatement = `FILTER ${filterstatement}\n`;
+      aqlstatement = getAndStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `FILTER ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
+
     if (key === '$collect') {
-      collectstatement = getCollectStatement(value || {});
-      if (collectstatement) {
-        collectstatement = `COLLECT ${collectstatement}\n`;
+      aqlstatement = getCollectStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `COLLECT ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
 
     if (key === '$intogroup') {
-      intostatement = getIntoStatement(value || {});
-      if (intostatement) {
-        intostatement = `INTO group = ${intostatement}\n`;
+      aqlstatement = getIntoStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `INTO group = ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
     if (key === '$withcountinto') {
-      withcountintostatement = `WITH COUNT INTO ${value}\n`;
+      aqlstatement = `WITH COUNT INTO ${value}\n`;
+      aqlstatements.push(aqlstatement);
     }
+
     if (key === '$aggregate') {
-      aggregatestatement = getAggregateStatement(value || {});
-      if (aggregatestatement) {
-        aggregatestatement = `AGGREGATE ${aggregatestatement}\n`;
+      aqlstatement = getCollectStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `AGGREGATE ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
+
+    if (key === '$let') {
+      aqlstatement = getCollectStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `LET ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
+      }
+    }
+
     if (key === '$sort') {
-      sortstatement = getSortStatement(value || {});
-      if (sortstatement) {
-        sortstatement = `SORT ${sortstatement}\n`;
+      aqlstatement = getSortStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `SORT ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
 
     if (key === '$return') {
-      returnstatement = getReturnStatement(value || {});
-      if (returnstatement) {
-        returnstatement = `RETURN ${returnstatement}\n`;
+      aqlstatement = getReturnStatement(value || {});
+      if (aqlstatement) {
+        aqlstatement = `RETURN ${aqlstatement}\n`;
+        aqlstatements.push(aqlstatement);
       }
     }
+  };
+
+  _.each(criteriaarray, obj => {
+    _.each(obj, (value, key) => {
+      getAqlStatement({ key, value });
+    });
   });
 
-  const statement = `FOR record in ${model} \n ${filterstatement}
-  ${collectstatement}
-  ${intostatement}
-  ${withcountintostatement}
-  ${aggregatestatement}
-  ${sortstatement}
-  ${returnstatement}`;
+  const statement = `FOR record in ${model} \n${aqlstatements.join('\n ')}`;
 
   return statement;
 };
