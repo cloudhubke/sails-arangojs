@@ -103,7 +103,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     let cursor;
@@ -131,6 +131,10 @@ module.exports = require('machine').build({
 
       if (statement.geoRadius > 0) {
         sql = `${sql} FILTER distance <= ${statement.geoRadius}`;
+      }
+
+      if (statement.sortClause) {
+        sql = `${sql} SORT ${statement.sortClause}`;
       }
 
       if (statement.limit) {
@@ -168,7 +172,7 @@ module.exports = require('machine').build({
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
     const selectRecords = cursor._result.map(r => (r.record ? { ...r.record, distance: r.distance } : r));
     try {
-      _.each(selectRecords, (nativeRecord) => {
+      _.each(selectRecords, nativeRecord => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
       });
       return exits.success({ records: selectRecords });

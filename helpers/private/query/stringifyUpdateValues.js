@@ -80,7 +80,7 @@ const stringifyUpdateValues = (values, method) => {
   const getPopValues = (key, value) => {
     let st;
     if (value) {
-      st = `POP(OLD.${key}`;
+      st = `POP(OLD.${key})`;
     } else {
       throw new Error(
         'The Values of the `$inc` statement must be a valid value'
@@ -92,7 +92,7 @@ const stringifyUpdateValues = (values, method) => {
   const getShiftValues = (key, value) => {
     let st = '';
     if (value) {
-      st = `POP(OLD.${key}`;
+      st = `SHIFT(OLD.${key})`;
     } else {
       throw new Error(
         'The Values of the `$inc` statement must be a valid value'
@@ -104,7 +104,7 @@ const stringifyUpdateValues = (values, method) => {
 
   const getPullValues = (key, value) => {
     let st;
-    if (_.isArray(values)) {
+    if (_.isArray(value)) {
       st = `REMOVE_VALUES(OLD.${key}, ${specialValue(value)})`;
     } else {
       throw new Error(
