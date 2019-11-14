@@ -115,8 +115,6 @@ const stringifyUpdateValues = (values, method) => {
     return st;
   };
 
-  let newvalues = [];
-
   const getAndOrValues = andorvalues => {
     let st = [];
     if (_.isArray(andorvalues)) {
@@ -140,6 +138,8 @@ const stringifyUpdateValues = (values, method) => {
     return st;
   };
 
+  let newvalues = [];
+
   _.each(values, (value, key) => {
     if (_.isPlainObject(value)) {
       if (_.isEmpty(value)) {
@@ -162,16 +162,16 @@ const stringifyUpdateValues = (values, method) => {
             newvalues = [...newvalues, `${key}: ${getShiftValues(key, v)}`];
             break;
           case '$unshift':
-            newvalues = {
+            newvalues = [
               ...newvalues,
-              [key]: getUnshiftValues(key, v, false),
-            };
+              `${key}:  ${getUnshiftValues(key, v, false)}`,
+            ];
             break;
           case '$unshiftset':
-            newvalues = {
+            newvalues = [
               ...newvalues,
-              [key]: getUnshiftValues(key, v, false),
-            };
+              `${key}:  ${getUnshiftValues(key, v, true)}`,
+            ];
             break;
           case '$push':
             newvalues = [
