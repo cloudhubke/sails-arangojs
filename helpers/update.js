@@ -242,6 +242,9 @@ module.exports = require('machine').build({
         if (fetchRecords) {
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
+        console.log('====================================');
+        console.log('SQL', sql);
+        console.log('====================================');
         result = await dbConnection.query(sql);
 
         if (fetchRecords) {

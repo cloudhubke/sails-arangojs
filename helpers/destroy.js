@@ -228,15 +228,12 @@ module.exports = require('machine').build({
       return exits.success();
     }
 
-    removedRecords = removedRecords.filter(r => Boolean(r));
+    removedRecords = [...(removedRecords || [])].filter(r => Boolean(r));
 
     try {
-      _.each(
-        removedRecords.filter(r => Boolean(r)),
-        nativeRecord => {
-          Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
-        }
-      );
+      _.each(removedRecords, nativeRecord => {
+        Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
+      });
     } catch (e) {
       return exits.error(e);
     }

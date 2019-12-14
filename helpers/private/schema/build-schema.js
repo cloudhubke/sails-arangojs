@@ -16,6 +16,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
   }
 
   const pk = definition.primaryKey;
+  let createdIndexes = [];
 
   if (_.isObject(definition) && !definition.attributes) {
     try {
@@ -29,13 +30,13 @@ module.exports = async function buildSchema(tableName, definition, collection) {
                 unique: true,
                 sparse: Boolean(!attribute.required),
               });
-              resolv();
+              resolv(`${name}`);
             }
-            resolv();
+            resolv('');
           })
       );
 
-      return Promise.all(indexes).then(() => true);
+      createdIndexes = await Promise.all(indexes);
     } catch (error) {
       flaverr(
         {
@@ -59,13 +60,13 @@ module.exports = async function buildSchema(tableName, definition, collection) {
               unique: true,
               sparse: Boolean(!attribute.required),
             });
-            resolv();
+            resolv(`${name}`);
           }
-          resolv();
+          resolv('');
         })
     );
 
-    return Promise.all(indexes).then(() => true);
+    createdIndexes = await Promise.all(indexes);
   } catch (error) {
     flaverr(
       {
@@ -75,6 +76,29 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       error
     );
   }
+
+  const modelIndexes = await collection.indexes();
+  createdIndexes = createdIndexes.filter(i => !!i);
+
+  // Delete indexes when they are removed from model
+  const deleteindexes = modelIndexes.map(async fld => {
+    if (fld.fields.length > 1) {
+      return fld;
+    }
+    const indexfield = fld.fields.join('');
+
+    if (indexfield === '_key') {
+      return fld;
+    }
+
+    if (!createdIndexes.includes(indexfield)) {
+      await collection.dropIndex(fld.id.split('/')[1]);
+    }
+    return fld;
+  });
+
+  await Promise.all(deleteindexes);
+
   // Build up a string of column attributes
 
   return true;
