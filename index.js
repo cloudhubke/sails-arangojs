@@ -172,7 +172,8 @@ module.exports = {
             new Error(
               `${numNotCompatible} model(s) are not compatible with this adapter:\n${_.reduce(
                 modelIncompatibilitiesMap,
-                (memo, incompatibility, modelIdentity) => `${memo}• \`${modelIdentity}\`  :: ${incompatibility}\n`,
+                (memo, incompatibility, modelIdentity) =>
+                  `${memo}• \`${modelIdentity}\`  :: ${incompatibility}\n`,
                 ''
               )}`
             )

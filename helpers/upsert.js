@@ -149,7 +149,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     let session;
@@ -196,8 +196,8 @@ module.exports = require('machine').build({
               name: 'upsert error',
               code: 'E_UNIQUE',
             },
-            error,
-          ),
+            error
+          )
         );
       }
       return exits.badConnection(error);
@@ -219,7 +219,9 @@ module.exports = require('machine').build({
 
     try {
       await Helpers.connection.releaseConnection(dbConnection);
-      const newrecords = updatedRecords.map(record => Helpers.query.processNativeRecord(record, WLModel, query.meta));
+      const newrecords = updatedRecords.map(record =>
+        Helpers.query.processNativeRecord(record, WLModel, query.meta)
+      );
       // Helpers.query.processNativeRecord(record.new, WLModel, query.meta);
       // Helpers.query.processNativeRecord(record.old, WLModel, query.meta);
 

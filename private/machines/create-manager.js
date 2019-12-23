@@ -124,6 +124,8 @@ module.exports = {
           const db = require('@arangodb').db;
           const aql = require('@arangodb').aql;
 
+          const dbServices = dbservices;
+
           const returnFunction = func;
 
           return returnFunction(params);
@@ -131,7 +133,9 @@ module.exports = {
 
         return dbConnection.transaction(
           { read: [...reads], write: [...writes] },
-          `${fanction}`.replace('func;', String(action)),
+          `${fanction}`
+            .replace('dbservices', config.dbServices)
+            .replace('func;', String(action)),
           { ...params },
           { ...options }
         );

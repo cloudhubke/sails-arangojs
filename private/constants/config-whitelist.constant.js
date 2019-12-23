@@ -8,6 +8,7 @@
 module.exports = [
   // graph options
   'graph',
+  'dbServices',
   // SSL Options:
   'ssl',
   'sslValidate',
