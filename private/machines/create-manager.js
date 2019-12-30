@@ -91,9 +91,13 @@ module.exports = {
     try {
       // Check whether a graph exist. of Not, create the graph
 
-      const graph = dbConnection.graph(`${config.database}`);
+      let graph;
+      let graphName;
 
       if (config.graph) {
+        graph = dbConnection.graph(`${config.database}`);
+        graphName = `${config.database}`;
+
         const exists = await graph.exists();
         if (!exists) {
           // create graph
@@ -146,6 +150,7 @@ module.exports = {
           dbConnection,
           graphEnabled: config.graph,
           graph,
+          graphName,
           aql,
           Transaction,
         },

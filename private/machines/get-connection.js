@@ -52,14 +52,21 @@ module.exports = {
     if (!_.isObject(inputs.manager)) {
       return exits.error(
         new Error(
-          'The provided `manager` is not a valid manager created by this driver.  (It should be a dictionary which contains a `close` function, at the very least.)',
-        ),
+          'The provided `manager` is not a valid manager created by this driver.  (It should be a dictionary which contains a `close` function, at the very least.)'
+        )
       );
     }
+
+    console.log('====================================');
+    console.log('inputs', inputs);
+    console.log('====================================');
 
     return exits.success({
       dbConnection: inputs.manager.connection,
       graph: inputs.manager.graph,
+      graphEnabled: inputs.manager.graphEnabled,
+      graphName: inputs.manager.graphName,
+      Transaction: inputs.manager.Transaction,
       aql: inputs.manager.aql,
       meta: inputs.meta,
     });

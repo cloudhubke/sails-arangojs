@@ -20,8 +20,10 @@ module.exports = {
 
   // Graph Methods
   createEdge: require('./create-edge'),
-  getOutboundVerices: require('./get-outbound-vertices'),
-  getInboundVerices: require('./get-inbound-vertices'),
+  findOutbound: require('./find-outbound'),
+  findInbound: require('./find-inbound'),
+  findAny: require('./find-any'),
+
   aggregate: require('./aggregate'),
   normalize: require('./normalize'),
   normalizeEach: require('./normalize-each'),

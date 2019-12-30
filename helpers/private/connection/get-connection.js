@@ -25,10 +25,18 @@ module.exports = function getConnection({ manager }) {
 
   if (manager) {
     // manager returns connection and aql
-    const { dbConnection, aql, graph, graphEnabled, Transaction } = manager;
+    const {
+      dbConnection,
+      aql,
+      graph,
+      graphName,
+      graphEnabled,
+      Transaction,
+    } = manager;
     return {
       dbConnection,
       graphEnabled,
+      graphName,
       graph,
       aql,
       Transaction,

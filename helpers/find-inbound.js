@@ -7,10 +7,9 @@
 //
 
 module.exports = require('machine').build({
-  friendlyName: 'GETINBOUNDVERTICES',
+  friendlyName: 'FINDINBOUND',
 
-  description:
-    'Return the GETINBOUNDVERTICES of the records matched by the query.',
+  description: 'Return the FINDINBOUND of the records matched by the query.',
 
   inputs: {
     datastore: {
@@ -38,7 +37,7 @@ module.exports = require('machine').build({
 
   exits: {
     success: {
-      description: 'The results of the sum query.',
+      description: 'Graph traversal in INBOUND direction',
       outputType: 'ref',
     },
 
@@ -53,7 +52,7 @@ module.exports = require('machine').build({
     },
   },
 
-  fn: async function getInboundVertices(inputs, exits) {
+  fn: async function findInbound(inputs, exits) {
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
 
@@ -65,6 +64,14 @@ module.exports = require('machine').build({
     const WLModel = inputs.models[query.using];
     if (!WLModel) {
       return exits.invalidDatastore();
+    }
+
+    if (WLModel.classType !== 'Vertex') {
+      return exits.badConnection(
+        new Error(
+          '\n\nThe this method can only be used in a model of type Vertex\n\n'
+        )
+      );
     }
 
     // Grab the pk column name (for use below)
@@ -89,7 +96,7 @@ module.exports = require('machine').build({
       statement = Helpers.query.compileStatement({
         pkColumnName,
         model: query.using,
-        method: 'getInboundVertices',
+        method: 'findInbound',
         criteria: query.criteria,
         edgeCollections: query.edgeCollections,
       });
@@ -97,37 +104,37 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
+    const { dbConnection, graph, graphName } = Helpers.connection.getConnection(
+      inputs.datastore,
+      query.meta
+    );
+
     const where = statement.primarywhere || {};
 
-    if (!statement.edgeCollections) {
+    if (!graph && !statement.edgeCollections) {
       return exits.badConnection(
-        new Error(
-          'The edgeCollections for getInboundVertices is null or undefined',
-        ),
+        new Error('The edgeCollections for findInbound is null or undefined')
       );
     }
 
     if (!where._id) {
       return exits.badConnection(
         new Error(
-          `Please provide the start vertex if ${pkColumnName} or _id for getInboundVertices is null or undefined`,
-        ),
+          `Please provide the start vertex if ${pkColumnName} or _id for findInbound is null or undefined`
+        )
       );
     }
 
     let result;
-
-    const { dbConnection } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta,
-    );
 
     try {
       // Construct sql statement
 
       let sql = '';
 
-      sql = `FOR vertex, edge, path IN INBOUND '${where._id}' ${statement.edgeCollections}`;
+      sql = `FOR vertex, edge, path IN INBOUND '${where._id}' ${
+        graphName ? `GRAPH '${graphName}'` : statement.edgeCollections
+      }`;
 
       if (statement.whereVertexClause || statement.whereEdgeClause) {
         const arr = [statement.whereVertexClause, statement.whereEdgeClause]
@@ -146,8 +153,8 @@ module.exports = require('machine').build({
           }
         }
 
-        if (key === 'sort' && statement.sortClause) {
-          sql = `${sql} SORT ${statement.sortClause}`;
+        if (key === 'sort' && statement.graphSort) {
+          sql = `${sql} SORT ${statement.graphSort}`;
         }
       });
 
