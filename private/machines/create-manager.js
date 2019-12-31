@@ -125,6 +125,7 @@ module.exports = {
             return data;
           };
 
+          const _ = require('lodash');
           const db = require('@arangodb').db;
           const aql = require('@arangodb').aql;
 
