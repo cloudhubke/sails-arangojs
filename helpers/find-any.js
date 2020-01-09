@@ -160,10 +160,6 @@ module.exports = require('machine').build({
 
       sql = `${sql} RETURN {vertex, edge }`;
 
-      console.log('====================================');
-      console.log(sql);
-      console.log('====================================');
-
       result = await dbConnection.query(sql);
 
       result = result._result;
