@@ -154,7 +154,7 @@ module.exports = require('machine').build({
         }
 
         if (key === 'sort' && statement.graphSort) {
-          sql = `${sql} SORT ${statement.graphSort}`;
+          sql = `${sql} SORT '${statement.graphSort}'`;
         }
       });
 

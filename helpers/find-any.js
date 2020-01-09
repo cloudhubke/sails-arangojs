@@ -154,11 +154,15 @@ module.exports = require('machine').build({
         }
 
         if (key === 'sort' && statement.graphSort) {
-          sql = `${sql} SORT ${statement.graphSort}`;
+          sql = `${sql} SORT '${statement.graphSort}'`;
         }
       });
 
       sql = `${sql} RETURN {vertex, edge }`;
+
+      console.log('====================================');
+      console.log(sql);
+      console.log('====================================');
 
       result = await dbConnection.query(sql);
 
