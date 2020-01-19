@@ -25,7 +25,8 @@ module.exports = ({ pkColumnName }) => {
         const v = arr[0];
         str = `== ${specialValue(v)}`;
       } else {
-        str = `IN [${arr.map(v => (Number(v) ? v : `'${v}'`))}]`;
+        const elements = arr.map(v => (typeof v === 'string' ? `'${v}'` : v));
+        str = `IN [${elements}]`;
       }
     } else {
       throw new Error('the IN statement expects an array of values.');
@@ -52,7 +53,8 @@ module.exports = ({ pkColumnName }) => {
         const v = arr[0];
         str = `!= ${specialValue(v)}`;
       } else {
-        str = `NOT IN [${arr.map(v => (Number(v) ? v : `'${v}'`))}]`;
+        const elements = arr.map(v => (typeof v === 'string' ? `'${v}'` : v));
+        str = `NOT IN [${elements}]`;
       }
     } else {
       throw new Error('the IN statement expects an array of values.');
