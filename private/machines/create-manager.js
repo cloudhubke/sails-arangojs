@@ -88,6 +88,26 @@ module.exports = {
     dbConnection.useDatabase(`${config.database}`);
     dbConnection.useBasicAuth(`${config.user}`, `${config.password || ''}`);
 
+    const createDatabase = async ({ rootPassword = '', dbName }) => {
+      try {
+        const db = new Database({
+          url: `http://${config.host}:${config.port || 8529}`,
+        });
+        // db.useDatabase('_system');
+        await db.createDatabase(dbName, [
+          { username: 'root', password: rootPassword },
+        ]);
+
+        console.log('====================================');
+        console.log(`Created db ${dbName}`);
+        console.log('====================================');
+      } catch (err) {
+        console.log('====================================');
+        console.log('DATABASE COULD NOT BE CREATED', err);
+        console.log('====================================');
+      }
+    };
+
     try {
       // Check whether a graph exist. of Not, create the graph
 
@@ -154,6 +174,7 @@ module.exports = {
           graphName,
           aql,
           Transaction,
+          createDatabase,
         },
         meta: config,
       });

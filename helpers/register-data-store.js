@@ -209,6 +209,7 @@ module.exports = require('machine').build({
           const definitionsarray = [];
           _.each(models, modelinfo => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
+
             if (modelDefinitions[modelinfo.identity]) {
               throw new Error(
                 `Consistency violation: Cannot register model: \`${modelinfo.identity}\`, because it is already registered with this adapter!  This could be due to an unexpected race condition in userland code (e.g. attempting to initialize multiple ORM instances at the same time), or it could be due to a bug in this adapter.  (If you get stumped, reach out at http://sailsjs.com/support.)`
