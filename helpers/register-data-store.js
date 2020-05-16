@@ -239,7 +239,7 @@ module.exports = require('machine').build({
             dbSchema[modelinfo.tableName] = definition;
 
             if (modelinfo.defaultDatastoreBuild === 'only') {
-              if (modelinfo.datastore === 'default') {
+              if (config.identity === 'default') {
                 definitionsarray.push({ ...definition });
               }
             }
@@ -247,7 +247,7 @@ module.exports = require('machine').build({
               definitionsarray.push({ ...definition });
             }
             if (modelinfo.defaultDatastoreBuild === 'exclude') {
-              if (modelinfo.datastore !== 'default') {
+              if (config.identity !== 'default') {
                 definitionsarray.push({ ...definition });
               }
             }
