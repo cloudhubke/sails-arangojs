@@ -237,19 +237,12 @@ module.exports = require('machine').build({
             }
 
             dbSchema[modelinfo.tableName] = definition;
+            if (!config.tenantType) {
+              config.tenantType = 'default';
+            }
 
-            if (modelinfo.defaultDatastoreBuild === 'only') {
-              if (config.identity === 'default') {
-                definitionsarray.push({ ...definition });
-              }
-            }
-            if (modelinfo.defaultDatastoreBuild === 'include') {
+            if (modelinfo.tenantType.includes(config.tenantType)) {
               definitionsarray.push({ ...definition });
-            }
-            if (modelinfo.defaultDatastoreBuild === 'exclude') {
-              if (config.identity !== 'default') {
-                definitionsarray.push({ ...definition });
-              }
             }
 
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
