@@ -136,10 +136,10 @@ module.exports = {
         params = {},
         ...options
       }) => {
-        const fanction = String(function(params) {
+        const fanction = String(function (params) {
           // This code will be executed inside ArangoDB!
 
-          const normalize = data => {
+          const normalize = (data) => {
             data.id = data._key;
             delete data._rev;
             return data;

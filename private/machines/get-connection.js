@@ -57,10 +57,6 @@ module.exports = {
       );
     }
 
-    console.log('====================================');
-    console.log('inputs', inputs);
-    console.log('====================================');
-
     return exits.success({
       dbConnection: inputs.manager.connection,
       graph: inputs.manager.graph,

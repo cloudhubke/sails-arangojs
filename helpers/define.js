@@ -71,9 +71,7 @@ module.exports = require('machine').build({
 
     if (model.tableName !== inputs.tableName) {
       return exits.error(
-        `Error in the definition of tableName property of the model associated with .${
-          inputs.tableName
-        }`,
+        `Error in the definition of tableName property of the model associated with .${inputs.tableName}`
       );
     }
 
@@ -89,7 +87,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      inputs.meta,
+      inputs.meta
     );
 
     try {
@@ -126,13 +124,13 @@ module.exports = require('machine').build({
           await Helpers.schema.buildSchema(
             tableName,
             inputs.definition,
-            collection,
+            collection
           );
           await Helpers.schema.buildIndexes(
             inputs.indexes,
             tableName,
             inputs.definition,
-            collection,
+            collection
           );
 
           Helpers.connection.releaseConnection(dbConnection);
@@ -148,7 +146,7 @@ module.exports = require('machine').build({
       await Helpers.schema.buildSchema(
         tableName,
         inputs.definition,
-        collection,
+        collection
       );
 
       Helpers.connection.releaseConnection(dbConnection);

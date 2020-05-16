@@ -162,7 +162,7 @@ module.exports = require('machine').build({
           `Failed to connect with the given datastore configuration.  Details:\n\`\`\`\n${report}`
         );
       },
-      success: async report => {
+      success: async (report) => {
         try {
           const { manager } = report;
 
@@ -207,7 +207,7 @@ module.exports = require('machine').build({
 
           const dbSchema = {};
           const definitionsarray = [];
-          _.each(models, modelinfo => {
+          _.each(models, (modelinfo) => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
 
             if (modelDefinitions[modelinfo.identity]) {
@@ -237,7 +237,20 @@ module.exports = require('machine').build({
             }
 
             dbSchema[modelinfo.tableName] = definition;
-            definitionsarray.push({ ...definition });
+
+            if (modelinfo.defaultDatastoreBuild === 'only') {
+              if (modelinfo.datastore === 'default') {
+                definitionsarray.push({ ...definition });
+              }
+            }
+            if (modelinfo.defaultDatastoreBuild === 'include') {
+              definitionsarray.push({ ...definition });
+            }
+            if (modelinfo.defaultDatastoreBuild === 'exclude') {
+              if (modelinfo.datastore !== 'default') {
+                definitionsarray.push({ ...definition });
+              }
+            }
 
             // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
             // The below code would be unnecessary if `modelinfo.identity` were passed in the define method.
@@ -249,6 +262,11 @@ module.exports = require('machine').build({
           }); // </each phModel>
 
           // We are going to create the graph vertices, edges and edgedefinitions
+
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // If auto build flag is true, construct the model collection
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
           await graphHelper.constructGraph(manager, definitionsarray, exits);
 
           modelDefinitions[identity] = dbSchema;
