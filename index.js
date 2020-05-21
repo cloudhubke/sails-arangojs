@@ -147,7 +147,7 @@ module.exports = {
     if (ArangoDB.verifyModelDef) {
       const modelIncompatibilitiesMap = {};
       try {
-        _.each(models, phModelInfo => {
+        _.each(models, (phModelInfo) => {
           try {
             ArangoDB.verifyModelDef({ modelDef: phModelInfo }).execSync();
           } catch (e) {

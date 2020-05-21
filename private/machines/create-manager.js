@@ -156,13 +156,12 @@ module.exports = {
           return returnFunction(params);
         });
 
-        return dbConnection.transaction(
+        return dbConnection.executeTransaction(
           { read: [...reads], write: [...writes] },
           `${fanction}`
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
-          { ...params },
-          { ...options }
+          { params, waitForSync: true, ...options }
         );
       };
 
