@@ -14,7 +14,7 @@ module.exports = async function buildIndexes(
   indexes,
   tableName,
   definition,
-  collection,
+  collection
 ) {
   if (!definition || !tableName) {
     throw new Error('Build Schema/Table Name requires a valid definition.');
@@ -23,24 +23,31 @@ module.exports = async function buildIndexes(
   try {
     const indexfields = _.map(
       indexes,
-      obj => new Promise(async (resolv) => {
-        if (obj.fields) {
-          await collection.createHashIndex(obj.fields, {
-            unique: true,
-            sparse: Boolean(obj.sparse),
-          });
-        }
+      (obj) =>
+        new Promise(async (resolv) => {
+          if (obj.fields && obj.unique !== false) {
+            await collection.createHashIndex(obj.fields, {
+              unique: true,
+              sparse: Boolean(obj.sparse),
+            });
+          }
+          if (obj.fields && obj.unique === false) {
+            await collection.createHashIndex(obj.fields, {
+              unique: false,
+              sparse: Boolean(obj.sparse),
+            });
+          }
 
-        if (obj.geo) {
-          await collection.createGeoIndex(obj.geo);
-        }
+          if (obj.geo) {
+            await collection.createGeoIndex(obj.geo);
+          }
 
-        if (obj.geoJson) {
-          await collection.createGeoIndex(obj.geoJson, { geoJson: true });
-        }
+          if (obj.geoJson) {
+            await collection.createGeoIndex(obj.geoJson, { geoJson: true });
+          }
 
-        resolv();
-      }),
+          resolv();
+        })
     );
 
     return Promise.all(indexfields).then(() => true);
@@ -50,7 +57,7 @@ module.exports = async function buildIndexes(
         code: 'E_BULDING_INDEXES',
         message: `Could not build model indexes for ${tableName}`,
       },
-      error,
+      error
     );
   }
   // Build up a string of column attributes
