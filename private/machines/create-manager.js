@@ -94,17 +94,24 @@ module.exports = {
           url: `http://${config.host}:${config.port || 8529}`,
         });
         // db.useDatabase('_system');
-        await db.createDatabase(dbName, [
-          { username: 'root', password: rootPassword },
-        ]);
+
+        db.useDatabase('_system');
+        db.useBasicAuth('root', rootPassword);
+
+        await db.createDatabase(dbName);
 
         console.log('====================================');
         console.log(`Created db ${dbName}`);
         console.log('====================================');
       } catch (err) {
         console.log('====================================');
-        console.log('DATABASE COULD NOT BE CREATED', err);
+        console.log(
+          `http://${config.host}:${config.port || 8529}`,
+          dbName,
+          rootPassword
+        );
         console.log('====================================');
+        throw new Error(err);
       }
     };
 

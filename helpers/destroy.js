@@ -172,7 +172,7 @@ module.exports = require('machine').build({
         }
 
         if (fetchRecords) {
-          const promise = ids.map(async id => {
+          const promise = ids.map(async (id) => {
             try {
               return await collection.document(id);
             } catch (error) {
@@ -184,8 +184,8 @@ module.exports = require('machine').build({
         }
 
         const results = ids.map(
-          id =>
-            new Promise(async resolve => {
+          (id) =>
+            new Promise(async (resolve) => {
               try {
                 result = await collection.remove(id);
               } catch (error) {
@@ -228,10 +228,10 @@ module.exports = require('machine').build({
       return exits.success();
     }
 
-    removedRecords = [...(removedRecords || [])].filter(r => Boolean(r));
+    removedRecords = [...(removedRecords || [])].filter((r) => Boolean(r));
 
     try {
-      _.each(removedRecords, nativeRecord => {
+      _.each(removedRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
       });
     } catch (e) {
