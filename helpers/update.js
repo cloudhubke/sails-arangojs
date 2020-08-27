@@ -15,7 +15,7 @@ function stringify(obj_from_json) {
   // Implements recursive object serialization according to JSON spec
   // but without quotes around the keys.
   const props = Object.keys(obj_from_json)
-    .map(key => `${key}:${stringify(obj_from_json[key])}`)
+    .map((key) => `${key}:${stringify(obj_from_json[key])}`)
     .join(',');
   return `{${props}}`;
 }
@@ -228,7 +228,7 @@ module.exports = require('machine').build({
         result = await dbConnection.query(sql);
 
         if (fetchRecords) {
-          updatedRecords = result._result.map(r => r.new);
+          updatedRecords = result._result.map((r) => r.new);
         }
       } else {
         let sql = `FOR record IN ${statement.tableName}`;
@@ -242,10 +242,11 @@ module.exports = require('machine').build({
         if (fetchRecords) {
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
+
         result = await dbConnection.query(sql);
 
         if (fetchRecords) {
-          updatedRecords = result._result.map(r => r.new);
+          updatedRecords = result._result.map((r) => r.new);
         }
       }
     } catch (error) {
@@ -284,7 +285,7 @@ module.exports = require('machine').build({
     try {
       await Helpers.connection.releaseConnection(dbConnection);
       const newrecords = updatedRecords.map(
-        record =>
+        (record) =>
           // eslint-disable-next-line implicit-arrow-linebreak
           Helpers.query.processNativeRecord(record, WLModel, query.meta)
         // eslint-disable-next-line function-paren-newline

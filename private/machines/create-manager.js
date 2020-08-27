@@ -134,6 +134,36 @@ module.exports = {
         }
       }
 
+      // Generate a token for foxx services requests
+
+      const authaction = String(function (params) {
+        // This code will be executed inside ArangoDB!
+        const request = require('@arangodb/request');
+        const db = require('@arangodb').db;
+
+        const response = request({
+          method: 'post',
+          url: `/_db/${db._name()}/_open/auth`,
+          body: {
+            username: params.username,
+            password: params.password || '',
+          },
+          json: true,
+        });
+
+        const body = response.json || {};
+
+        return `${body.jwt}`;
+      });
+
+      const bearerToken = await dbConnection.executeTransaction(
+        { read: [], write: [] },
+        authaction,
+        {
+          params: { username: config.user, password: config.password },
+        }
+      );
+
       // Transactions
 
       const Transaction = ({
@@ -155,6 +185,15 @@ module.exports = {
           const _ = require('lodash');
           const db = require('@arangodb').db;
           const aql = require('@arangodb').aql;
+          const queues = require('@arangodb/foxx/queues');
+          const arangoRequest = require('@arangodb/request');
+
+          const request = (options) => {
+            const requestOptions = Object.assign(options, {
+              auth: { bearer: params.bearerToken },
+            });
+            return arangoRequest(requestOptions);
+          };
 
           const dbServices = dbservices;
 
@@ -168,7 +207,7 @@ module.exports = {
           `${fanction}`
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
-          { params, waitForSync: true, ...options }
+          { params: { ...params, bearerToken }, waitForSync: true, ...options }
         );
       };
 
