@@ -25,7 +25,7 @@ module.exports = ({ pkColumnName }) => {
         const v = arr[0];
         str = `== ${specialValue(v)}`;
       } else {
-        const elements = arr.map(v => (typeof v === 'string' ? `'${v}'` : v));
+        const elements = arr.map((v) => (typeof v === 'string' ? `'${v}'` : v));
         str = `IN [${elements}]`;
       }
     } else {
@@ -53,7 +53,7 @@ module.exports = ({ pkColumnName }) => {
         const v = arr[0];
         str = `!= ${specialValue(v)}`;
       } else {
-        const elements = arr.map(v => (typeof v === 'string' ? `'${v}'` : v));
+        const elements = arr.map((v) => (typeof v === 'string' ? `'${v}'` : v));
         str = `NOT IN [${elements}]`;
       }
     } else {
@@ -124,6 +124,14 @@ module.exports = ({ pkColumnName }) => {
         case '$like':
           str = `LIKE ${`${specialValue(value)}`.toLowerCase()}`;
           return;
+
+        case 'notlike':
+          str = `NOT LIKE ${`${specialValue(value)}`.toLowerCase()}`;
+          return;
+        case '$notlike':
+          str = `NOT LIKE ${`${specialValue(value)}`.toLowerCase()}`;
+          return;
+
         case '$in':
           str = getInStatement(value);
           return;
@@ -179,7 +187,7 @@ module.exports = ({ pkColumnName }) => {
           const v = value[0];
           inarr = `== ${specialValue(v)}`;
         }
-        inarr = `IN [${value.map(v => specialValue(v))}]`;
+        inarr = `IN [${value.map((v) => specialValue(v))}]`;
         criteria.push(inarr);
         return;
       }
@@ -190,7 +198,12 @@ module.exports = ({ pkColumnName }) => {
           return;
         }
 
-        if (_.has(value, '$like') || _.has(value, 'like')) {
+        if (
+          _.has(value, '$like') ||
+          _.has(value, 'like') ||
+          _.has(value, '$notlike') ||
+          _.has(value, 'notlike')
+        ) {
           criteria.push(`LOWER(record.${key}) ${getComparison(value)}`);
           return;
         }
@@ -212,7 +225,7 @@ module.exports = ({ pkColumnName }) => {
   function getOrStatement(arr) {
     const orst = [];
     if (Array.isArray(arr) && arr.length > 1) {
-      _.each(arr, obj => {
+      _.each(arr, (obj) => {
         orst.push(getAndStatement(obj));
       });
     } else {
@@ -226,7 +239,7 @@ module.exports = ({ pkColumnName }) => {
   function getAndArrayStatement(arr) {
     const andst = [];
     if (Array.isArray(arr)) {
-      _.each(arr, obj => {
+      _.each(arr, (obj) => {
         andst.push(getAndStatement(obj));
       });
     } else {

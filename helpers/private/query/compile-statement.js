@@ -94,7 +94,7 @@ module.exports = function compileStatement(options) {
 
   function selectAttributes(vals) {
     if (vals && Array.isArray(vals)) {
-      let fields = [...vals].filter(f => {
+      let fields = [...vals].filter((f) => {
         const arr = [
           'sort',
           'limit',
@@ -102,6 +102,7 @@ module.exports = function compileStatement(options) {
           'select',
           'filter',
           'like',
+          'notlike',
           'not',
           'in',
           'for',
@@ -135,7 +136,7 @@ module.exports = function compileStatement(options) {
 
   function getNumericAttrName() {
     if (Array.isArray(numericAttrName)) {
-      return numericAttrName.map(n => `record.${n}`).join(' + ');
+      return numericAttrName.map((n) => `record.${n}`).join(' + ');
     }
     if (numericAttrName) {
       return numericAttrName;
@@ -145,7 +146,7 @@ module.exports = function compileStatement(options) {
 
   function getEdgeCollections() {
     if (Array.isArray(edgeCollections)) {
-      return edgeCollections.map(n => n).join(', ');
+      return edgeCollections.map((n) => n).join(', ');
     }
     if (edgeCollections) {
       return edgeCollections;
@@ -194,8 +195,8 @@ module.exports = function compileStatement(options) {
   if (passedcriteria.sort) {
     if (passedcriteria.sort.length > 0) {
       sortClauseArray = passedcriteria.sort
-        .map(c => getSortClause(c))
-        .filter(c => !!c);
+        .map((c) => getSortClause(c))
+        .filter((c) => !!c);
     }
   }
 
