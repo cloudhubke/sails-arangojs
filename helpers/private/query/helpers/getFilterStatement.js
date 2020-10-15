@@ -164,6 +164,8 @@ module.exports = ({ pkColumnName }) => {
       return '';
     }
     _.each(obj, (value, key) => {
+      const keystr = `${key}`.replace(/ /g, '');
+
       if (key.toLowerCase() === '$or' || key.toLowerCase() === 'or') {
         // eslint-disable-next-line no-use-before-define
         criteria.push(`(${getOrStatement(value)})`);
@@ -208,11 +210,20 @@ module.exports = ({ pkColumnName }) => {
           return;
         }
 
-        criteria.push(`record.${key} ${getComparison(value)}`);
+        if (`${keystr}`.includes('(record.')) {
+          criteria.push(`${key} ${getComparison(value)}`);
+        } else {
+          criteria.push(`record.${key} ${getComparison(value)}`);
+        }
+
         return;
       }
 
-      criteria.push(`record.${key} == ${specialValue(value, key)}`);
+      if (`${keystr}`.includes('(record.')) {
+        criteria.push(`${key} == ${specialValue(value, key)}`);
+      } else {
+        criteria.push(`record.${key} == ${specialValue(value, key)}`);
+      }
     });
 
     if (str) {
