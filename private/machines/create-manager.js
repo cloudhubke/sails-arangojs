@@ -81,6 +81,7 @@ module.exports = {
 
   async fn({ config /* meta */ }, exits) {
     const { Database, aql } = require('arangojs');
+    const _ = require('@sailshq/lodash');
 
     const dbConnection = new Database({
       url: `http://${config.host}:${config.port || 8529}`,
@@ -203,7 +204,10 @@ module.exports = {
         });
 
         return dbConnection.executeTransaction(
-          { read: [...reads], write: [...writes] },
+          {
+            read: _.uniq([...reads, '_jobs']),
+            write: _.uniq([...writes, '_jobs']),
+          },
           `${fanction}`
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
