@@ -189,6 +189,8 @@ module.exports = {
         const fanction = String(function (params) {
           // This code will be executed inside ArangoDB!
 
+          const SystemSettings = params.SystemSettings || {};
+
           const normalize = (data) => {
             data.id = data._key;
             delete data._rev;
