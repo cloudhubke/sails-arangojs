@@ -167,7 +167,19 @@ module.exports = {
 
       // Transactions
 
-      const Transaction = ({
+      let SystemSettings = {};
+
+      const updateSystemSettings = (settings = {}) => {
+        SystemSettings = {
+          ...settings,
+        };
+      };
+
+      const getSystemSettings = () => {
+        return { ...SystemSettings };
+      };
+
+      Transaction = ({
         action = '',
         reads = [],
         writes = [],
@@ -211,7 +223,15 @@ module.exports = {
           `${fanction}`
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
-          { params: { ...params, bearerToken }, waitForSync: true, ...options }
+          {
+            params: {
+              ...params,
+              SystemSettings: getSystemSettings(),
+              bearerToken,
+            },
+            waitForSync: true,
+            ...options,
+          }
         );
       };
 
@@ -223,7 +243,9 @@ module.exports = {
           graphName,
           aql,
           Transaction,
-          createDatabase,
+          SystemSettings,
+          getSystemSettings,
+          updateSystemSettings,
         },
         meta: config,
       });
