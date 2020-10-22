@@ -3,6 +3,13 @@ const _ = require('@sailshq/lodash');
 
 module.exports = ({ pkColumnName }) => {
   function specialValue(val, key) {
+    if (`${val}`.includes('(record.')) {
+      return val;
+    }
+    if (`${val}`.slice(0, 1) === '$') {
+      return `${val}`.replace('$', '');
+    }
+
     if (key === pkColumnName) {
       return `${SqlString.escape(val)}`;
     }
@@ -42,7 +49,6 @@ module.exports = ({ pkColumnName }) => {
     } else {
       throw new Error('the HAS statement expects a number or string.');
     }
-
     return str;
   }
 
@@ -183,16 +189,16 @@ module.exports = ({ pkColumnName }) => {
         return;
       }
 
-      if (_.isArray(value)) {
-        let inarr = '';
-        if (value.length === 1) {
-          const v = value[0];
-          inarr = `== ${specialValue(v)}`;
-        }
-        inarr = `IN [${value.map((v) => specialValue(v))}]`;
-        criteria.push(inarr);
-        return;
-      }
+      // if (_.isArray(value)) {
+      //   let inarr = '';
+      //   if (value.length === 1) {
+      //     const v = value[0];
+      //     inarr = `== ${specialValue(v)}`;
+      //   }
+      //   inarr = `IN [${value.map((v) => specialValue(v))}]`;
+      //   criteria.push(inarr);
+      //   return;
+      // }
 
       if (_.isObject(value)) {
         if (_.has(value, '$has') || _.has(value, 'has')) {
@@ -210,8 +216,10 @@ module.exports = ({ pkColumnName }) => {
           return;
         }
 
-        if (`${keystr}`.includes('(record.')) {
-          criteria.push(`${key} ${getComparison(value)}`);
+        if (`${keystr}`.includes('(record.') || `${keystr}`.includes('$')) {
+          criteria.push(
+            `${`${keystr}`.replace('$', '')} ${getComparison(value)}`
+          );
         } else {
           criteria.push(`record.${key} ${getComparison(value)}`);
         }
@@ -219,8 +227,10 @@ module.exports = ({ pkColumnName }) => {
         return;
       }
 
-      if (`${keystr}`.includes('(record.')) {
-        criteria.push(`${key} == ${specialValue(value, key)}`);
+      if (`${keystr}`.includes('(record.') || `${keystr}`.includes('$')) {
+        criteria.push(
+          `${`${keystr}`.replace('$', '')} == ${specialValue(value, key)}`
+        );
       } else {
         criteria.push(`record.${key} == ${specialValue(value, key)}`);
       }
@@ -259,7 +269,18 @@ module.exports = ({ pkColumnName }) => {
     return andst.join(' AND ');
   }
 
+  function getLetStatements(obj) {
+    let str = '';
+    for (const key in obj) {
+      const val = obj[key];
+      str = `${str}LET ${key} = ${specialValue(val)}\n`;
+    }
+
+    return str;
+  }
+
   return {
     getAndStatement,
+    getLetStatements,
   };
 };

@@ -59,10 +59,12 @@ module.exports = require('machine').build({
     // Store the Query input for easier access
 
     const { query, models } = inputs;
+
     query.meta = query.meta || {};
 
     // Find the model definition
     const WLModel = models[query.using];
+
     if (!WLModel) {
       return exits.invalidDatastore();
     }
@@ -101,7 +103,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     try {

@@ -75,7 +75,9 @@ module.exports = function compileStatement(options) {
     throw new Error('Criteria must contain a WHERE clause.');
   }
 
-  const { getAndStatement } = getFilterStatement({ pkColumnName });
+  const { getAndStatement, getLetStatements } = getFilterStatement({
+    pkColumnName,
+  });
 
   function hasSelectFields() {
     if (
@@ -210,12 +212,14 @@ module.exports = function compileStatement(options) {
     return str;
   }
 
+  const letStatements = getLetStatements(passedcriteria.let || {});
   const compiledwhere = getAndStatement(passedcriteria.where || {});
   const compiledwherevertex = getAndStatement(passedcriteria.whereVertex || {});
   const compiledwhereedge = getAndStatement(passedcriteria.whereEdge || {});
 
   const obj = {
     ...passedcriteria,
+    letStatements,
     method,
     select: hasSelectFields()
       ? selectAttributes(passedcriteria.select)

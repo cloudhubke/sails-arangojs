@@ -89,6 +89,7 @@ module.exports = require('machine').build({
     // // Compile the original Waterline Query
 
     let statement;
+
     try {
       statement = Helpers.query.compileStatement({
         pkColumnName,
@@ -116,33 +117,43 @@ module.exports = require('machine').build({
       // Spawn a new connection for running queries on.
 
       // Execute sql using the driver acquired dbConnectio.
-      let sql = `FOR record in ${statement.tableName}`;
+      let sql = `FOR record in ${statement.tableName} \n`;
+
+      if (statement.letStatements) {
+        sql = `${sql}${statement.letStatements} \n`;
+      }
 
       _.each(query.criteria, (value, key) => {
         if (key === 'where' && statement.whereClause) {
-          sql = `${sql} FILTER ${statement.whereClause}`;
+          sql = `${sql}FILTER ${statement.whereClause} \n`;
         }
 
         if (key === 'sort' && statement.sortClause) {
-          sql = `${sql} SORT ${statement.sortClause}`;
+          sql = `${sql} SORT ${statement.sortClause} \n`;
         }
 
         if (key === 'limit' && statement.limit) {
           if (statement.skip) {
-            sql = `${sql} LIMIT ${statement.skip}, ${statement.limit}`;
+            sql = `${sql} LIMIT ${statement.skip}, ${statement.limit} \n`;
           } else {
-            sql = `${sql} LIMIT ${statement.limit}`;
+            sql = `${sql} LIMIT ${statement.limit} \n`;
           }
         }
       });
 
+      const variables = _.keys(statement.let);
+
       if (statement.select.length > 1) {
-        sql = `${sql} return {${statement.select
-          .map((f) => `${f}: record.${f}`)
-          .join(' , ')}}`;
+        sql = `${sql} return { \n${statement.select
+          .map((f) => `${f}: ${variables.includes(f) ? f : `record.${f}`}`)
+          .join(', \n')} \n}`;
       } else {
         sql = `${sql} return record`;
       }
+
+      console.log('====================================');
+      console.log(sql);
+      console.log('====================================');
 
       cursor = await dbConnection.query(`${sql}`);
       // cursor = await dbConnection.query(`${sql}`);
