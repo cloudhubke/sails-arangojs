@@ -123,7 +123,11 @@ module.exports = require('machine').build({
 
       const { geoAttrName } = statement;
 
-      let sql = `FOR record in ${statement.tableName}`;
+      let sql = `FOR record in ${statement.tableName} \n`;
+
+      if (statement.letStatements) {
+        sql = `${sql}${statement.letStatements} \n`;
+      }
 
       if (statement.distanceCriteria) {
         sql = `${sql} let distance =  GEO_DISTANCE([${statement.distanceCriteria}], record.${geoAttrName}) sort distance ASC`;
@@ -143,7 +147,7 @@ module.exports = require('machine').build({
 
       if (statement.select.length > 1) {
         sql = `${sql} return {${statement.select
-          .map(f => `${f}: record.${f}`)
+          .map((f) => `${f}: record.${f}`)
           .join(' , ')}, distance: distance}`;
       }
 
@@ -170,9 +174,11 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = cursor._result.map(r => (r.record ? { ...r.record, distance: r.distance } : r));
+    const selectRecords = cursor._result.map((r) =>
+      r.record ? { ...r.record, distance: r.distance } : r
+    );
     try {
-      _.each(selectRecords, nativeRecord => {
+      _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
       });
       return exits.success({ records: selectRecords });

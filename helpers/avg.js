@@ -112,18 +112,21 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     try {
-      let sql = `FOR record in ${statement.tableName}`;
+      let sql = `FOR record in ${statement.tableName} \n`;
+
+      if (statement.letStatements) {
+        sql = `${sql}${statement.letStatements} \n`;
+      }
+
       if (statement.whereClause) {
         sql = `${sql} FILTER ${statement.whereClause}`;
       }
 
-      sql = `${sql} COLLECT AGGREGATE avg = AVG(record.${
-        statement.numericAttrName
-      })`;
+      sql = `${sql} COLLECT AGGREGATE avg = AVG(record.${statement.numericAttrName})`;
       sql = `${sql} RETURN avg`;
 
       results = await dbConnection.query(sql);

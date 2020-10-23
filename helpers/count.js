@@ -107,7 +107,12 @@ module.exports = require('machine').build({
     );
 
     try {
-      let sql = `FOR record IN ${statement.tableName}`;
+      let sql = `FOR record in ${statement.tableName} \n`;
+
+      if (statement.letStatements) {
+        sql = `${sql}${statement.letStatements} \n`;
+      }
+
       if (statement.whereClause) {
         sql = `${sql} FILTER ${statement.whereClause}`;
       }

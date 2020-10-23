@@ -271,8 +271,12 @@ module.exports = ({ pkColumnName }) => {
 
   function getLetStatements(obj) {
     let str = '';
+
     for (const key in obj) {
       const val = obj[key];
+      // if(_.isObject(obj) || _.isArray(obj)){
+
+      // }
       str = `${str}LET ${key} = ${specialValue(val)}\n`;
     }
 

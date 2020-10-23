@@ -216,6 +216,11 @@ module.exports = require('machine').build({
         }
       } else if (statement.primarywhere._id) {
         let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;
+
+        if (statement.letStatements) {
+          sql = `${sql}${statement.letStatements} \n`;
+        }
+
         sql = `${sql} UPDATE record WITH ${updatevalues} IN ${statement.tableName}`;
 
         sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
@@ -231,7 +236,12 @@ module.exports = require('machine').build({
           updatedRecords = result._result.map((r) => r.new);
         }
       } else {
-        let sql = `FOR record IN ${statement.tableName}`;
+        let sql = `FOR record in ${statement.tableName} \n`;
+
+        if (statement.letStatements) {
+          sql = `${sql}${statement.letStatements} \n`;
+        }
+
         if (statement.whereClause) {
           sql = `${sql} FILTER ${statement.whereClause}`;
         }

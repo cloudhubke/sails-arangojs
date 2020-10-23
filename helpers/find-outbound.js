@@ -135,9 +135,13 @@ module.exports = require('machine').build({
         graphName ? `GRAPH '${graphName}'` : statement.edgeCollections
       }`;
 
+      if (statement.letStatements) {
+        sql = `${sql}${statement.letStatements} \n`;
+      }
+
       if (statement.whereVertexClause || statement.whereEdgeClause) {
         const arr = [statement.whereVertexClause, statement.whereEdgeClause]
-          .filter(a => !!a)
+          .filter((a) => !!a)
           .join(' AND ');
 
         sql = `${sql} FILTER ${arr}`;
@@ -180,7 +184,7 @@ module.exports = require('machine').build({
           ? Helpers.query.processNativeRecord(edge, WLModel, query.meta)
           : null,
       }))
-      .filter(r => r.vertex !== null && r.edge !== null);
+      .filter((r) => r.vertex !== null && r.edge !== null);
 
     return exits.success({ record: newresult });
   },

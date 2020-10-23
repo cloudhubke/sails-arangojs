@@ -102,7 +102,7 @@ module.exports = require('machine').build({
 
     if (!statement.numericAttrName) {
       return exits.badConnection(
-        new Error('The AttributeName for SUM in null or undefined'),
+        new Error('The AttributeName for SUM in null or undefined')
       );
     }
 
@@ -111,7 +111,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     try {
@@ -121,7 +121,12 @@ module.exports = require('machine').build({
       let sql = '';
 
       if (isarray) {
-        sql = `FOR record IN ${statement.tableName}`;
+        sql = `FOR record in ${statement.tableName} \n`;
+
+        if (statement.letStatements) {
+          sql = `${sql}${statement.letStatements} \n`;
+        }
+
         sql = `${sql} LET sum = ${statement.numericAttrName}`;
         sql = `${sql} LET doc = record`;
         sql = `${sql} RETURN {doc, sum }`;
@@ -130,19 +135,19 @@ module.exports = require('machine').build({
         if (statement.whereClause) {
           sql = `${sql} FILTER ${statement.whereClause}`;
         }
-        sql = `${sql} COLLECT AGGREGATE sum = SUM(record.${
-          statement.numericAttrName
-        })`;
+        sql = `${sql} COLLECT AGGREGATE sum = SUM(record.${statement.numericAttrName})`;
         sql = `${sql} RETURN sum`;
       }
 
       result = await dbConnection.query(sql);
 
       if (isarray) {
-        result = result._result.map(record => Helpers.query.processNativeRecord(
-          { ...record.doc, sum: record.sum },
-          WLModel,
-        ));
+        result = result._result.map((record) =>
+          Helpers.query.processNativeRecord(
+            { ...record.doc, sum: record.sum },
+            WLModel
+          )
+        );
       } else {
         result = _.isArray(result._result) ? result._result[0] : 0;
       }
