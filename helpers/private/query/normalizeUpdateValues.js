@@ -1,8 +1,15 @@
 const _ = require('@sailshq/lodash');
 const SqlString = require('sqlstring');
 
-const normalizeUpdateValues = values => {
+const normalizeUpdateValues = (values) => {
   function specialValue(val) {
+    if (`${val}`.includes('(record.')) {
+      return val;
+    }
+    if (`${val}`.slice(0, 1) === '$') {
+      return `${val}`.replace('$', '');
+    }
+
     if (_.isObject(val)) {
       return JSON.stringify(val)
         .replace(/"'/g, '')
@@ -18,7 +25,7 @@ const normalizeUpdateValues = values => {
     return val;
   }
 
-  const getIncreaseValues = incvalues => {
+  const getIncreaseValues = (incvalues) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -60,7 +67,7 @@ const normalizeUpdateValues = values => {
     return st;
   };
 
-  const getPopValues = incvalues => {
+  const getPopValues = (incvalues) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -72,7 +79,7 @@ const normalizeUpdateValues = values => {
     return st;
   };
 
-  const getShiftValues = incvalues => {
+  const getShiftValues = (incvalues) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -84,7 +91,7 @@ const normalizeUpdateValues = values => {
     return st;
   };
 
-  const getPullValues = incvalues => {
+  const getPullValues = (incvalues) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
@@ -102,10 +109,10 @@ const normalizeUpdateValues = values => {
     return st;
   };
 
-  const getAndOrValues = andorvalues => {
+  const getAndOrValues = (andorvalues) => {
     let st = {};
     if (_.isArray(andorvalues)) {
-      _.each(andorvalues, val => {
+      _.each(andorvalues, (val) => {
         st = { ...st, ...val };
       });
     } else {

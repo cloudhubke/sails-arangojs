@@ -18,13 +18,20 @@ function stringify(obj_from_json) {
   }
 
   const props = Object.keys(obj_from_json)
-    .map(key => `${key}:${stringify(obj_from_json[key])}`)
+    .map((key) => `${key}:${stringify(obj_from_json[key])}`)
     .join(',');
   return `{${props}}`;
 }
 
 const stringifyUpdateValues = (values, method) => {
   function specialValue(val) {
+    if (`${val}`.includes('(record.')) {
+      return val;
+    }
+    if (`${val}`.slice(0, 1) === '$') {
+      return `${val}`.replace('$', '');
+    }
+
     if (_.isObject(val)) {
       return stringify(val).replace(/'/g, '');
     }
@@ -115,10 +122,10 @@ const stringifyUpdateValues = (values, method) => {
     return st;
   };
 
-  const getAndOrValues = andorvalues => {
+  const getAndOrValues = (andorvalues) => {
     let st = [];
     if (_.isArray(andorvalues)) {
-      _.each(andorvalues, val => {
+      _.each(andorvalues, (val) => {
         _.each(val, (value, key) => {
           if (method === 'upsert') {
             if (_.includes(key, '.')) {

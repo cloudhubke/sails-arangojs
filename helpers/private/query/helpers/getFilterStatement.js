@@ -17,7 +17,7 @@ module.exports = ({ pkColumnName }) => {
       return JSON.stringify(val);
     }
     if (_.isString(val)) {
-      return `${SqlString.escape(val)}`;
+      return `${SqlString.escape(`${val}`.trim())}`;
     }
     if (Number(val)) {
       return val;
@@ -273,10 +273,13 @@ module.exports = ({ pkColumnName }) => {
     let str = '';
 
     for (const key in obj) {
-      const val = obj[key];
+      let val = obj[key];
       // if(_.isObject(obj) || _.isArray(obj)){
 
       // }
+      if (`${val}`.slice(0, 1) === '$') {
+        val = `${val}`.replace('$', ' $');
+      }
       str = `${str}LET ${key} = ${specialValue(val)}\n`;
     }
 
