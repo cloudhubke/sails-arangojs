@@ -250,7 +250,8 @@ module.exports = function compileStatement(options) {
       {
         ...passedcriteria.where,
       },
-      method
+      method,
+      passedcriteria.let || {}
     );
     obj.insertvalues = stringifyUpdateValues(
       {
@@ -258,12 +259,20 @@ module.exports = function compileStatement(options) {
         ...(values || {}),
         createdAt: new Date().getTime(),
       },
-      method
+      method,
+      passedcriteria.let || {}
     );
 
-    obj.values = stringifyUpdateValues(values || {}, method);
+    obj.values = stringifyUpdateValues(
+      values || {},
+      method,
+      passedcriteria.let || {}
+    );
 
-    obj.valuesToSet = normalizeUpdateValues(values || {}, method);
+    obj.valuesToSet = normalizeUpdateValues(
+      values || {},
+      passedcriteria.let || {}
+    );
   }
 
   if (method === 'create' || method === 'createEach') {

@@ -23,12 +23,15 @@ function stringify(obj_from_json) {
   return `{${props}}`;
 }
 
-const stringifyUpdateValues = (values, method) => {
+const stringifyUpdateValues = (values, method, letObj = {}) => {
   function specialValue(val) {
     if (`${val}`.includes('(record.')) {
       return val;
     }
-    if (`${val}`.slice(0, 1) === '$') {
+    if (
+      `${val}`.slice(0, 1) === '$' &&
+      _.has(letObj, `${val}`.replace('$', ''))
+    ) {
       return `${val}`.replace('$', '');
     }
 

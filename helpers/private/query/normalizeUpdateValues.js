@@ -1,12 +1,15 @@
 const _ = require('@sailshq/lodash');
 const SqlString = require('sqlstring');
 
-const normalizeUpdateValues = (values) => {
+const normalizeUpdateValues = (values, letObj = {}) => {
   function specialValue(val) {
     if (`${val}`.includes('(record.')) {
       return val;
     }
-    if (`${val}`.slice(0, 1) === '$') {
+    if (
+      `${val}`.slice(0, 1) === '$' &&
+      _.has(letObj, `${val}`.replace('$', ''))
+    ) {
       return `${val}`.replace('$', '');
     }
 
