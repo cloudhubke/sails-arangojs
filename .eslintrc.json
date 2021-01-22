@@ -1,27 +1,79 @@
 {
+  //   ╔═╗╔═╗╦  ╦╔╗╔╔╦╗┬─┐┌─┐
+  //   ║╣ ╚═╗║  ║║║║ ║ ├┬┘│
+  //  o╚═╝╚═╝╩═╝╩╝╚╝ ╩ ┴└─└─┘
+  // A set of basic code conventions (similar to a .jshintrc file) designed to
+  // and encourage quality and consistency across your Sails app's code base.
+  // These rules are checked against automatically any time you run `npm test`.
+  //
+  // > An additional eslintrc override file is included in the `assets/` folder
+  // > right out of the box.  This is specifically to allow for variations in acceptable
+  // > global variables between front-end JavaScript code designed to run in the browser
+  // > vs. backend code designed to run in a Node.js/Sails process.
+  //
+  // > Note: If you're using mocha, you'll want to add an extra override file to your
+  // > `test/` folder so that eslint will tolerate mocha-specific globals like `before`
+  // > and `describe`.
+  //
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // For more information about any of the rules below, check out the relevant
+  // reference page on eslint.org.  For example, to get details on "no-sequences",
+  // you would visit `http://eslint.org/docs/rules/no-sequences`.
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
   "env": {
-    "commonjs": true,
-    "es6": true,
     "node": true
   },
 
-  "extends": "airbnb-base",
-  "globals": {
-    "Atomics": "readonly",
-    "SharedArrayBuffer": "readonly"
-  },
   "parserOptions": {
-    "ecmaVersion": 2018
+    "ecmaVersion": 8
   },
+
+  "globals": {
+    // If "no-undef" is enabled below and your app uses globals, be sure to list all
+    // relevant globals below (including the globalIds of models, if relevant):
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // "sails": true,
+    // "_": true,
+    // "async": true,
+    // ...and any other backend globals (e.g. `"User": true`)
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  },
+
   "rules": {
+    "semi-style": ["warn", "last"],
+    "getter-return": "error",
+    "switch-colon-spacing": "error",
+    "no-buffer-constructor": 0,
+    "function-paren-newline": 0,
+    "implicit-arrow-linebreak": 0,
+    "lines-between-class-members": ["error", "always"],
+    "dot-notation": 0,
+    "no-underscore-dangle": 0,
+    "no-use-before-define": 0,
+    "no-undef": [0],
+    "consistent-return": 0,
+    "arrow-parens": 0,
+    "object-curly-newline": 0,
+    "no-empty": 0,
+    "operator-linebreak": 0,
+    "comma-dangle": 0,
+    "no-param-reassign": 0,
+    "import/no-extraneous-dependencies": 0,
     "global-require": 0,
     "max-len": 0,
-    "no-param-reassign": 0,
-    "no-underscore-dangle": 0,
-    "arrow-parens": 0,
+    "no-restricted-syntax": 0,
+    "guard-for-in": 0,
     "camelcase": 0,
-    "indent": 0,
-    "comma-dangle": 0,
-    "object-curly-newline": 0
+    "prefer-destructuring": 0,
+    "func-names": 0,
+    "space-before-function-paren": 0,
+    "settings": {
+      "import/resolver": {
+        "node": {
+          "moduleDirectory": ["node_modules", "./reactapp/app"]
+        }
+      }
+    }
   }
 }

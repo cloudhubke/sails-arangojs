@@ -224,7 +224,10 @@ module.exports = require('machine').build({
 
             const definition = {
               indexes: modelinfo.indexes,
+              schemaValidation: modelinfo.schemaValidation,
+              additionalProperties: modelinfo.additionalProperties,
               classType: modelinfo.classType,
+              tenantType: modelinfo.tenantType,
               primaryKey: modelinfo.primaryKey,
               attributes: modelinfo.definition,
               definition: modelinfo.definition,

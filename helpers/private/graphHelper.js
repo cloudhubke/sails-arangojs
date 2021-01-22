@@ -9,12 +9,13 @@ module.exports = {
       const graphInfo = await graph.get();
 
       const edgeDefinitions = (graphInfo.edgeDefinitions || []).map(
-        ed => ed.collection
+        (ed) => ed.collection
       );
 
       const collections = await graph.listVertexCollections();
       const graphinfo = definitionsarray.map(
-        model => new Promise(async resolve => {
+        (model) =>
+          new Promise(async (resolve) => {
             let collection = await graph.vertexCollection(`${model.tableName}`);
 
             if (model.classType === 'Edge') {
@@ -42,9 +43,9 @@ module.exports = {
               // Check Edge definitions in the edge
               const def = model.edgeDefinition || {};
 
-              _.each(def.from, f => {
+              _.each(def.from, (f) => {
                 const fromExists = _.includes(
-                  definitionsarray.map(d => d.tableName),
+                  definitionsarray.map((d) => d.tableName),
                   f
                 );
                 if (!fromExists) {
@@ -55,9 +56,9 @@ module.exports = {
                 return true;
               });
 
-              _.each(def.to, t => {
+              _.each(def.to, (t) => {
                 const toExists = _.includes(
-                  definitionsarray.map(d => d.tableName),
+                  definitionsarray.map((d) => d.tableName),
                   t
                 );
                 if (!toExists) {
