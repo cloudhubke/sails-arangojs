@@ -178,11 +178,6 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             );
           }
         }
-        if (tableName === 'equitydeposit') {
-          console.log('====================================');
-          console.log(fldName, fldProps, rules);
-          console.log('====================================');
-        }
       }
       if (attProps.type === 'boolean') {
         fldProps.type = attProps.type;
