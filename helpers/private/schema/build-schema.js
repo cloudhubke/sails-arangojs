@@ -119,7 +119,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       let fldProps = {};
       const attProps = attributes[fldName] || {};
 
-      if (attProps.required || Boolean(attProps.defaultsTo)) {
+      if (attProps.required || Boolean(`${attProps.defaultsTo || ''}`)) {
         required.push(fldName);
       }
 
@@ -227,6 +227,20 @@ module.exports = async function buildSchema(tableName, definition, collection) {
                 `);
             }
           }
+
+          if (fldProps.required && _.isArray(fldProps.required)) {
+            fldProps.required = [...fldProps.required];
+
+            for (let r of fldProps.required) {
+              if (!fldProps.properties[r]) {
+                throw new Error(
+                  `${r} rules property for attribute ${fldName} in schema ${tableName} is not included in the rules properties
+                                     
+                    `
+                );
+              }
+            }
+          }
         }
         if (
           rules.additionalProperties &&
@@ -235,19 +249,6 @@ module.exports = async function buildSchema(tableName, definition, collection) {
           fldProps.additionalProperties = {
             ...rules.additionalProperties,
           };
-        }
-        if (rules.required && _.isArray(rules.required)) {
-          fldProps.required = [...rules.required];
-
-          for (let r of rules.required) {
-            if (!rules.properties[r]) {
-              throw new Error(
-                `${r} rules property for attribute ${fldName} in schema ${tableName} is not included in the rules properties
-                                   
-                  `
-              );
-            }
-          }
         }
       }
 
@@ -269,7 +270,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       rule: {
         properties,
         additionalProperties: Boolean(definition.additionalProperties),
-        required,
+        ...(_.isEmpty(required) ? {} : { required }),
       },
       level: definition.schemaValidation,
       message: `
