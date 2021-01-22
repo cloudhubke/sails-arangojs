@@ -1,6 +1,6 @@
 {
   "name": "sails-arangojs",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
   "scripts": {
@@ -45,7 +45,7 @@
     "arangojs": "^6.11.1",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",
-    "sails-orm-hook": "^3.12.0",
+    "sails-orm-hook": "^3.13.0",
     "sqlstring": "^2.3.1",
     "uniqid": "^5.0.3",
     "waterline-utils": "^1.4.2"
