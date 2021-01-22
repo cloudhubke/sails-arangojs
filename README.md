@@ -1,6 +1,6 @@
 <!-- AUTO-GENERATED-CONTENT:START (STARTER) -->
 <p align="center">
-  <a href="https://sails-arangojs.netlify.co.ke">
+  <a href="https://sails-arangojs.netlify.com">
     <img alt="Gatsby" src="https://cloudhub-components.netlify.com/static/logo-c4416d49bc581833470a04b7153efcbb.png" width="250" />
   </a>
 </p>
