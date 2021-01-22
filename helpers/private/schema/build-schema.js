@@ -119,13 +119,24 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       let fldProps = {};
       const attProps = attributes[fldName] || {};
 
-      if (attProps.required || Boolean(`${attProps.defaultsTo || ''}`)) {
+      if (
+        attProps.required ||
+        attProps.defaultsTo ||
+        typeof attProps.defaultsTo === 'number'
+      ) {
         required.push(fldName);
       }
 
       if (attProps.type === 'string') {
         fldProps.type = attProps.type;
         const rules = attProps.rules || {};
+
+        if (typeof rules.minLength === 'number') {
+          fldProps.minLength = rules.minLength;
+        }
+        if (typeof rules.maxLength === 'number') {
+          fldProps.maxLength = rules.maxLength;
+        }
 
         for (let key in rules) {
           if (!['minLength', 'maxLength'].includes(key)) {
@@ -137,16 +148,23 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             );
           }
         }
+
+        const validations = attProps.validations || {};
+
+        if (validations.isIn && _.isArray(validations.isIn)) {
+          fldProps.enum = [...validations.isIn];
+        }
       }
+
       if (attProps.type === 'number') {
         fldProps.type = attProps.type;
 
         const rules = attProps.rules || {};
 
-        if (rules.minimum && typeof rules.minimum === 'number') {
+        if (typeof rules.minimum === 'number') {
           fldProps.minimum = rules.minimum;
         }
-        if (rules.maximum && typeof rules.maximum === 'number') {
+        if (typeof rules.maximum === 'number') {
           fldProps.maximum = rules.maximum;
         }
 
@@ -159,6 +177,11 @@ module.exports = async function buildSchema(tableName, definition, collection) {
                 `
             );
           }
+        }
+        if (tableName === 'equitydeposit') {
+          console.log('====================================');
+          console.log(fldName, fldProps, rules);
+          console.log('====================================');
         }
       }
       if (attProps.type === 'boolean') {
