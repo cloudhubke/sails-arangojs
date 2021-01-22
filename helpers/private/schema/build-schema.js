@@ -119,7 +119,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       let fldProps = {};
       const attProps = attributes[fldName] || {};
 
-      if (attProps.required) {
+      if (attProps.required || Boolean(attProps.defaultsTo)) {
         required.push(fldName);
       }
 
