@@ -127,7 +127,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         required.push(fldName);
       }
 
-      if (attProps.type === 'string') {
+      if (attProps.type === 'string' && !attProps.allowNull) {
         fldProps.type = attProps.type;
         const rules = attProps.rules || {};
 
