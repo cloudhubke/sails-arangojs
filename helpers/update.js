@@ -110,10 +110,12 @@ module.exports = require('machine').build({
     // Check if the pkField was set. This will avoid auto generation of new ids and deleting the key
     const criteria = query.criteria ? query.criteria.where || {} : {};
     // eslint-disable-next-line operator-linebreak
-    const shouldUpdatePk =
+    let shouldUpdatePk =
       // eslint-disable-next-line operator-linebreak
       Boolean(query.valuesToSet[pkColumnName]) &&
       Boolean(criteria[pkColumnName]);
+
+    shouldUpdatePk = false; //TO AVOID DELETION OF RECORDS
 
     try {
       Helpers.query.preProcessRecord({
