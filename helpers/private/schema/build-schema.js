@@ -246,8 +246,8 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             }
           }
 
-          if (fldProps.required && _.isArray(fldProps.required)) {
-            fldProps.required = [...fldProps.required];
+          if (rules.required && _.isArray(rules.required)) {
+            fldProps.required = [...rules.required];
 
             for (let r of fldProps.required) {
               if (!fldProps.properties[r]) {
