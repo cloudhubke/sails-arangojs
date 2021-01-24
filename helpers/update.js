@@ -187,6 +187,7 @@ module.exports = require('machine').build({
       //  ╦═╗╦ ╦╔╗╔  ┬ ┬┌─┐┌┬┐┌─┐┌┬┐┌─┐  ┌─┐ ┬ ┬┌─┐┬─┐┬ ┬
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
+
       const updatevalues = `${statement.values}`.replace(/OLD/g, 'record');
 
       if (shouldUpdatePk) {
@@ -225,7 +226,7 @@ module.exports = require('machine').build({
 
         sql = `${sql} UPDATE record WITH ${updatevalues} IN ${statement.tableName}`;
 
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+        sql = `${sql} OPTIONS { ignoreRevs: false, mergeObjects: ${
           mergeObjects ? 'true' : 'false'
         } }`;
         if (fetchRecords) {
@@ -248,7 +249,7 @@ module.exports = require('machine').build({
           sql = `${sql} FILTER ${statement.whereClause}`;
         }
         sql = `${sql} UPDATE record WITH ${updatevalues} IN ${statement.tableName}`;
-        sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+        sql = `${sql} OPTIONS { ignoreRevs: false, mergeObjects: ${
           mergeObjects ? 'true' : 'false'
         } }`;
         if (fetchRecords) {

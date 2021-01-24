@@ -172,7 +172,7 @@ module.exports = require('machine').build({
       INSERT ${insertvalues}
       UPDATE ${upsertvalues} IN ${statement.tableName}`;
 
-      sql = `${sql} OPTIONS { ignoreRevs: false, ignoreErrors: true, mergeObjects: ${
+      sql = `${sql} OPTIONS { ignoreRevs: false, mergeObjects: ${
         mergeObjects ? 'true' : 'false'
       } }`;
 
@@ -182,7 +182,7 @@ module.exports = require('machine').build({
 
       result = await dbConnection.query(sql);
       if (fetchRecords) {
-        updatedRecords = result._result.map(r => r.new);
+        updatedRecords = result._result.map((r) => r.new);
       }
     } catch (error) {
       if (dbConnection) {
@@ -219,7 +219,7 @@ module.exports = require('machine').build({
 
     try {
       await Helpers.connection.releaseConnection(dbConnection);
-      const newrecords = updatedRecords.map(record =>
+      const newrecords = updatedRecords.map((record) =>
         Helpers.query.processNativeRecord(record, WLModel, query.meta)
       );
       // Helpers.query.processNativeRecord(record.new, WLModel, query.meta);

@@ -218,6 +218,7 @@ const stringifyUpdateValues = (values, method, letObj = {}) => {
     }
   });
 
+  newvalues = _.uniq(newvalues);
   return `{${newvalues.join(', ')}}`;
 };
 
