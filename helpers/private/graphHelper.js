@@ -136,7 +136,7 @@ module.exports = {
     return true;
   },
 
-  sanitizeDb: async (manager, definitionsarray, dsName, exits) => {
+  sanitizeDb: async (manager, definitionsarray, dsName) => {
     const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
     await sleep(1000);
@@ -219,7 +219,10 @@ module.exports = {
 
       return true;
     } catch (error) {
-      return exits.error(error);
+      console.log('SANITIZE ERROR');
+      console.log('====================================');
+      console.log(error.toString());
+      console.log('====================================');
     }
   },
 };
