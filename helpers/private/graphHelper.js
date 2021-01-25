@@ -186,9 +186,8 @@ module.exports = {
 
             normalized = await dsModel(dsName).normalize(docParams);
             const isValid = validateSchema(model, schema, {
-              // ...normalized,
-              // _key,
-              ...params,
+              ...normalized,
+              _key,
             });
 
             if (isValid) {
@@ -201,7 +200,7 @@ module.exports = {
               );
             } else {
               console.log(
-                `Schema error for rec ${rec._id} in model ${model.tableName}`
+                `Schema error for rec ${_key} in model ${model.tableName}`
               );
               console.log('====================================');
               console.log(error.toString());

@@ -14,16 +14,23 @@ module.exports = function validateSchema(model, schema, document) {
         console.log(`Schema validation failed for model ${model.tableName}`);
         console.log('====================================');
         for (let errorObject of validate.errors) {
-          const fldName = `${errorObject.dataPath}`.split('/')[1];
-          console.log(
-            `${fldName} | ${errorObject.message} but got: ${typeof document[
-              fldName
-            ]}`,
-            {
-              [fldName]: document[fldName],
-              _key: document._key,
-            }
-          );
+          const fldName = `${errorObject.dataPath || model.tableName}`.split(
+            '/'
+          )[1];
+
+          if (fldName) {
+            console.log(
+              `${fldName} | ${errorObject.message} but got: ${typeof document[
+                fldName
+              ]}`,
+              {
+                [fldName]: document[fldName],
+                _key: document._key,
+              }
+            );
+          } else {
+            console.log(`${model.tableName} | ${errorObject.message}`);
+          }
         }
         console.log(validate.errors);
         throw new Error(
