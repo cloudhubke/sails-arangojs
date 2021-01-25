@@ -267,6 +267,9 @@ module.exports = require('machine').build({
         Helpers.connection.releaseConnection(dbConnection);
       }
 
+      const response = error.response || {};
+      const errorData = response.data || response.body || {};
+
       if (error.code === 409) {
         return exits.notUnique(
           flaverr(
@@ -278,7 +281,8 @@ module.exports = require('machine').build({
           )
         );
       }
-      return exits.badConnection(error);
+
+      return exits.badConnection(errorData || error);
     }
 
     // If `fetch` is NOT enabled, we're done.

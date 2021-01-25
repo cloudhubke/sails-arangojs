@@ -1,6 +1,6 @@
 {
   "name": "sails-arangojs",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
   "scripts": {
@@ -42,6 +42,7 @@
   "license": "MIT",
   "dependencies": {
     "@sailshq/lodash": "^3.10.2",
+    "ajv": "^7.0.3",
     "arangojs": "^6.11.1",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",

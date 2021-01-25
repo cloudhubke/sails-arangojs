@@ -10,6 +10,7 @@ module.exports = [
   'graph',
   'dbServices',
   'tenantType',
+  'sanitize',
   // SSL Options:
   'ssl',
   'sslValidate',

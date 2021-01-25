@@ -1,5 +1,14 @@
 const _ = require('@sailshq/lodash');
 const Helpers = require('./');
+const validateSchema = require('./schema/validate-schema');
+
+const sleep = (duration) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, duration);
+  });
+};
 
 module.exports = {
   constructGraph: async (manager, definitionsarray, exits) => {
@@ -125,5 +134,73 @@ module.exports = {
       return true;
     }
     return true;
+  },
+
+  sanitizeDb: async (manager, definitionsarray, dsName, exits) => {
+    const { graph, graphEnabled, dbConnection } = manager;
+
+    await sleep(1000);
+
+    try {
+      console.log(`Please wait as we try to check DB for Errors....`);
+      console.log('====================================');
+      for (let model of definitionsarray) {
+        console.log(`Checking ${model.tableName}...`);
+
+        // const properties = await collection.properties();
+        let aql = `
+          let colschema = SCHEMA_GET("${model.tableName}")
+        
+          FOR rec in ${model.tableName}
+              FILTER SCHEMA_VALIDATE(rec, colschema)!=true
+              RETURN {
+                rec,
+                colschema
+              }
+          `;
+        const cursor = await dbConnection.query(aql);
+
+        const records = cursor._result;
+
+        const dsModel = sails.models[`_${model.tableName}`];
+
+        for (let rec of records.slice(0, 2)) {
+          const {
+            colschema,
+            rec: { _key, _id, ...params },
+          } = rec;
+
+          const schema = (colschema || {}).rule;
+
+          try {
+            let docParams = {};
+            for (let key in params) {
+              if (Boolean(params[key]) || typeof params[key] === 'boolean') {
+                docParams[key] = params[key];
+              }
+            }
+
+            normalized = await dsModel(dsName).normalize(docParams);
+            const isValid = validateSchema(model, schema, {
+              ...normalized,
+              _key,
+            });
+            if (isValid) {
+              await dsModel(dsName).updateOne({ id: _key }).set(normalized);
+            }
+          } catch (error) {
+            if (error.toString().includes('Schema violation')) {
+              throw new Error(
+                `SCHEMA VALIDATION FAILED FOR DATASTORE ${dsName}`
+              );
+            }
+          }
+        }
+      }
+
+      return true;
+    } catch (error) {
+      return exits.error(error);
+    }
   },
 };

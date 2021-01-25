@@ -264,8 +264,11 @@ module.exports = require('machine').build({
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
           await graphHelper.constructGraph(manager, definitionsarray, exits);
-
           modelDefinitions[identity] = dbSchema;
+
+          if (config.sanitize) {
+            graphHelper.sanitizeDb(manager, definitionsarray, identity, exits);
+          }
           return exits.success({ datastores, modelDefinitions, config });
         } catch (e) {
           return exits.error(e);
