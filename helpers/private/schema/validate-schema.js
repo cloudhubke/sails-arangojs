@@ -2,7 +2,7 @@ const Ajv = require('ajv').default;
 
 const ajv = new Ajv();
 
-module.exports = async function validateSchema(model, schema, document) {
+module.exports = function validateSchema(model, schema, document) {
   try {
     if (schema) {
       schema.type = 'object';
@@ -30,6 +30,8 @@ module.exports = async function validateSchema(model, schema, document) {
           `\n\Sanitization of the model ${model.tableName} has failed\n\n`
         );
       }
+
+      return valid;
     } else {
       return true;
     }

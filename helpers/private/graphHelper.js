@@ -152,7 +152,8 @@ module.exports = {
           let colschema = SCHEMA_GET("${model.tableName}")
         
           FOR rec in ${model.tableName}
-              FILTER SCHEMA_VALIDATE(rec, colschema)!=true
+              let validation = SCHEMA_VALIDATE(rec, colschema)
+              FILTER validation.valid==false
               RETURN {
                 rec,
                 colschema
@@ -164,7 +165,10 @@ module.exports = {
 
         const dsModel = sails.models[`_${model.tableName}`];
 
-        for (let rec of records.slice(0, 2)) {
+        if (records.length > 0) {
+          console.log(`Found ${records.length} invalid records`);
+        }
+        for (let rec of records) {
           const {
             colschema,
             rec: { _key, _id, ...params },
@@ -182,9 +186,11 @@ module.exports = {
 
             normalized = await dsModel(dsName).normalize(docParams);
             const isValid = validateSchema(model, schema, {
-              ...normalized,
-              _key,
+              // ...normalized,
+              // _key,
+              ...params,
             });
+
             if (isValid) {
               await dsModel(dsName).updateOne({ id: _key }).set(normalized);
             }
@@ -193,7 +199,14 @@ module.exports = {
               throw new Error(
                 `SCHEMA VALIDATION FAILED FOR DATASTORE ${dsName}`
               );
+            } else {
+              console.log(
+                `Schema error for rec ${rec._id} in model ${model.tableName}`
+              );
+              console.log('====================================');
+              console.log(error.toString());
             }
+            throw new Error(`Error sanitizing model ${model.tableName}`);
           }
         }
       }
