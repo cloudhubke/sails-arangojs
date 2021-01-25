@@ -137,7 +137,7 @@ module.exports = {
   },
 
   sanitizeDb: async (manager, definitionsarray, dsName, exits) => {
-    const { graph, graphEnabled, dbConnection } = manager;
+    const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
     await sleep(1000);
 
@@ -147,21 +147,28 @@ module.exports = {
       for (let model of definitionsarray) {
         console.log(`Checking ${model.tableName}...`);
 
-        // const properties = await collection.properties();
-        let aql = `
-          let colschema = SCHEMA_GET("${model.tableName}")
-        
-          FOR rec in ${model.tableName}
-              let validation = SCHEMA_VALIDATE(rec, colschema)
-              FILTER validation.valid==false
-              RETURN {
-                rec,
-                colschema
-              }
-          `;
-        const cursor = await dbConnection.query(aql);
+        const records = await Transaction({
+          action: function ({ tableName }) {
+            let aql = `
+              let colschema = SCHEMA_GET("${tableName}")
+            
+              FOR rec in ${tableName}
+                  let validation = SCHEMA_VALIDATE(rec, colschema)
+                  FILTER validation.valid==false
+                  RETURN {
+                    rec,
+                    colschema
+                  }
+              `;
 
-        const records = cursor._result;
+            const result = db._query(aql);
+            return result._documents;
+          },
+          writes: [],
+          params: {
+            tableName: model.tableName,
+          },
+        });
 
         const dsModel = sails.models[`_${model.tableName}`];
 
