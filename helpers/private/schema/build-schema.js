@@ -137,9 +137,16 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         if (typeof rules.maxLength === 'number') {
           fldProps.maxLength = rules.maxLength;
         }
+        if (typeof rules.pattern === 'string') {
+          fldProps.pattern = rules.pattern;
+        }
+
+        if (typeof rules.format === 'format') {
+          fldProps.format = rules.format;
+        }
 
         for (let key in rules) {
-          if (!['minLength', 'maxLength'].includes(key)) {
+          if (!['minLength', 'maxLength', 'pattern', 'format'].includes(key)) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
@@ -167,9 +174,27 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         if (typeof rules.maximum === 'number') {
           fldProps.maximum = rules.maximum;
         }
+        if (typeof rules.exclusiveMinimum === 'number') {
+          fldProps.exclusiveMinimum = rules.exclusiveMinimum;
+        }
+        if (typeof rules.exclusiveMaximum === 'number') {
+          fldProps.exclusiveMaximum = rules.exclusiveMaximum;
+        }
+
+        if (typeof rules.multipleOf === 'number') {
+          fldProps.multipleOf = rules.multipleOf;
+        }
 
         for (let key in rules) {
-          if (!['minimum', 'maximum'].includes(key)) {
+          if (
+            ![
+              'minimum',
+              'maximum',
+              'exclusiveMaximum',
+              'exclusiveMinimum',
+              'multipleOf',
+            ].includes(key)
+          ) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
