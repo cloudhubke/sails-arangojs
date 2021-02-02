@@ -32,25 +32,25 @@ module.exports = function preProcessRecord(options) {
   //   ╚╝ ╩ ╩╩═╝╩═╩╝╩ ╩ ╩ ╚═╝  └─┘┴   ┴ ┴└─┘┘└┘└─┘
   if (_.isUndefined(options) || !_.isPlainObject(options)) {
     throw new Error(
-      'Invalid options argument. Options must contain: records, identity, and orm.',
+      'Invalid options argument. Options must contain: records, identity, and orm.'
     );
   }
 
   if (!_.has(options, 'records') || !_.isArray(options.records)) {
     throw new Error(
-      'Invalid option used in options argument. Missing or invalid records.',
+      'Invalid option used in options argument. Missing or invalid records.'
     );
   }
 
   if (!_.has(options, 'identity') || !_.isString(options.identity)) {
     throw new Error(
-      'Invalid option used in options argument. Missing or invalid identity.',
+      'Invalid option used in options argument. Missing or invalid identity.'
     );
   }
 
   if (!_.has(options, 'model') || !_.isPlainObject(options.model)) {
     throw new Error(
-      'Invalid option used in options argument. Missing or invalid model.',
+      'Invalid option used in options argument. Missing or invalid model.'
     );
   }
 
@@ -60,13 +60,13 @@ module.exports = function preProcessRecord(options) {
     const [toCollection, toDocument] = params.from.split('/');
     if (!fromCollection || !fromDocument) {
       throw new Error(
-        'Invalid option used in params argument. Missing `from` vertex or document.',
+        'Invalid option used in params argument. Missing `from` vertex or document.'
       );
     }
 
     if (!toCollection || !toDocument) {
       throw new Error(
-        'Invalid option used in params argument. Missing `to` vertex or document.',
+        'Invalid option used in params argument. Missing `to` vertex or document.'
       );
     }
   }
@@ -83,6 +83,8 @@ module.exports = function preProcessRecord(options) {
       if (!pkValue) {
         // remove the field
         delete record[primaryKeyColumnName];
+      } else {
+        record[primaryKeyColumnName] = `${pkValue}`.toLowerCase();
       }
       return record;
     });
