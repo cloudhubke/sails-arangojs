@@ -137,8 +137,10 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         if (typeof rules.maxLength === 'number') {
           fldProps.maxLength = rules.maxLength;
         }
-        if (typeof rules.pattern === 'string') {
-          fldProps.pattern = rules.pattern;
+
+        if (typeof rules.pattern === 'object') {
+          // prettier-ignore
+          fldProps.pattern = String(rules.pattern).replace('/^','^').replace('$/', '$');
         }
 
         if (typeof rules.format === 'format') {
