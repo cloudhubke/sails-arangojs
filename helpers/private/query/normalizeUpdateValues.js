@@ -20,7 +20,7 @@ const normalizeUpdateValues = (values, letObj = {}) => {
         .replace(/\\/g, '');
     }
     if (_.isString(val)) {
-      return `${SqlString.escape(val)}`;
+      return `${SqlString.escape(val)}`.trim();
     }
     if (Number(val)) {
       return val;

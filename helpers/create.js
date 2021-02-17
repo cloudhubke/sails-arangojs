@@ -60,6 +60,7 @@ module.exports = require('machine').build({
 
   fn: async function create(inputs, exits) {
     // Dependencies
+
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
     // Store the Query input for easier access

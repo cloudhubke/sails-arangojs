@@ -228,6 +228,21 @@ module.exports = async function buildSchema(tableName, definition, collection) {
 
         if (rules.items && _.isPlainObject(rules.items)) {
           fldProps.items = { ...rules.items };
+
+          if (fldProps.items.required && _.isArray(fldProps.items.required)) {
+            fldProps.items.required = [...fldProps.items.required].filter(
+              (r) => r !== '_key' && r !== '_id'
+            );
+
+            for (let r of fldProps.items.required) {
+              if (!fldProps.items.properties[r]) {
+                throw new Error(
+                  `${r} rules property ${r} in array items of ${tableName}.${fldName} is not included in the rules properties      
+                    `
+                );
+              }
+            }
+          }
         }
         if (rules.items && _.isArray(rules.items)) {
           fldProps.items = { ...rules.items };
@@ -274,7 +289,9 @@ module.exports = async function buildSchema(tableName, definition, collection) {
           }
 
           if (rules.required && _.isArray(rules.required)) {
-            fldProps.required = [...rules.required];
+            fldProps.required = [...rules.required].filter(
+              (r) => r !== '_key' && r !== '_id'
+            );
 
             for (let r of fldProps.required) {
               if (!fldProps.properties[r]) {

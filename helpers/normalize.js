@@ -60,6 +60,7 @@ module.exports = require('machine').build({
 
   fn: async function normalize(inputs, exits) {
     // Dependencies
+    const validateSchema = require('./private/schema/validate-schema');
     const Helpers = require('./private');
     // Store the Query input for easier access
     const { query } = inputs;
@@ -120,13 +121,31 @@ module.exports = require('machine').build({
     let normalizedRecord = {};
 
     try {
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Model the query OR INSERT USING THE  Query Builder! 👍🏽
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -å
+      const { Transaction } = Helpers.connection.getConnection(
+        inputs.datastore,
+        query.meta
+      );
+
+      const aql = `RETURN SCHEMA_GET("${statement.tableName}")`;
+
+      const schema = await Transaction({
+        action: function ({ aql }) {
+          const result = db._query(aql).toArray()[0];
+          return result.rule;
+        },
+        writes: [],
+        params: {
+          aql,
+        },
+      });
 
       // Execute sql using the driver acquired graph.
 
       normalizedRecord = statement.values;
+
+      validateSchema(WLModel, schema, {
+        ...normalizedRecord,
+      });
     } catch (err) {
       return exits.badConnection(err);
     }
@@ -135,7 +154,7 @@ module.exports = require('machine').build({
       Helpers.query.processNativeRecord(normalizedRecord, WLModel, query.meta);
     } catch (error) {
       return exits.invalidDatastore(
-        'Records could not math with your model attributes',
+        'Records could not math with your model attributes'
       );
     }
 
