@@ -211,6 +211,12 @@ module.exports = {
           };
 
           const dbServices = dbservices;
+          // make it global
+          let constructorNames = [];
+          for (key in dbServices) {
+            constructorNames.push(key);
+            global[key] = dbServices[key]();
+          }
 
           const returnFunction = func;
 
