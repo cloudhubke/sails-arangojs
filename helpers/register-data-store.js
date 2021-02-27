@@ -207,6 +207,7 @@ module.exports = require('machine').build({
 
           const dbSchema = {};
           const definitionsarray = [];
+
           _.each(models, (modelinfo) => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
 
@@ -233,6 +234,10 @@ module.exports = require('machine').build({
               definition: modelinfo.definition,
               tableName: modelinfo.tableName,
               identity: modelinfo.identity,
+              globalId: modelinfo.globalId,
+              ModelObjectConstructor: modelinfo.ModelObjectConstructor,
+              keyProps: modelinfo.keyProps,
+              cache: modelinfo.cache,
             };
 
             if (modelinfo.classType === 'Edge') {
@@ -242,6 +247,10 @@ module.exports = require('machine').build({
             dbSchema[modelinfo.tableName] = definition;
             if (!config.tenantType) {
               config.tenantType = 'default';
+            }
+
+            if (modelinfo.tableName === 'supplier') {
+              // console.log('SUP', modelinfo.tenantType, config.tenantType);
             }
 
             if (modelinfo.tenantType.includes(config.tenantType)) {
@@ -264,11 +273,15 @@ module.exports = require('machine').build({
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
           await graphHelper.constructGraph(manager, definitionsarray, exits);
+
           modelDefinitions[identity] = dbSchema;
 
           if (config.sanitize) {
             graphHelper.sanitizeDb(manager, definitionsarray, identity, exits);
           }
+
+          graphHelper.buildObjects(manager, definitionsarray, identity);
+
           return exits.success({ datastores, modelDefinitions, config });
         } catch (e) {
           return exits.error(e);

@@ -1,6 +1,7 @@
 const _ = require('@sailshq/lodash');
 const Helpers = require('./');
 const validateSchema = require('./schema/validate-schema');
+const ObjectMethods = require('./schema/ObjectMethods');
 
 const sleep = (duration) => {
   return new Promise((resolve) => {
@@ -9,6 +10,8 @@ const sleep = (duration) => {
     }, duration);
   });
 };
+
+let registeredObjectModels = [];
 
 module.exports = {
   constructGraph: async (manager, definitionsarray, exits) => {
@@ -136,10 +139,43 @@ module.exports = {
     return true;
   },
 
+  buildObjects: async function buildObjects(manager, definitionsarray, dsName) {
+    try {
+      const { graph, graphEnabled, dbConnection, Transaction } = manager;
+
+      // if (dsName === 'foodchainer-instaveg') {
+      //   console.log(Object.keys(sails.models));
+      // }
+
+      for (let model of definitionsarray) {
+        if (
+          !registeredObjectModels.includes(model.globalId) &&
+          model.globalId &&
+          model.ModelObjectConstructor
+        ) {
+          Object.assign(
+            model.ModelObjectConstructor,
+            ObjectMethods(model.globalId, model.keyProps, Boolean(model.cache))
+          );
+
+          // console.log(`Checking`, model);
+
+          registeredObjectModels.push(model.globalId);
+        }
+      }
+    } catch (error) {
+      console.log('OBJECTS ERROR');
+      console.log('====================================');
+      console.log(error.toString());
+      console.log('====================================');
+      throw error;
+    }
+  },
+
   sanitizeDb: async (manager, definitionsarray, dsName) => {
     const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
-    await sleep(1000);
+    await sleep(2000);
 
     try {
       console.log(`Please wait as we try to check DB for Errors....`);
@@ -223,6 +259,7 @@ module.exports = {
       console.log('====================================');
       console.log(error.toString());
       console.log('====================================');
+      throw error;
     }
   },
 };

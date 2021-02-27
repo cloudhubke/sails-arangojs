@@ -69,7 +69,7 @@ module.exports = require('machine').build({
     try {
       const { dbConnection } = Helpers.connection.getConnection(
         inputs.datastore,
-        inputs.meta,
+        inputs.meta
       );
 
       const { tableName } = inputs;
