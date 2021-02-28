@@ -27,7 +27,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             const unique = Boolean(attribute.unique);
             // attribute.unique, allowNull, etc
             if (attribute && unique && !attribute.primaryKey) {
-              await collection.createHashIndex(`${name}`, {
+              const ind = await collection.createHashIndex(`${name}`, {
                 unique: true,
                 sparse: Boolean(!attribute.required),
               });
@@ -82,22 +82,22 @@ module.exports = async function buildSchema(tableName, definition, collection) {
   const modelIndexes = await collection.indexes();
   createdIndexes = createdIndexes.filter((i) => !!i);
 
-  // Delete indexes when they are removed from model
-  for (let fld of modelIndexes) {
-    if (fld.fields.length === 1) {
-      const indexfield = fld.fields.join('');
-      if (indexfield !== '_key') {
-        if (!createdIndexes.includes(indexfield)) {
-          await collection.dropIndex(fld.name);
-        }
-      }
-    } else {
-      const indexfield = fld.fields.join('');
-      if (indexfield !== '_from_to') {
-        await collection.dropIndex(fld);
-      }
-    }
-  }
+  // // Delete indexes when they are removed from model
+  // for (let fld of modelIndexes) {
+  //   if (fld.fields.length === 1) {
+  //     const indexfield = fld.fields.join('');
+  //     if (indexfield !== '_key') {
+  //       if (!createdIndexes.includes(indexfield)) {
+  //         await collection.dropIndex(fld.name);
+  //       }
+  //     }
+  //   } else {
+  //     const indexfield = fld.fields.join('');
+  //     if (indexfield !== '_from_to') {
+  //       await collection.dropIndex(fld);
+  //     }
+  //   }
+  // }
 
   // Build up a string of column attributes
 

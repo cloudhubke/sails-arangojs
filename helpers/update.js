@@ -259,7 +259,9 @@ module.exports = require('machine').build({
         result = await dbConnection.query(sql);
 
         if (fetchRecords) {
-          updatedRecords = result._result.map((r) => r.new);
+          updatedRecords = result._result.map((r) =>
+            global[`${WLModel.globalId}Object`].initialize(r.new)
+          );
         }
       }
     } catch (error) {

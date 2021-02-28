@@ -183,7 +183,10 @@ module.exports = require('machine').build({
 
         const opts = { returnNew: fetchRecords };
         const result = await collection.save(statement.values, opts);
-        createdRecord = result.new;
+
+        createdRecord = global[`${WLModel.globalId}Object`].initialize(
+          result.new
+        );
       }
     } catch (err) {
       if (graph) {

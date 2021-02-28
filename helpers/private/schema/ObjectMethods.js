@@ -133,10 +133,10 @@ module.exports = (globalId, keyProps = [], saveToCache = false) => ({
         }
       }
 
-      for (let prop of keyProps) {
+      for (let prop in otherprops) {
         if (otherprops[prop] && !doc) {
           if (dsName) {
-            doc = await global[_`${globalId}`](dsName).findOne({
+            doc = await global[`_${globalId}`](dsName).findOne({
               [prop]: otherprops[prop],
             });
           } else {
@@ -145,6 +145,22 @@ module.exports = (globalId, keyProps = [], saveToCache = false) => ({
             });
           }
         }
+      }
+
+      if (doc) {
+        return global[`${globalId}Object`].initialize(doc);
+      }
+
+      return null;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  initialize: function initialize(doc, dsName) {
+    try {
+      if (doc instanceof global[`${globalId}Object`]) {
+        return doc;
       }
 
       let docObj;

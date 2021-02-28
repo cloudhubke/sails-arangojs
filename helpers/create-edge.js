@@ -76,19 +76,19 @@ module.exports = require('machine').build({
 
     if (_.isUndefined(params) || !_.isPlainObject(params)) {
       throw new Error(
-        'Invalid options argument. Options must contain: records, identity, and orm.',
+        'Invalid options argument. Options must contain: records, identity, and orm.'
       );
     }
     // Check for params to, and from
     if (!_.has(params, 'to') || !_.isString(params.to)) {
       throw new Error(
-        'Invalid option used in options argument. Missing or invalid `to` parameter in params boject.',
+        'Invalid option used in options argument. Missing or invalid `to` parameter in params boject.'
       );
     }
 
     if (!_.has(params, 'from') || !_.isString(params.from)) {
       throw new Error(
-        'Invalid option used in options argument. Missing or invalid `from` parameter in the params object.',
+        'Invalid option used in options argument. Missing or invalid `from` parameter in the params object.'
       );
     }
 
@@ -166,7 +166,7 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     let createdRecord = {};
@@ -187,7 +187,7 @@ module.exports = require('machine').build({
 
       if (!fromExists) {
         return exits.invalidVertex(
-          'The `from` document in the created vertex does not exist ',
+          'The `from` document in the created vertex does not exist '
         );
       }
 
@@ -196,19 +196,22 @@ module.exports = require('machine').build({
 
       if (!toExists) {
         return exits.invalidVertex(
-          'The `to` document in the created vertex does not exist ',
+          'The `to` document in the created vertex does not exist '
         );
       }
 
       const opts = { returnNew: fetchRecords };
       const collection = dbConnection.edgeCollection(`${statement.tableName}`);
+
       const result = await collection.save(
         { ...statement.values, _from: params.from, _to: params.to },
-        opts,
+        opts
       );
 
       if (fetchRecords) {
-        createdRecord = result.new;
+        createdRecord = global[`${WLModel.globalId}Object`].initialize(
+          result.new
+        );
       }
     } catch (err) {
       if (dbConnection) {
@@ -227,7 +230,7 @@ module.exports = require('machine').build({
       Helpers.query.processNativeRecord(createdRecord, WLModel, query.meta);
     } catch (error) {
       return exits.invalidDatastore(
-        'Records could not math with your model attributes ',
+        'Records could not math with your model attributes '
       );
     }
 

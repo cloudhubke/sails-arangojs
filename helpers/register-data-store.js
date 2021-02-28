@@ -76,6 +76,7 @@ module.exports = require('machine').build({
     const _ = require('@sailshq/lodash');
     const ArangoDb = require('../private/machinepack-arango');
     const graphHelper = require('./private/graphHelper');
+    const ObjectMethods = require('./private/schema/ObjectMethods');
     // var Helpers = require('./private');
 
     // Validate that the datastore isn't already initialized
@@ -239,6 +240,27 @@ module.exports = require('machine').build({
               keyProps: modelinfo.keyProps,
               cache: modelinfo.cache,
             };
+
+            const ModelObjectName = `${modelinfo.globalId}Object`;
+            if (!global[ModelObjectName]) {
+              global[ModelObjectName] = new Function(
+                `return function ${ModelObjectName}(dsName){
+                  if(dsName && dsName!=='default'){
+                    this.constructor.prototype.tenantcode = dsName;
+                    this.constructor.prototype.merchantcode = dsName;
+                  }
+                };`
+              )();
+
+              Object.assign(
+                global[ModelObjectName],
+                ObjectMethods(
+                  modelinfo.globalId,
+                  modelinfo.keyProps,
+                  Boolean(modelinfo.cache)
+                )
+              );
+            }
 
             if (modelinfo.classType === 'Edge') {
               definition.edgeDefinition = modelinfo.edgeDefinition || {};

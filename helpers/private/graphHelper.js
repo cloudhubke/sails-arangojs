@@ -112,12 +112,12 @@ module.exports = {
                 collection
               );
 
-              await Helpers.schema.buildIndexes(
-                model.indexes,
-                model.tableName,
-                model,
-                collection
-              );
+              // await Helpers.schema.buildIndexes(
+              //   model.indexes,
+              //   model.tableName,
+              //   model,
+              //   collection
+              // );
 
               if (!_.includes(collections, model.tableName)) {
                 try {

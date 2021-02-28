@@ -159,7 +159,7 @@ module.exports = require('machine').build({
 
     try {
       result = await Transaction({
-        action: function(params) {
+        action: function (params) {
           const col = db._collection(params.collection);
           const results = col.insert(params.values, params.options);
 
@@ -194,9 +194,11 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
-    const createdRecords = result.map(r => r.new);
+    const createdRecords = result.map((r) =>
+      global[`${WLModel.globalId}Object`].initialize(r.new)
+    );
     try {
-      _.each(createdRecords, record => {
+      _.each(createdRecords, (record) => {
         Helpers.query.processNativeRecord(record, WLModel, query.meta);
       });
     } catch (e) {

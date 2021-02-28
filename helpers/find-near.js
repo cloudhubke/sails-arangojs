@@ -174,9 +174,11 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = cursor._result.map((r) =>
-      r.record ? { ...r.record, distance: r.distance } : r
-    );
+    const selectRecords = cursor._result.map((r) => {
+      const doc = r.record ? { ...r.record, distance: r.distance } : r;
+      return global[`${WLModel.globalId}Object`].initialize(doc);
+    });
+
     try {
       _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);

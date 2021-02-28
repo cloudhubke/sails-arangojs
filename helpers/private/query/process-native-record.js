@@ -21,21 +21,21 @@ const _ = require('@sailshq/lodash');
 
 module.exports = function processNativeRecord(
   nativeRecord,
-  WLModel /* , meta */,
+  WLModel /* , meta */
 ) {
   assert(!_.isUndefined(nativeRecord), '1st argument is required');
   assert(
-    _.isObject(nativeRecord)
-      && !_.isArray(nativeRecord)
-      && !_.isFunction(nativeRecord),
-    '1st argument must be a dictionary',
+    _.isObject(nativeRecord) &&
+      !_.isArray(nativeRecord) &&
+      !_.isFunction(nativeRecord),
+    '1st argument must be a dictionary'
   );
   assert(!_.isUndefined(WLModel), '2nd argument is required');
   assert(
-    _.isObject(nativeRecord)
-      && !_.isArray(nativeRecord)
-      && !_.isFunction(nativeRecord),
-    '2nd argument must be a WLModel, and it has to have a `definition` property for this utility to work.',
+    _.isObject(nativeRecord) &&
+      !_.isArray(nativeRecord) &&
+      !_.isFunction(nativeRecord),
+    '2nd argument must be a WLModel, and it has to have a `definition` property for this utility to work.'
   );
 
   // Grab the pk column name (for use below)
