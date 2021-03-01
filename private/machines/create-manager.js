@@ -111,12 +111,6 @@ module.exports = {
       }
     });
 
-    if (config.identity === 'default') {
-      console.log('====================================');
-      console.log(dbObjects);
-      console.log('====================================');
-    }
-
     const dbConnection = new Database({
       url: `http://${config.host}:${config.port || 8529}`,
     });
