@@ -67,7 +67,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
           params.Email = `${params.Email}`.toLocaleLowerCase().trim();
         }
 
-        const obj = await global[`${globalId}Object`][`find${globalId}`](
+        const doc = await global[`${globalId}Object`][`find${globalId}`](
           {
             id: params.id,
           },
