@@ -149,6 +149,13 @@ module.exports = require('machine').build({
         collection
       );
 
+      await Helpers.schema.buildIndexes(
+        inputs.indexes || inputs.model ? inputs.model.indexes : [],
+        tableName,
+        inputs.definition,
+        collection
+      );
+
       Helpers.connection.releaseConnection(dbConnection);
 
       return exits.success(result);

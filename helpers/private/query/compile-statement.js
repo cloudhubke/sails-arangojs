@@ -128,12 +128,15 @@ module.exports = function compileStatement(options) {
         return !_.includes(arr, f);
       });
       if (!_.includes(fields, pkColumnName)) {
-        fields = [...vals, pkColumnName];
+        fields = [...fields, pkColumnName];
+      }
+      if (!_.includes(fields, '_id')) {
+        fields = [...fields, '_id'];
       }
       return fields;
     }
 
-    return [pkColumnName];
+    return [pkColumnName, '_id'];
   }
 
   function getNumericAttrName() {

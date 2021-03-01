@@ -106,18 +106,19 @@ module.exports = {
               if (!collectionExists) {
                 await collection.create();
               }
+
               await Helpers.schema.buildSchema(
                 model.tableName,
                 model,
                 collection
               );
 
-              // await Helpers.schema.buildIndexes(
-              //   model.indexes,
-              //   model.tableName,
-              //   model,
-              //   collection
-              // );
+              await Helpers.schema.buildIndexes(
+                model.indexes,
+                model.tableName,
+                model,
+                collection
+              );
 
               if (!_.includes(collections, model.tableName)) {
                 try {
@@ -148,6 +149,19 @@ module.exports = {
       // }
 
       for (let model of definitionsarray) {
+        let keyProps = [...model.keyProps];
+
+        for (let key in model.attributes) {
+          const autoMigrations = model.attributes[key].autoMigrations || {};
+          const unique = Boolean(autoMigrations.unique);
+
+          if (unique) {
+            keyProps.push(key);
+          }
+        }
+
+        keyProps = _.uniq(keyProps);
+
         if (
           !registeredObjectModels.includes(model.globalId) &&
           model.globalId &&
@@ -155,7 +169,7 @@ module.exports = {
         ) {
           Object.assign(
             model.ModelObjectConstructor,
-            ObjectMethods(model.globalId, model.keyProps, Boolean(model.cache))
+            ObjectMethods(model.globalId, keyProps, Boolean(model.cache))
           );
 
           // console.log(`Checking`, model);

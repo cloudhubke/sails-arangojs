@@ -22,11 +22,13 @@
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
   "env": {
-    "node": true
+    "node": true,
+    "es6": true
   },
 
   "parserOptions": {
-    "ecmaVersion": 8
+    "ecmaVersion": 2020,
+    "sourceType": "module"
   },
 
   "globals": {
@@ -67,13 +69,6 @@
     "camelcase": 0,
     "prefer-destructuring": 0,
     "func-names": 0,
-    "space-before-function-paren": 0,
-    "settings": {
-      "import/resolver": {
-        "node": {
-          "moduleDirectory": ["node_modules", "./reactapp/app"]
-        }
-      }
-    }
+    "space-before-function-paren": 0
   }
 }

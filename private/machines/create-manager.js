@@ -1,3 +1,6 @@
+const { isGeneratedAqlQuery } = require('arangojs/lib/cjs/aql-query');
+const DbObject = require('./DbObject');
+
 /* eslint-disable */
 module.exports = {
   friendlyName: 'Create manager',
@@ -11,6 +14,12 @@ module.exports = {
   inputs: {
     config: {
       description: 'The Arango Db Connection Object',
+      example: '===',
+      required: true,
+    },
+
+    models: {
+      description: 'The models defined for the db connection',
       example: '===',
       required: true,
     },
@@ -79,9 +88,34 @@ module.exports = {
     },
   },
 
-  async fn({ config /* meta */ }, exits) {
+  async fn({ config, models /* meta */ }, exits) {
     const { Database, aql } = require('arangojs');
     const _ = require('@sailshq/lodash');
+
+    let dbObjects = ``;
+    _.each(models, (model) => {
+      let keyProps = model.keyProps;
+
+      for (let key in model.definition) {
+        const autoMigrations = model.definition[key].autoMigrations || {};
+        const unique = Boolean(autoMigrations.unique);
+
+        if (unique) {
+          keyProps.push(key);
+        }
+      }
+      keyProps = _.uniq(keyProps);
+
+      if (model.tenantType.includes(config.tenantType)) {
+        dbObjects = `${dbObjects}${DbObject(model.globalId, keyProps)}\n\n`;
+      }
+    });
+
+    if (config.identity === 'default') {
+      console.log('====================================');
+      console.log(dbObjects);
+      console.log('====================================');
+    }
 
     const dbConnection = new Database({
       url: `http://${config.host}:${config.port || 8529}`,
@@ -210,13 +244,10 @@ module.exports = {
             return arangoRequest(requestOptions);
           };
 
+          dbObjects;
+
           const dbServices = dbservices;
           // make it global
-          let constructorNames = [];
-          for (key in dbServices) {
-            constructorNames.push(key);
-            global[key] = dbServices[key]();
-          }
 
           const returnFunction = func;
 
@@ -229,6 +260,7 @@ module.exports = {
             write: _.uniq([...writes, '_jobs']),
           },
           `${fanction}`
+            .replace('dbObjects;', dbObjects)
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
           {
@@ -236,6 +268,7 @@ module.exports = {
               ...params,
               SystemSettings: getSystemSettings(),
               bearerToken,
+              dbObjects,
             },
             waitForSync: true,
             ...options,

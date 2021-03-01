@@ -146,6 +146,7 @@ module.exports = require('machine').build({
 
     return ArangoDb.createManager({
       config,
+      models,
       meta: _.omit(config, ['adapter', 'url', 'identity', 'schema']),
     }).switch({
       error(err) {
@@ -252,11 +253,25 @@ module.exports = require('machine').build({
                 };`
               )();
 
+              let keyProps = [...modelinfo.keyProps];
+
+              for (let key in modelinfo.definition) {
+                const autoMigrations =
+                  modelinfo.definition[key].autoMigrations || {};
+                const unique = Boolean(autoMigrations.unique);
+
+                if (unique) {
+                  keyProps.push(key);
+                }
+              }
+
+              keyProps = _.uniq(keyProps);
+
               Object.assign(
                 global[ModelObjectName],
                 ObjectMethods(
                   modelinfo.globalId,
-                  modelinfo.keyProps,
+                  keyProps,
                   Boolean(modelinfo.cache)
                 )
               );
@@ -269,10 +284,6 @@ module.exports = require('machine').build({
             dbSchema[modelinfo.tableName] = definition;
             if (!config.tenantType) {
               config.tenantType = 'default';
-            }
-
-            if (modelinfo.tableName === 'supplier') {
-              // console.log('SUP', modelinfo.tenantType, config.tenantType);
             }
 
             if (modelinfo.tenantType.includes(config.tenantType)) {
