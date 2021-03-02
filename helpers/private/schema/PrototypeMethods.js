@@ -21,7 +21,7 @@ module.exports = (globalId) => {
               .set({ ...updateValues });
           }
 
-          this.reinitialize(updatedDoc);
+          this.reInitialize(updatedDoc);
         } else {
           throw new Error(`Dbo update function expects a callback`);
         }
@@ -30,21 +30,34 @@ module.exports = (globalId) => {
       }
     },
 
-    reInitialize: function reinitialize(doc) {
+    reInitialize: function reInitialize(doc) {
       try {
-        for (let key in doc) {
+        for (let key of Object.keys(doc)) {
           this[key] = doc[key];
         }
 
+        if (!Object.getOwnPropertyNames(this).includes('keyProps')) {
+          Object.defineProperty(this, 'keyProps', {
+            get: () => {
+              return this.getKeyProps();
+            },
+          });
+        }
+      } catch (error) {
+        throw error;
+      }
+    },
+    getKeyProps: function getKeyProps() {
+      try {
         let props = {};
-        for (let prop of this.keyProps) {
-          props[prop] = doc[prop];
+        for (let prop of global[`${globalId}Object`].keyProps) {
+          props[prop] = this[prop];
         }
 
-        this.constructor.prototype.keyProps = {
+        return {
           ...props,
-          id: doc.id || doc._key,
-          _id: doc._id,
+          id: this.id || this._key,
+          _id: this._id,
         };
       } catch (error) {
         throw error;

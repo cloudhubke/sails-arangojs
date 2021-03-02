@@ -173,11 +173,8 @@ module.exports = {
             keyProps,
             Boolean(model.cache)
           );
-          const DefaultPrototypeMethods = PrototypeMethods(
-            model.globalId,
-            keyProps,
-            Boolean(model.cache)
-          );
+
+          const DefaultPrototypeMethods = PrototypeMethods(model.globalId);
 
           for (let m of Object.keys(model.ModelObjectConstructor)) {
             delete DefaultStaticMethods[m];

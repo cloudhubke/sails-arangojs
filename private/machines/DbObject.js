@@ -24,11 +24,13 @@ module.exports = (globalId, keyProps) => {
 
     initialize: function (doc) {
       if (doc instanceof globalIdDbo) {
+        //Re Initialize
+        doc.reInitialize(doc);
         return doc;
       }
 
       const obj = new globalIdDbo();
-      for (let key in doc) {
+      for (let key of Object.keys(doc)) {
         obj[key] = doc[key];
         obj.id = doc._key;
       }
@@ -38,11 +40,11 @@ module.exports = (globalId, keyProps) => {
         props[prop] = doc[prop];
       }
 
-      obj.constructor.prototype.keyProps = {
-        ...props,
-        id: obj._key,
-        _id: obj._id,
-      };
+      Object.defineProperty(obj, 'keyProps', {
+        get: () => {
+          return obj.getKeyProps();
+        },
+      });
 
       return obj;
     },
@@ -66,7 +68,36 @@ module.exports = (globalId, keyProps) => {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   });
 
+  const prototypes = () => ({
+    getKeyProps: function getKeyProps() {
+      let props = {};
+      for (let prop of this.constructor.keyProps) {
+        props[prop] = this[prop];
+      }
+
+      return {
+        ...props,
+        id: this._key,
+        _id: this._id,
+      };
+    },
+    reInitialize: function (doc) {
+      for (let key of Object.keys(doc)) {
+        this[key] = doc[key];
+      }
+
+      if (!Object.getOwnPropertyNames(this).includes('keyProps')) {
+        Object.defineProperty(this, 'keyProps', {
+          get: () => {
+            return this.getKeyProps();
+          },
+        });
+      }
+    },
+  });
+
   Object.assign(global[`${globalId}Dbo`], methods());
+  Object.assign(global[`${globalId}Dbo`].prototype, prototypes());
 
   const objString = `${getObject(globalId)}\n`;
 
@@ -88,12 +119,6 @@ module.exports = (globalId, keyProps) => {
       global[`${globalId}Dbo`].prototype[key]
     )}\n`;
   }
-
-  // if (globalId === 'Merchant') {
-  //   console.log('====================================');
-  //   console.log(`${objString}${methodsString}${protypesString}`);
-  //   console.log('====================================');
-  // }
 
   return `${objString}${methodsString}${protypesString}`;
 };

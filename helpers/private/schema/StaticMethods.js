@@ -98,12 +98,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
               ] = null;
             }
           }
-          const doc = await global[`${globalId}Object`][`get${globalId}`](
-            {
-              ...newdoc,
-            },
-            dsName
-          );
+          const doc = global[`${globalId}Object`].initialize(newdoc, dsName);
 
           return doc;
         }
@@ -141,6 +136,9 @@ module.exports = (globalId, keyProps, saveToCache) => {
         }
 
         if (doc) {
+          if (dsName) {
+            return global[`${globalId}Object`].initialize(doc, dsName);
+          }
           return global[`${globalId}Object`].initialize(doc);
         }
 
@@ -153,6 +151,11 @@ module.exports = (globalId, keyProps, saveToCache) => {
     initialize: function initialize(doc, dsName) {
       try {
         if (doc instanceof global[`${globalId}Object`]) {
+          if (dsName && !doc.tenantcode) {
+            doc.tenantcode = dsName;
+          }
+
+          doc.reInitialize(doc);
           return doc;
         }
 
@@ -164,20 +167,15 @@ module.exports = (globalId, keyProps, saveToCache) => {
             docObj = new global[`${globalId}Object`]();
           }
 
-          for (let key in doc) {
+          for (let key of Object.keys(doc)) {
             docObj[key] = doc[key];
           }
 
-          let props = {};
-          for (let prop of global[`${globalId}Object`].keyProps) {
-            props[prop] = doc[prop];
-          }
-
-          docObj.constructor.prototype.keyProps = {
-            ...props,
-            id: doc.id || doc._key,
-            _id: doc._id,
-          };
+          Object.defineProperty(docObj, 'keyProps', {
+            get: () => {
+              return docObj.getKeyProps();
+            },
+          });
         }
 
         return docObj;
