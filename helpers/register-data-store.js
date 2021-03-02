@@ -76,7 +76,7 @@ module.exports = require('machine').build({
     const _ = require('@sailshq/lodash');
     const ArangoDb = require('../private/machinepack-arango');
     const graphHelper = require('./private/graphHelper');
-    const ObjectMethods = require('./private/schema/ObjectMethods');
+    const StaticMethods = require('./private/schema/StaticMethods');
     // var Helpers = require('./private');
 
     // Validate that the datastore isn't already initialized
@@ -269,7 +269,7 @@ module.exports = require('machine').build({
 
               Object.assign(
                 global[ModelObjectName],
-                ObjectMethods(
+                StaticMethods(
                   modelinfo.globalId,
                   keyProps,
                   Boolean(modelinfo.cache)

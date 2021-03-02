@@ -61,7 +61,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
       }
     },
 
-    [`createOrUpdate${globalId}`]: async function (params, dsName) {
+    [`create${globalId}`]: async function (params, dsName) {
       try {
         if (params.Email) {
           params.Email = `${params.Email}`.toLocaleLowerCase().trim();
@@ -74,29 +74,16 @@ module.exports = (globalId, keyProps, saveToCache) => {
           dsName
         );
 
+        if (doc) {
+          throw new Error(`Document with same id already exists`);
+        }
+
         let newdoc;
 
-        if (doc && doc.id) {
-          // update
-          if (dsName) {
-            newdoc = await global[`_${globalId}`](dsName)
-              .updateOne({ id: doc.id })
-              .set({
-                ...params,
-              });
-          } else {
-            newdoc = await global[globalId].updateOne({ id: doc.id }).set({
-              ...params,
-            });
-          }
+        if (dsName) {
+          newdoc = await global[`_${globalId}`](dsName).create(params).fetch();
         } else {
-          if (dsName) {
-            newdoc = await global[`_${globalId}`](dsName)
-              .create(params)
-              .fetch();
-          } else {
-            newdoc = await global[globalId].create(params).fetch();
-          }
+          newdoc = await global[globalId].create(params).fetch();
         }
 
         if (newdoc) {
@@ -115,8 +102,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
             {
               ...newdoc,
             },
-            dsName,
-            saveToCache
+            dsName
           );
 
           return doc;

@@ -1,7 +1,8 @@
 const _ = require('@sailshq/lodash');
 const Helpers = require('./');
 const validateSchema = require('./schema/validate-schema');
-const ObjectMethods = require('./schema/ObjectMethods');
+const StaticMethods = require('./schema/StaticMethods');
+const PrototypeMethods = require('./schema/PrototypeMethods');
 
 const sleep = (duration) => {
   return new Promise((resolve) => {
@@ -167,9 +168,29 @@ module.exports = {
           model.globalId &&
           model.ModelObjectConstructor
         ) {
+          const DefaultStaticMethods = StaticMethods(
+            model.globalId,
+            keyProps,
+            Boolean(model.cache)
+          );
+          const DefaultPrototypeMethods = PrototypeMethods(
+            model.globalId,
+            keyProps,
+            Boolean(model.cache)
+          );
+
+          for (let m of Object.keys(model.ModelObjectConstructor)) {
+            delete DefaultStaticMethods[m];
+          }
+
+          for (let m of Object.keys(model.ModelObjectConstructor.prototype)) {
+            delete DefaultPrototypeMethods[m];
+          }
+
+          Object.assign(model.ModelObjectConstructor, DefaultStaticMethods);
           Object.assign(
-            model.ModelObjectConstructor,
-            ObjectMethods(model.globalId, keyProps, Boolean(model.cache))
+            model.ModelObjectConstructor.prototype,
+            DefaultPrototypeMethods
           );
 
           // console.log(`Checking`, model);
