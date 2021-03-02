@@ -5,6 +5,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     globalId,
+    tableName: `${globalId}`.toLocaleLowerCase(),
     keyProps,
     saveToCache,
     [`Available${globalId}s`]: {},

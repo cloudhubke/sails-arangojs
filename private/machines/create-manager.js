@@ -1,6 +1,10 @@
 const { isGeneratedAqlQuery } = require('arangojs/lib/cjs/aql-query');
 const DbObject = require('./DbObject');
 
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
 /* eslint-disable */
 module.exports = {
   friendlyName: 'Create manager',
@@ -92,7 +96,32 @@ module.exports = {
     const { Database, aql } = require('arangojs');
     const _ = require('@sailshq/lodash');
 
-    let dbObjects = ``;
+    const modelCases = () => {
+      let caseStr = '';
+      _.each(models, (model) => {
+        caseStr = `${caseStr}case '${model.globalId}': {\nreturn ${model.globalId}Dbo.get${model.globalId}({_id})\n}\n\n`;
+      });
+      return caseStr;
+    };
+
+    let getDocument = `
+        String.prototype.capitalize = function () {
+          return this.charAt(0).toUpperCase() + this.slice(1);
+        };
+        const getDocument = function({_id}){
+          let coll=_id.split('/')[0].capitalize();
+
+          switch (coll) {
+            ${modelCases()}          
+            default: {
+              throw new Error('getDocument could not find document ' + _id);
+            }
+          }
+        }
+    `;
+
+    let dbObjects = `${getDocument}\n\n`;
+
     _.each(models, (model) => {
       let keyProps = model.keyProps;
 
