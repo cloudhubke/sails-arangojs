@@ -142,6 +142,7 @@ module.exports = require('machine').build({
       dbConnection,
       graph,
       graphEnabled,
+      dsName,
     } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let collections = [];
@@ -185,7 +186,8 @@ module.exports = require('machine').build({
         const result = await collection.save(statement.values, opts);
 
         createdRecord = global[`${WLModel.globalId}Object`].initialize(
-          result.new
+          result.new,
+          dsName
         );
       }
     } catch (err) {

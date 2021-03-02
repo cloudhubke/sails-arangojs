@@ -164,7 +164,7 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection } = Helpers.connection.getConnection(
+    const { dbConnection, dsName } = Helpers.connection.getConnection(
       inputs.datastore,
       query.meta
     );
@@ -210,7 +210,8 @@ module.exports = require('machine').build({
 
       if (fetchRecords) {
         createdRecord = global[`${WLModel.globalId}Object`].initialize(
-          result.new
+          result.new,
+          dsName
         );
       }
     } catch (err) {

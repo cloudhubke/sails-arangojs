@@ -281,6 +281,7 @@ module.exports = {
           SystemSettings,
           getSystemSettings,
           updateSystemSettings,
+          dsName: config.identity === 'default' ? undefined : config.identity,
         },
         meta: config,
       });

@@ -147,7 +147,7 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection } = Helpers.connection.getConnection(
+    const { dbConnection, dsName } = Helpers.connection.getConnection(
       inputs.datastore,
       query.meta
     );
@@ -183,7 +183,7 @@ module.exports = require('machine').build({
       result = await dbConnection.query(sql);
       if (fetchRecords) {
         updatedRecords = result._result.map((r) =>
-          global[`${WLModel.globalId}Object`].initialize(r.new)
+          global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
         );
       }
     } catch (error) {

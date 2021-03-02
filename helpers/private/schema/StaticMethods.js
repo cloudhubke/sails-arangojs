@@ -151,7 +151,7 @@ module.exports = (globalId, keyProps, saveToCache) => {
     initialize: function initialize(doc, dsName) {
       try {
         if (doc instanceof global[`${globalId}Object`]) {
-          if (dsName && !doc.tenantcode) {
+          if (dsName && dsName !== doc.tenantcode) {
             return global[`${globalId}Object`].initialize({ ...doc }, dsName);
           }
 

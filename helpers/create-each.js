@@ -150,10 +150,11 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection, Transaction } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta
-    );
+    const {
+      dbConnection,
+      Transaction,
+      dsName,
+    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let result;
 
@@ -195,7 +196,7 @@ module.exports = require('machine').build({
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
     const createdRecords = result.map((r) =>
-      global[`${WLModel.globalId}Object`].initialize(r.new)
+      global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
     );
     try {
       _.each(createdRecords, (record) => {

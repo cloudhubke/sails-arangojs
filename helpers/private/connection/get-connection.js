@@ -32,6 +32,7 @@ module.exports = function getConnection({ manager }) {
       graphName,
       graphEnabled,
       Transaction,
+      dsName,
     } = manager;
     return {
       dbConnection,
@@ -40,6 +41,7 @@ module.exports = function getConnection({ manager }) {
       graph,
       aql,
       Transaction,
+      dsName,
     };
   }
 

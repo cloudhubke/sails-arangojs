@@ -101,7 +101,7 @@ module.exports = require('machine').build({
       return exits.error(error);
     }
 
-    const { dbConnection } = Helpers.connection.getConnection(
+    const { dbConnection, dsName } = Helpers.connection.getConnection(
       inputs.datastore,
       query.meta
     );
@@ -184,7 +184,7 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
     const selectRecords = cursor._result.map((doc) =>
-      global[`${WLModel.globalId}Object`].initialize(doc)
+      global[`${WLModel.globalId}Object`].initialize(doc, dsName)
     );
 
     try {
