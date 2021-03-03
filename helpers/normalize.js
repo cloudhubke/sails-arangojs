@@ -147,7 +147,7 @@ module.exports = require('machine').build({
         ...normalizedRecord,
       });
     } catch (err) {
-      return exits.badConnection(err);
+      return exits.badConnection();
     }
 
     try {

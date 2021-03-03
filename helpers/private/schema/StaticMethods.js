@@ -1,4 +1,6 @@
-module.exports = (globalId, keyProps, saveToCache) => {
+const _ = require('@sailshq/lodash');
+
+module.exports = (globalId, keyProps, saveToCache, gIds) => {
   return {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STATIC METHODS
@@ -177,6 +179,29 @@ module.exports = (globalId, keyProps, saveToCache) => {
               return docObj.getKeyProps();
             },
           });
+
+          Object.defineProperty(docObj, '_Transaction', {
+            get: () => {
+              if (docObj.tenantcode) {
+                return sails.getDatastore(docObj.tenantcode).manager
+                  .Transaction;
+              }
+              return sails.getDatastore().manager.Transaction;
+            },
+          });
+
+          if (gIds) {
+            _.each(gIds, (gId) => {
+              Object.defineProperty(docObj, `_${gId}`, {
+                get: () => {
+                  if (docObj.tenantcode) {
+                    return global[`_${gId}`](docObj.tenantcode);
+                  }
+                  return global[gId];
+                },
+              });
+            });
+          }
         }
 
         return docObj;

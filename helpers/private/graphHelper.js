@@ -145,9 +145,10 @@ module.exports = {
     try {
       const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
-      // if (dsName === 'foodchainer-instaveg') {
-      //   console.log(Object.keys(sails.models));
-      // }
+      let gIds = [];
+      for (let model of definitionsarray) {
+        gIds.push(model.globalId);
+      }
 
       for (let model of definitionsarray) {
         let keyProps = [...model.keyProps];
@@ -171,7 +172,8 @@ module.exports = {
           const DefaultStaticMethods = StaticMethods(
             model.globalId,
             keyProps,
-            Boolean(model.cache)
+            Boolean(model.cache),
+            gIds
           );
 
           const DefaultPrototypeMethods = PrototypeMethods(model.globalId);
