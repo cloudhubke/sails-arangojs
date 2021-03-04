@@ -35,14 +35,6 @@ module.exports = (globalId) => {
         for (let key of Object.keys(doc)) {
           this[key] = doc[key];
         }
-
-        if (!Object.getOwnPropertyNames(this).includes('keyProps')) {
-          Object.defineProperty(this, 'keyProps', {
-            get: () => {
-              return this.getKeyProps();
-            },
-          });
-        }
       } catch (error) {
         throw error;
       }

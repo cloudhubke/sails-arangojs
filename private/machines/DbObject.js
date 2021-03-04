@@ -17,7 +17,7 @@ module.exports = (globalId, keyProps) => {
       return globalIdDbo.initialize(doc);
     },
 
-    [`get${globalId}`]: function (params) {
+    getDocument: function (params) {
       const doc = db.globalid.document(params);
       return globalIdDbo.initialize(doc);
     },
@@ -49,20 +49,6 @@ module.exports = (globalId, keyProps) => {
       return obj;
     },
 
-    update: function (callback) {
-      if (typeof callback === 'function') {
-        const updateValues = callback(this);
-        const updatedDoc = db._update(
-          this,
-          { ...updateValues },
-          { returnNew: true }
-        ).new;
-        this.initialize(updatedDoc);
-      } else {
-        throw new Error(`Dbo update function expects a callback`);
-      }
-    },
-
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // PROTOTYPES
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -85,13 +71,18 @@ module.exports = (globalId, keyProps) => {
       for (let key of Object.keys(doc)) {
         this[key] = doc[key];
       }
-
-      if (!Object.getOwnPropertyNames(this).includes('keyProps')) {
-        Object.defineProperty(this, 'keyProps', {
-          get: () => {
-            return this.getKeyProps();
-          },
-        });
+    },
+    update: function (callback) {
+      if (typeof callback === 'function') {
+        const updateValues = callback(this);
+        const updatedDoc = db._update(
+          this,
+          { ...updateValues },
+          { returnNew: true }
+        ).new;
+        this.reInitialize(updatedDoc);
+      } else {
+        throw new Error(`Dbo update function expects a callback`);
       }
     },
   });

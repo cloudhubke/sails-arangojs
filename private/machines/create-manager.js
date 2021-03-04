@@ -99,7 +99,7 @@ module.exports = {
     const modelCases = () => {
       let caseStr = '';
       _.each(models, (model) => {
-        caseStr = `${caseStr}case '${model.globalId}': {\nreturn ${model.globalId}Dbo.get${model.globalId}({_id})\n}\n\n`;
+        caseStr = `${caseStr}case '${model.globalId}': {\nreturn ${model.globalId}Dbo.getDocument({_id})\n}\n\n`;
       });
       return caseStr;
     };

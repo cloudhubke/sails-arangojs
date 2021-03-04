@@ -180,6 +180,12 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
             },
           });
 
+          Object.defineProperty(docObj, 'tableName', {
+            get: () => {
+              return `${globalId}`.toLocaleLowerCase();
+            },
+          });
+
           Object.defineProperty(docObj, '_Transaction', {
             get: () => {
               if (docObj.tenantcode) {
