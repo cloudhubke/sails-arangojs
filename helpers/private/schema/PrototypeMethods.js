@@ -84,5 +84,8 @@ module.exports = (globalId) => {
         }
       }
     },
+    update: function update(callback) {
+      return this[`update${globalId}`](callback);
+    },
   };
 };

@@ -246,14 +246,6 @@ module.exports = {
         const fanction = String(function (params) {
           // This code will be executed inside ArangoDB!
 
-          const SystemSettings = params.SystemSettings || {};
-
-          const normalize = (data) => {
-            data.id = data._key;
-            delete data._rev;
-            return data;
-          };
-
           const _ = require('lodash');
           const db = require('@arangodb').db;
           const aql = require('@arangodb').aql;
@@ -266,6 +258,15 @@ module.exports = {
             });
             return arangoRequest(requestOptions);
           };
+
+          const normalize = (data) => {
+            data.id = data._key;
+            delete data._rev;
+            return data;
+          };
+
+          SystemSettings;
+          bearerToken;
 
           dbObjects;
 
@@ -284,14 +285,16 @@ module.exports = {
           },
           `${fanction}`
             .replace('dbObjects;', dbObjects)
+            .replace('bearerToken;', `const bearerToken = '${bearerToken}';`)
+            .replace(
+              'SystemSettings;',
+              `const SystemSettings  = ${JSON.stringify(getSystemSettings())};`
+            )
             .replace('dbservices', config.dbServices)
             .replace('func;', String(action)),
           {
             params: {
               ...params,
-              SystemSettings: getSystemSettings(),
-              bearerToken,
-              dbObjects,
             },
             waitForSync: true,
             ...options,
