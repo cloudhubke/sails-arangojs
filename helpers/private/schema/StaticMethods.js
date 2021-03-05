@@ -1,6 +1,6 @@
 const _ = require('@sailshq/lodash');
 
-module.exports = (globalId, keyProps, saveToCache, gIds) => {
+module.exports = (globalId, keyProps, cache, gIds) => {
   return {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STATIC METHODS
@@ -9,13 +9,13 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
     globalId,
     tableName: `${globalId}`.toLocaleLowerCase(),
     keyProps,
-    saveToCache,
+    cache,
     [`Available${globalId}s`]: {},
     [`get${globalId}`]: async function (params, dsName) {
       try {
         const { id } = params || {};
 
-        if (saveToCache) {
+        if (cache) {
           if (dsName) {
             if (
               id &&
@@ -43,17 +43,7 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
         );
 
         if (obj && obj.id) {
-          if (saveToCache) {
-            if (dsName) {
-              global[`${globalId}Object`][`Available${globalId}s`][
-                `${dsName}/${obj.id}`
-              ] = obj;
-            } else {
-              global[`${globalId}Object`][`Available${globalId}s`][
-                obj.id
-              ] = obj;
-            }
-          }
+          obj.saveToCache();
         } else {
           throw new Error(`${globalId} not available`);
         }
@@ -90,19 +80,7 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
         }
 
         if (newdoc) {
-          if (saveToCache) {
-            if (dsName) {
-              global[`${globalId}Object`][`Available${globalId}s`][
-                newdoc.id
-              ] = null;
-            } else {
-              global[`${globalId}Object`][`Available${globalId}s`][
-                `${dsName}/${newdoc.id}`
-              ] = null;
-            }
-          }
           const doc = global[`${globalId}Object`].initialize(newdoc, dsName);
-
           return doc;
         }
         return null;
@@ -186,6 +164,17 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
             },
           });
 
+          Object.defineProperty(docObj, 'cache', {
+            get: () => {
+              return cache;
+            },
+          });
+          Object.defineProperty(docObj, 'globalId', {
+            get: () => {
+              return globalId;
+            },
+          });
+
           Object.defineProperty(docObj, '_Transaction', {
             get: () => {
               if (docObj.tenantcode) {
@@ -208,6 +197,8 @@ module.exports = (globalId, keyProps, saveToCache, gIds) => {
               });
             });
           }
+
+          docObj.saveToCache();
         }
 
         return docObj;

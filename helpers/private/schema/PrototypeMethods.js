@@ -21,7 +21,22 @@ module.exports = (globalId) => {
               .set({ ...updateValues });
           }
 
-          this.reInitialize(updatedDoc);
+          if (updatedDoc) {
+            if (this.saveToCache) {
+              if (this.tenantcode) {
+                global[`${globalId}Object`][`Available${globalId}s`][
+                  `${this.tenantcode}/${updatedDoc.id}`
+                ] = null;
+              } else {
+                global[`${globalId}Object`][`Available${globalId}s`][
+                  updatedDoc.id
+                ] = null;
+              }
+            }
+            this.reInitialize(updatedDoc);
+          } else {
+            throw new Error(`Update could not reInitialize`);
+          }
         } else {
           throw new Error(`Dbo update function expects a callback`);
         }
@@ -35,6 +50,7 @@ module.exports = (globalId) => {
         for (let key of Object.keys(doc)) {
           this[key] = doc[key];
         }
+        this.saveToCache();
       } catch (error) {
         throw error;
       }
@@ -53,6 +69,19 @@ module.exports = (globalId) => {
         };
       } catch (error) {
         throw error;
+      }
+    },
+    saveToCache: function saveToCache() {
+      if (this.cache) {
+        if (this.tenantcode) {
+          global[`${this.globalId}Object`][`Available${this.globalId}s`][
+            `${this.tenantcode}/${this.id}`
+          ] = this;
+        } else {
+          global[`${this.globalId}Object`][`Available${this.globalId}s`][
+            this.id
+          ] = this;
+        }
       }
     },
   };
