@@ -1,5 +1,47 @@
 const _ = require('@sailshq/lodash');
 
+String.prototype.capitalizeCollection = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
+if (!global.getDocument) {
+  global.getDocument = async function getDocument({ _id }, merchantcode) {
+    try {
+      if (!_id || !_.isString(_id) || !`${_id}`.includes('/')) {
+        throw new Error(`_id is required in getDocument`);
+      }
+
+      const tableName = `${_id}`.split('/')[0].capitalizeCollection();
+
+      if (!global[tableName]) {
+        throw new Error(
+          `Global object for ${tableName} not found in getDocument`
+        );
+      }
+
+      let obj;
+      if (merchantcode) {
+        obj = await global[`${tableName}Object`][`get${tableName}`](
+          {
+            _id: _id,
+          },
+          merchantcode
+        );
+        return obj;
+      }
+      obj = await global[`${tableName}Object`][`get${tableName}`]({
+        _id: _id,
+      });
+      return obj;
+    } catch (error) {
+      console.log('====================================');
+      console.log(error);
+      console.log('====================================');
+      throw error;
+    }
+  };
+}
+
 module.exports = (globalId, keyProps, cache, gIds) => {
   return {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -11,6 +53,26 @@ module.exports = (globalId, keyProps, cache, gIds) => {
     keyProps,
     cache,
     [`Available${globalId}s`]: {},
+    findOneOrCreate: async function (params, dsName) {
+      try {
+        let doc;
+        if (dsName) {
+          doc = await global[`_${globalId}`](dsName).findOne(params);
+          if (!doc) {
+            doc = await global[`_${globalId}`](dsName).create(params).fetch();
+          }
+        } else {
+          doc = await global[`${globalId}`].findOne(params);
+          if (!doc) {
+            doc = await global[`${globalId}`].create(params).fetch();
+          }
+        }
+
+        return doc;
+      } catch (error) {
+        throw error;
+      }
+    },
     [`get${globalId}`]: async function (params, dsName) {
       try {
         const { id } = params || {};
@@ -45,7 +107,9 @@ module.exports = (globalId, keyProps, cache, gIds) => {
         if (obj && obj.id) {
           obj.saveToCache();
         } else {
-          throw new Error(`${globalId} not available`);
+          throw new Error(
+            `${globalId} not available in ${dsName || 'default'} datastore`
+          );
         }
 
         return obj;

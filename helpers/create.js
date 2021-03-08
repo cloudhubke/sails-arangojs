@@ -174,6 +174,11 @@ module.exports = require('machine').build({
 
         if (fetchRecords) {
           createdRecord = await collection.document(result[pkColumnName]);
+
+          createdRecord = global[`${WLModel.globalId}Object`].initialize(
+            createdRecord,
+            dsName
+          );
         }
       } else {
         collection = dbConnection.collection(`${statement.tableName}`);
