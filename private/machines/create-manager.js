@@ -305,6 +305,7 @@ module.exports = {
       return exits.success({
         manager: {
           dbConnection,
+          createDatabase,
           graphEnabled: config.graph,
           graph,
           graphName,
