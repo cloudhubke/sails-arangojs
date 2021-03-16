@@ -60,7 +60,7 @@ module.exports = require('machine').build({
 
   fn: async function create(inputs, exits) {
     // Dependencies
-
+    const validateSchema = require('./private/schema/validate-schema');
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
     // Store the Query input for easier access
@@ -139,6 +139,7 @@ module.exports = require('machine').build({
     // Spawn a new connection for running queries on.
 
     const {
+      Transaction,
       dbConnection,
       graph,
       graphEnabled,
@@ -156,11 +157,36 @@ module.exports = require('machine').build({
 
     try {
       // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-      // Model the query OR INSERT USING THE  Query Builder! 👍🏽
-      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -å
+      // SCHEMA VALIDATION
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+      const aql = `RETURN SCHEMA_GET("${statement.tableName}")`;
+
+      const schema = await Transaction({
+        action: function ({ aql }) {
+          const result = db._query(aql).toArray()[0];
+          return result.rule;
+        },
+        writes: [],
+        params: {
+          aql,
+        },
+      });
+
+      validateSchema(WLModel, schema, {
+        ...statement.values,
+      });
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // END SCHEMA VALIDATION
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       // Execute sql using the driver acquired graph.
 
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      // Model the query OR INSERT USING THE  Query Builder! 👍🏽
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -å
+      // Execute sql using the driver acquired graph.
       if (_.includes(collections, statement.tableName)) {
         // This is a graph member!
 

@@ -74,6 +74,7 @@ module.exports = require('machine').build({
 
   fn: async function update(inputs, exits) {
     // Dependencies
+    const validateSchema = require('./private/schema/validate-schema');
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
     const flaverr = require('flaverr');
@@ -174,10 +175,11 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const { dbConnection, dsName } = Helpers.connection.getConnection(
-      inputs.datastore,
-      query.meta
-    );
+    const {
+      dbConnection,
+      Transaction,
+      dsName,
+    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let session;
     let result;
