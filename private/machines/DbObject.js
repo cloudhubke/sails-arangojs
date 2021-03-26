@@ -54,6 +54,10 @@ module.exports = (globalId, keyProps) => {
         },
       });
 
+      if (typeof obj.afterInitialize === 'function') {
+        obj.afterInitialize();
+      }
+
       return obj;
     },
 
