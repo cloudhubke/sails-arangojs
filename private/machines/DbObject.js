@@ -22,6 +22,14 @@ module.exports = (globalId, keyProps) => {
       return globalIdDbo.initialize(doc);
     },
 
+    firstExample: function (params) {
+      const doc = db.globalid.firstExample(params);
+      if (doc) {
+        return globalIdDbo.initialize(doc);
+      }
+      return null;
+    },
+
     initialize: function (doc) {
       if (doc instanceof globalIdDbo) {
         //Re Initialize
