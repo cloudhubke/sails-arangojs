@@ -27,10 +27,17 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             const unique = Boolean(attribute.unique);
             // attribute.unique, allowNull, etc
             if (attribute && unique && !attribute.primaryKey) {
-              const ind = await collection.createHashIndex(`${name}`, {
-                unique: true,
-                sparse: Boolean(!attribute.required),
-              });
+              try {
+                const ind = await collection.ensureIndex({
+                  fields: [`${name}`],
+                  name: `${name}`,
+                  unique: true,
+                  type: 'hash',
+                  sparse: Boolean(!attribute.required),
+                });
+              } catch (error) {
+                resolv('');
+              }
               resolv(`${name}`);
             }
             resolv('');
@@ -53,15 +60,22 @@ module.exports = async function buildSchema(tableName, definition, collection) {
     const indexes = _.map(
       definition.attributes,
       (attribute, name) =>
-        new Promise(async (resolv) => {
+        new Promise(async (resolv, reject) => {
           const autoMigrations = attribute.autoMigrations || {};
           const unique = Boolean(autoMigrations.unique);
           // attribute.unique, allowNull, etc
           if (attribute && unique && name !== pk) {
-            await collection.createHashIndex(`${name}`, {
-              unique: true,
-              sparse: Boolean(!attribute.required),
-            });
+            try {
+              await collection.ensureIndex({
+                fields: [`${name}`],
+                name: `${name}`,
+                unique: true,
+                type: 'hash',
+                sparse: Boolean(!attribute.required),
+              });
+            } catch (error) {
+              resolv('');
+            }
             resolv(`${name}`);
           }
           resolv('');
@@ -343,9 +357,9 @@ module.exports = async function buildSchema(tableName, definition, collection) {
       `,
     };
 
-    await collection.setProperties({ schema: schema });
+    await collection.properties({ schema: schema });
   } else {
-    await collection.setProperties({ schema: null });
+    await collection.properties({ schema: null });
   }
 
   return true;

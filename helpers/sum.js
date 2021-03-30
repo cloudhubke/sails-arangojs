@@ -139,17 +139,18 @@ module.exports = require('machine').build({
         sql = `${sql} RETURN sum`;
       }
 
-      result = await dbConnection.query(sql);
+      const cursor = await dbConnection.query(sql);
+      result = await cursor.all();
 
       if (isarray) {
-        result = result._result.map((record) =>
+        result = result.map((record) =>
           Helpers.query.processNativeRecord(
             { ...record.doc, sum: record.sum },
             WLModel
           )
         );
       } else {
-        result = _.isArray(result._result) ? result._result[0] : 0;
+        result = _.isArray(result) ? result[0] : 0;
       }
 
       Helpers.connection.releaseConnection(session, leased);

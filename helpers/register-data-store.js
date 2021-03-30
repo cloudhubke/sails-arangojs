@@ -150,6 +150,9 @@ module.exports = require('machine').build({
       meta: _.omit(config, ['adapter', 'url', 'identity', 'schema']),
     }).switch({
       error(err) {
+        console.log('====================================');
+        console.log(err);
+        console.log('====================================');
         return exits.error(
           `Consistency violation: Unexpected error creating db connection manager:\n\`\`\`\n${err}`
         );
@@ -225,6 +228,10 @@ module.exports = require('machine').build({
               );
             }
 
+            if (!modelinfo.globalId) {
+              modelinfo.globalId = modelinfo.identity;
+            }
+
             const definition = {
               indexes: modelinfo.indexes,
               schemaValidation: modelinfo.schemaValidation,
@@ -238,7 +245,7 @@ module.exports = require('machine').build({
               identity: modelinfo.identity,
               globalId: modelinfo.globalId,
               ModelObjectConstructor: modelinfo.ModelObjectConstructor,
-              keyProps: modelinfo.keyProps,
+              keyProps: modelinfo.keyProps || [],
               cache: modelinfo.cache,
             };
 
@@ -247,13 +254,25 @@ module.exports = require('machine').build({
               global[ModelObjectName] = new Function(
                 `return function ${ModelObjectName}(dsName){
                   if(dsName && dsName!=='default'){
-                    this.constructor.prototype.tenantcode = dsName;
-                    this.constructor.prototype.merchantcode = dsName;
+                    let tenantcode = dsName;
+                    Object.defineProperty(this, 'tenantcode', {
+                      get: function(){
+                        return tenantcode;
+                      },
+                      set: function (val) {
+                        tenantcode=val;
+                      }
+                    })
+                    Object.defineProperty(this, 'merchantcode', {
+                      get: function(){
+                        return tenantcode;
+                      }
+                    })
                   }
                 };`
               )();
 
-              let keyProps = [...modelinfo.keyProps];
+              let keyProps = [...(modelinfo.keyProps || [])];
 
               for (let key in modelinfo.definition) {
                 const autoMigrations =
@@ -275,6 +294,8 @@ module.exports = require('machine').build({
                   Boolean(modelinfo.cache)
                 )
               );
+
+              definition.ModelObjectConstructor = global[ModelObjectName];
             }
 
             if (modelinfo.classType === 'Edge') {
@@ -314,6 +335,7 @@ module.exports = require('machine').build({
           }
 
           graphHelper.buildObjects(manager, definitionsarray, identity);
+          graphHelper.afterRegister(manager, definitionsarray);
 
           return exits.success({ datastores, modelDefinitions, config });
         } catch (e) {

@@ -83,6 +83,7 @@ module.exports = require('machine').build({
 
     // Escape Table Name
     const { tableName } = inputs;
+
     let result;
 
     const { dbConnection } = Helpers.connection.getConnection(
@@ -103,7 +104,7 @@ module.exports = require('machine').build({
       let collection;
       let collectionExists;
 
-      collection = dbConnection.collection(`${tableName}`);
+      collection = await dbConnection.collection(`${tableName}`);
       collectionExists = await collection.exists();
 
       if (collectionExists) {
@@ -114,28 +115,25 @@ module.exports = require('machine').build({
       if (model.classType === 'Edge') {
         // Sleep for one second to allow vertices to create.
 
-        //       await sleep();
+        await collection.create({ type: 3 });
+        edgeCollection = await dbConnection.collection(`${tableName}`);
 
-        collection = dbConnection.edgeCollection(`${tableName}`);
-        collectionExists = await collection.exists();
+        // Try recreating Indexes
+        await Helpers.schema.buildSchema(
+          tableName,
+          inputs.definition,
+          edgeCollection
+        );
+        await Helpers.schema.buildIndexes(
+          inputs.indexes,
+          tableName,
+          inputs.definition,
+          edgeCollection
+        );
 
-        if (collectionExists) {
-          // Try recreating Indexes
-          await Helpers.schema.buildSchema(
-            tableName,
-            inputs.definition,
-            collection
-          );
-          await Helpers.schema.buildIndexes(
-            inputs.indexes,
-            tableName,
-            inputs.definition,
-            collection
-          );
+        Helpers.connection.releaseConnection(dbConnection);
 
-          Helpers.connection.releaseConnection(dbConnection);
-          return exits.success();
-        }
+        return exits.success();
 
         // Look for edge definitions in the Edge model. If its not in there, register it.
       }

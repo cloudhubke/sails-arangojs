@@ -165,7 +165,7 @@ module.exports = require('machine').build({
       const schema = await Transaction({
         action: function ({ aql }) {
           const result = db._query(aql).toArray()[0];
-          return result.rule;
+          return result ? result.rule : {};
         },
         writes: [],
         params: {
@@ -190,10 +190,14 @@ module.exports = require('machine').build({
       if (_.includes(collections, statement.tableName)) {
         // This is a graph member!
 
-        collection = graph.vertexCollection(`${statement.tableName}`);
+        const vertexCollection = graph.vertexCollection(
+          `${statement.tableName}`
+        );
+        collection = vertexCollection.collection;
 
         if (WLModel.classType === 'Edge') {
-          collection = graph.edgeCollection(`${statement.tableName}`);
+          const egdeCollection = graph.edgeCollection(`${statement.tableName}`);
+          collection = edgeCollection.collection;
         }
 
         const result = await collection.save(statement.values);
@@ -208,10 +212,6 @@ module.exports = require('machine').build({
         }
       } else {
         collection = dbConnection.collection(`${statement.tableName}`);
-
-        if (WLModel.classType === 'Edge') {
-          collection = dbConnection.edgeCollection(`${statement.tableName}`);
-        }
 
         const opts = { returnNew: fetchRecords };
         const result = await collection.save(statement.values, opts);

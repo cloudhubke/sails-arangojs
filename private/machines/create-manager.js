@@ -1,4 +1,3 @@
-const { isGeneratedAqlQuery } = require('arangojs/lib/cjs/aql-query');
 const DbObject = require('./DbObject');
 
 String.prototype.capitalize = function () {
@@ -123,7 +122,7 @@ module.exports = {
     let dbObjects = `${getDocument}\n\n`;
 
     _.each(models, (model) => {
-      let keyProps = model.keyProps;
+      let keyProps = model.keyProps || [];
 
       for (let key in model.definition) {
         const autoMigrations = model.definition[key].autoMigrations || {};

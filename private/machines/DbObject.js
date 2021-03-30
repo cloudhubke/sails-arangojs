@@ -48,6 +48,12 @@ module.exports = (globalId, keyProps) => {
         props[prop] = doc[prop];
       }
 
+      Object.defineProperty(obj, 'instanceName', {
+        get: () => {
+          return 'globalIdDbo';
+        },
+      });
+
       Object.defineProperty(obj, 'keyProps', {
         get: () => {
           return obj.getKeyProps();

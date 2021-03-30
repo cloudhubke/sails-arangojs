@@ -55,6 +55,7 @@ module.exports = require('machine').build({
   fn: async function count(inputs, exits) {
     // Dependencies
     const Helpers = require('./private');
+    const _ = require('@sailshq/lodash');
 
     // Store the Query input for easier access
 
@@ -119,14 +120,16 @@ module.exports = require('machine').build({
       sql = `${sql} COLLECT WITH COUNT INTO length`;
       sql = `${sql} RETURN length`;
 
-      result = await dbConnection.query(sql);
+      const cursor = await dbConnection.query(sql);
+      cursor._result = await cursor.all();
+
+      result = _.isArray(cursor._result) ? cursor._result[0] : 0;
 
       Helpers.connection.releaseConnection(session);
     } catch (error) {
       return exits.badConnection(error);
     }
 
-    const len = result._result ? result._result[0] : 0;
-    return exits.success(len);
+    return exits.success(result);
   },
 });

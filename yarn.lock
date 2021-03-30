@@ -243,6 +243,10 @@
   version "14.14.22"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.22.tgz#0d29f382472c4ccf3bd96ff0ce47daf5b7b84b18"
 
+"@types/node@>=13.13.4":
+  version "14.14.37"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-14.14.37.tgz#a3dd8da4eb84a996c36e331df98d82abd76b516e"
+
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
   resolved "https://registry.yarnpkg.com/@types/normalize-package-data/-/normalize-package-data-2.4.0.tgz#e486d0d97396d79beedd0a6e33f4534ff6b4973e"
@@ -386,14 +390,14 @@ aproba@^1.0.3, aproba@^1.1.1, aproba@^1.1.2:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/aproba/-/aproba-2.0.0.tgz#52520b8ae5b569215b354efc0caa3fe1e45a8adc"
 
-arangojs@^6.11.1:
-  version "6.14.1"
-  resolved "https://registry.yarnpkg.com/arangojs/-/arangojs-6.14.1.tgz#49f0911a35313ad27c3a34b39df0649373f8c1cd"
+arangojs@^7.3.0:
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/arangojs/-/arangojs-7.3.0.tgz#36eded14b7a2b132e17ceef273e5c89c175d3fb2"
   dependencies:
-    "@types/node" "*"
+    "@types/node" ">=13.13.4"
     es6-error "^4.0.1"
-    multi-part "^2.0.0"
-    x3-linkedlist "1.0.0"
+    multi-part "^3.0.0"
+    x3-linkedlist "1.2.0"
     xhr "^2.4.1"
 
 archy@~1.0.0:
@@ -1026,7 +1030,7 @@ debug@^3.1.0:
   dependencies:
     ms "^2.1.1"
 
-debuglog@*, debuglog@^1.0.1:
+debuglog@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/debuglog/-/debuglog-1.0.1.tgz#aa24ffb9ac3df9a2351837cfb2d279360cd78492"
 
@@ -1544,9 +1548,9 @@ file-entry-cache@^5.0.1:
   dependencies:
     flat-cache "^2.0.1"
 
-file-type@^4.3.0:
-  version "4.4.0"
-  resolved "https://registry.yarnpkg.com/file-type/-/file-type-4.4.0.tgz#1b600e5fca1fbdc6e80c0a70c71c8dba5f7906c5"
+file-type@^12.1.0:
+  version "12.4.2"
+  resolved "https://registry.yarnpkg.com/file-type/-/file-type-12.4.2.tgz#a344ea5664a1d01447ee7fb1b635f72feb6169d9"
 
 fill-range@^7.0.1:
   version "7.0.1"
@@ -2040,9 +2044,16 @@ import-lazy@^2.1.0:
   version "2.1.0"
   resolved "https://registry.yarnpkg.com/import-lazy/-/import-lazy-2.1.0.tgz#05698e3d45c88e8d7e9d92cb0584e77f096f3e43"
 
-imurmurhash@*, imurmurhash@^0.1.4:
+imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
+
+include-files@^4.0.5:
+  version "4.0.5"
+  resolved "https://registry.yarnpkg.com/include-files/-/include-files-4.0.5.tgz#a64d6f4d185620c1453c8a2e2a7b63a1552788d5"
+  dependencies:
+    "@sailshq/lodash" "^3.10.2"
+    merge-dictionaries "^0.0.3"
 
 indent-string@^4.0.0:
   version "4.0.0"
@@ -2656,10 +2667,6 @@ lodash._basecreate@^3.0.0:
   version "3.0.3"
   resolved "https://registry.yarnpkg.com/lodash._basecreate/-/lodash._basecreate-3.0.3.tgz#1bc661614daa7fc311b7d03bf16806a0213cf821"
 
-lodash._baseindexof@*:
-  version "3.1.0"
-  resolved "https://registry.yarnpkg.com/lodash._baseindexof/-/lodash._baseindexof-3.1.0.tgz#fe52b53a1c6761e42618d654e4a25789ed61822c"
-
 lodash._baseuniq@~4.6.0:
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/lodash._baseuniq/-/lodash._baseuniq-4.6.0.tgz#0ebb44e456814af7905c6212fa2c9b2d51b841e8"
@@ -2667,25 +2674,11 @@ lodash._baseuniq@~4.6.0:
     lodash._createset "~4.0.0"
     lodash._root "~3.0.0"
 
-lodash._bindcallback@*:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/lodash._bindcallback/-/lodash._bindcallback-3.0.1.tgz#e531c27644cf8b57a99e17ed95b35c748789392e"
-
-lodash._cacheindexof@*:
-  version "3.0.2"
-  resolved "https://registry.yarnpkg.com/lodash._cacheindexof/-/lodash._cacheindexof-3.0.2.tgz#3dc69ac82498d2ee5e3ce56091bafd2adc7bde92"
-
-lodash._createcache@*:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/lodash._createcache/-/lodash._createcache-3.1.2.tgz#56d6a064017625e79ebca6b8018e17440bdcf093"
-  dependencies:
-    lodash._getnative "^3.0.0"
-
 lodash._createset@~4.0.0:
   version "4.0.3"
   resolved "https://registry.yarnpkg.com/lodash._createset/-/lodash._createset-4.0.3.tgz#0f4659fbb09d75194fa9e2b88a6644d363c9fe26"
 
-lodash._getnative@*, lodash._getnative@^3.0.0:
+lodash._getnative@^3.0.0:
   version "3.9.1"
   resolved "https://registry.yarnpkg.com/lodash._getnative/-/lodash._getnative-3.9.1.tgz#570bc7dede46d61cdcde687d65d3eecbaa3aaff5"
 
@@ -2752,10 +2745,6 @@ lodash.keys@^3.0.0:
     lodash._getnative "^3.0.0"
     lodash.isarguments "^3.0.0"
     lodash.isarray "^3.0.0"
-
-lodash.restparam@*:
-  version "3.6.1"
-  resolved "https://registry.yarnpkg.com/lodash.restparam/-/lodash.restparam-3.6.1.tgz#936a4e309ef330a7645ed4145986c85ae5b20805"
 
 lodash.set@^4.3.2:
   version "4.3.2"
@@ -2907,6 +2896,12 @@ meow@^8.0.0:
     type-fest "^0.18.0"
     yargs-parser "^20.2.3"
 
+merge-dictionaries@^0.0.3:
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/merge-dictionaries/-/merge-dictionaries-0.0.3.tgz#c4de4d58dbb25e4c2823aa30cb8e1539069eb757"
+  dependencies:
+    "@sailshq/lodash" "^3.10.2"
+
 merge-stream@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/merge-stream/-/merge-stream-2.0.0.tgz#52823629a14dd00c9770fb6ad47dc6310f2c1f60"
@@ -2926,18 +2921,28 @@ mime-db@1.45.0:
   version "1.45.0"
   resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.45.0.tgz#cceeda21ccd7c3a745eba2decd55d4b73e7879ea"
 
-mime-kind@^2.0.1:
-  version "2.0.2"
-  resolved "https://registry.yarnpkg.com/mime-kind/-/mime-kind-2.0.2.tgz#5a43d5bebdeb082182224d9d263206329e57cdf8"
-  dependencies:
-    file-type "^4.3.0"
-    mime-types "^2.1.15"
+mime-db@1.46.0:
+  version "1.46.0"
+  resolved "https://registry.yarnpkg.com/mime-db/-/mime-db-1.46.0.tgz#6267748a7f799594de3cbc8cde91def349661cee"
 
-mime-types@^2.1.12, mime-types@^2.1.15, mime-types@~2.1.19:
+mime-kind@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/mime-kind/-/mime-kind-3.0.0.tgz#23bb3aba03ed6a1ea8c4f6093a9c7ab7121a9cb2"
+  dependencies:
+    file-type "^12.1.0"
+    mime-types "^2.1.24"
+
+mime-types@^2.1.12, mime-types@~2.1.19:
   version "2.1.28"
   resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.28.tgz#1160c4757eab2c5363888e005273ecf79d2a0ecd"
   dependencies:
     mime-db "1.45.0"
+
+mime-types@^2.1.24:
+  version "2.1.29"
+  resolved "https://registry.yarnpkg.com/mime-types/-/mime-types-2.1.29.tgz#1d4ab77da64b91f5f72489df29236563754bb1b2"
+  dependencies:
+    mime-db "1.46.0"
 
 mime@^2.4.3:
   version "2.5.0"
@@ -3070,11 +3075,16 @@ ms@^2.0.0, ms@^2.1.1:
   version "2.1.3"
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
 
-multi-part@^2.0.0:
-  version "2.0.0"
-  resolved "https://registry.yarnpkg.com/multi-part/-/multi-part-2.0.0.tgz#674f53b432f850cf8cc02d30d21f2064e309563c"
+multi-part-lite@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/multi-part-lite/-/multi-part-lite-1.0.0.tgz#7b86baf8ff83ef20ca13f1269a0f35aec42b9000"
+
+multi-part@^3.0.0:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/multi-part/-/multi-part-3.0.0.tgz#2bde386e8c1dcc9f15a2277267a7f5ed13aa0cc0"
   dependencies:
-    mime-kind "^2.0.1"
+    mime-kind "^3.0.0"
+    multi-part-lite "^1.0.0"
 
 mute-stream@0.0.7:
   version "0.0.7"
@@ -4207,19 +4217,20 @@ sails-disk@^1.1.0:
     machinepack-fs "^12.0.1"
     nedb "1.8.0"
 
-sails-orm-hook@^3.14.0:
-  version "3.14.0"
-  resolved "https://registry.yarnpkg.com/sails-orm-hook/-/sails-orm-hook-3.14.0.tgz#960b055c61f4ac7718dc9455fb5cc708728730fd"
+sails-orm-hook@^3.18.0:
+  version "3.18.0"
+  resolved "https://registry.yarnpkg.com/sails-orm-hook/-/sails-orm-hook-3.18.0.tgz#a68e4c84dc4bc4f0348fa7544f0416ed7dda7381"
   dependencies:
     "@sailshq/lodash" "^3.10.2"
     async "2.0.1"
     chalk "1.1.3"
     flaverr "^1.8.0"
+    include-files "^4.0.5"
     parley "^3.3.2"
     prompt "0.2.14"
     sails-disk "^1.1.0"
     waterline-utils "^1.0.0"
-    waternile "^0.28.0"
+    waternile "^0.30.0"
 
 semantic-release@^15.13.3:
   version "15.14.0"
@@ -4946,7 +4957,21 @@ waternile-adapter-tests@^1.0.15:
     waterline-utils "^1.3.2"
     waternile "github:cloudhubke/waternile"
 
-waternile@^0.28.0, "waternile@github:cloudhubke/waternile":
+waternile@^0.30.0:
+  version "0.30.0"
+  resolved "https://registry.yarnpkg.com/waternile/-/waternile-0.30.0.tgz#3bb769a30f6d004e3bf0263b9f2a661d44613148"
+  dependencies:
+    "@sailshq/lodash" "^3.10.2"
+    anchor "^1.2.0"
+    async "2.0.1"
+    encrypted-attr "1.0.6"
+    flaverr "^1.9.2"
+    lodash.issafeinteger "4.0.4"
+    parley "^3.3.2"
+    rttc "^10.0.0-1"
+    waterline-utils "^1.3.7"
+
+"waternile@github:cloudhubke/waternile":
   version "0.28.0"
   resolved "https://codeload.github.com/cloudhubke/waternile/tar.gz/6c251fe6b9b778312fe5e5abe63fa87788d44bb8"
   dependencies:
@@ -5098,9 +5123,9 @@ write@1.0.3:
   dependencies:
     mkdirp "^0.5.1"
 
-x3-linkedlist@1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/x3-linkedlist/-/x3-linkedlist-1.0.0.tgz#f5a8c7e742cf3b31d7800e031ab15135387f85d3"
+x3-linkedlist@1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/x3-linkedlist/-/x3-linkedlist-1.2.0.tgz#c70467559b7c748595f0f79222af1d709402699e"
 
 xdg-basedir@^3.0.0:
   version "3.0.0"

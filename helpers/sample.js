@@ -145,7 +145,9 @@ module.exports = require('machine').build({
         sql = `${sql} return record`;
       }
 
-      cursor = await dbConnection.query(`${sql}`);
+      cursor = await dbConnection.query(sql);
+      cursor._result = await cursor.all();
+
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
 

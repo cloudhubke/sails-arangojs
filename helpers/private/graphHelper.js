@@ -3,6 +3,7 @@ const Helpers = require('./');
 const validateSchema = require('./schema/validate-schema');
 const StaticMethods = require('./schema/StaticMethods');
 const PrototypeMethods = require('./schema/PrototypeMethods');
+const ArangoReal = require('./connection/ArangoReal');
 
 const sleep = (duration) => {
   return new Promise((resolve) => {
@@ -26,13 +27,18 @@ module.exports = {
       );
 
       const collections = await graph.listVertexCollections();
+
       const graphinfo = definitionsarray.map(
         (model) =>
           new Promise(async (resolve) => {
-            let collection = await graph.vertexCollection(`${model.tableName}`);
+            let vertexCollection = await graph.vertexCollection(
+              `${model.tableName}`
+            );
+            let collection = vertexCollection.collection;
 
             if (model.classType === 'Edge') {
-              collection = graph.edgeCollection(`${model.tableName}`);
+              const edgeCollection = graph.edgeCollection(`${model.tableName}`);
+              collection = edgeCollection.collection;
 
               const collectionExists = await collection.exists();
 
@@ -141,7 +147,7 @@ module.exports = {
     return true;
   },
 
-  buildObjects: async function buildObjects(manager, definitionsarray, dsName) {
+  buildObjects: function buildObjects(manager, definitionsarray, dsName) {
     try {
       const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
@@ -290,6 +296,39 @@ module.exports = {
       return true;
     } catch (error) {
       console.log('SANITIZE ERROR');
+      console.log('====================================');
+      console.log(error.toString());
+      console.log('====================================');
+      throw error;
+    }
+  },
+
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // After Datastore Initialization
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  afterRegister: async (manager, definitionsarray) => {
+    try {
+      const { dbConnection, dsName } = manager;
+
+      const dbListener = new ArangoReal({
+        db: dbConnection,
+      });
+
+      for (let model of definitionsarray) {
+        dbListener.on(model.tableName, (doc, type) => {
+          if (
+            model.ModelObjectConstructor &&
+            typeof model.ModelObjectConstructor[type] === 'function'
+          ) {
+            const docObj = model.ModelObjectConstructor.initialize(doc, dsName);
+            model.ModelObjectConstructor[type](docObj);
+          }
+        });
+      }
+
+      dbListener.start();
+    } catch (error) {
+      console.log('after Register Error');
       console.log('====================================');
       console.log(error.toString());
       console.log('====================================');

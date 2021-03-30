@@ -156,6 +156,7 @@ module.exports = require('machine').build({
       }
 
       cursor = await dbConnection.query(`${sql}`);
+      cursor._result = await cursor.all();
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {

@@ -180,9 +180,11 @@ module.exports = require('machine').build({
         sql = `${sql} RETURN {new: NEW, old: OLD}`;
       }
 
-      result = await dbConnection.query(sql);
+      const cursor = await dbConnection.query(sql);
+      result = await cursor.all();
+
       if (fetchRecords) {
-        updatedRecords = result._result.map((r) =>
+        updatedRecords = result.map((r) =>
           global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
         );
       }

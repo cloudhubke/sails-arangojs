@@ -162,7 +162,10 @@ module.exports = require('machine').build({
       }
 
       cursor = await dbConnection.query(`${sql}`);
+      cursor._result = await cursor.all();
+
       countCursor = await dbConnection.query(`${countSql}`);
+      countCursor._result = await countCursor.all();
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
 

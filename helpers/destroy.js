@@ -143,10 +143,14 @@ module.exports = require('machine').build({
       if (_.includes(collections, statement.tableName)) {
         // This is a graph member! Collection  must be removed via key
 
-        collection = graph.vertexCollection(`${statement.tableName}`);
+        const vertexCollection = graph.vertexCollection(
+          `${statement.tableName}`
+        );
+        collection = vertexCollection.collection;
 
         if (WLModel.classType === 'Edge') {
-          collection = graph.edgeCollection(`${statement.tableName}`);
+          const egdeCollection = graph.edgeCollection(`${statement.tableName}`);
+          collection = edgeCollection.collection;
         }
 
         let ids = where[pkColumnName];
@@ -209,10 +213,11 @@ module.exports = require('machine').build({
           sql = `${sql}  LET removed = OLD RETURN removed`;
         }
 
-        result = await dbConnection.query(sql);
+        const cursor = await dbConnection.query(sql);
+        cursor._result = await cursor.all();
 
         if (fetchRecords) {
-          removedRecords = result._result;
+          removedRecords = cursor._result;
         }
       }
 

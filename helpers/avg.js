@@ -129,9 +129,10 @@ module.exports = require('machine').build({
       sql = `${sql} COLLECT AGGREGATE avg = AVG(record.${statement.numericAttrName})`;
       sql = `${sql} RETURN avg`;
 
-      results = await dbConnection.query(sql);
+      const cursor = await dbConnection.query(sql);
+      cursor._result = await cursor.all();
 
-      results = _.isArray(results._result) ? results._result[0] : 0;
+      results = _.isArray(cursor._result) ? cursor._result[0] : 0;
 
       Helpers.connection.releaseConnection(session, leased);
     } catch (error) {

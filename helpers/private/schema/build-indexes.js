@@ -26,13 +26,19 @@ module.exports = async function buildIndexes(
       (obj) =>
         new Promise(async (resolv) => {
           if (obj.fields && obj.unique !== false) {
-            await collection.createHashIndex(obj.fields, {
+            await collection.ensureIndex({
+              // name: obj.fields.join(''),
+              fields: obj.fields,
+              type: 'hash',
               unique: true,
               sparse: Boolean(obj.sparse),
             });
           }
           if (obj.fields && obj.unique === false) {
-            await collection.createHashIndex(obj.fields, {
+            await collection.ensureIndex({
+              // name: obj.fields.join(''),
+              fields: obj.fields,
+              type: 'hash',
               unique: false,
               sparse: Boolean(obj.sparse),
             });

@@ -162,10 +162,8 @@ module.exports = require('machine').build({
       });
 
       sql = `${sql} RETURN {vertex, edge }`;
-
-      result = await dbConnection.query(sql);
-
-      result = result._result;
+      const cursor = await dbConnection.query(sql);
+      result = await cursor.all();
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {

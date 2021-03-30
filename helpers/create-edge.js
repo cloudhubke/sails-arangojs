@@ -6,6 +6,14 @@
 //   ╚═════╝╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝   ╚═╝   ╚══════╝    ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝
 //
 
+const sleep = (time = 5000) => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, time);
+  });
+};
+
 module.exports = require('machine').build({
   friendlyName: 'Create Edge',
 
@@ -201,7 +209,15 @@ module.exports = require('machine').build({
       }
 
       const opts = { returnNew: fetchRecords };
-      const collection = dbConnection.edgeCollection(`${statement.tableName}`);
+      let collection = await dbConnection.collection(`${statement.tableName}`);
+      const exists = await collection.exists();
+      if (!exits) {
+        try {
+          collection = await dbConnection.createEdgeCollection(
+            `${statement.tableName}`
+          );
+        } catch (error) {}
+      }
 
       const result = await collection.save(
         { ...statement.values, _from: params.from, _to: params.to },

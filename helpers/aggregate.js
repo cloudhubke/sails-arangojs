@@ -102,12 +102,13 @@ module.exports = require('machine').build({
 
     const { dbConnection } = Helpers.connection.getConnection(
       inputs.datastore,
-      query.meta,
+      query.meta
     );
 
     let cursor;
     try {
       cursor = await dbConnection.query(statement.aggregatestatement);
+      cursor._result = await cursor.all();
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {

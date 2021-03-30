@@ -83,10 +83,6 @@ module.exports = require('machine').build({
 
       // Find if the collection exists
       let collection = dbConnection.collection(`${tableName}`);
-      if (WLModel.classType === 'Edge') {
-        collection = dbConnection.edgeCollection(`${tableName}`);
-      }
-
       const collectionExists = await collection.exists();
 
       if (collectionExists) {

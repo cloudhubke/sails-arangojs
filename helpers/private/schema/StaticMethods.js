@@ -220,6 +220,9 @@ module.exports = (globalId, keyProps, cache, gIds) => {
 
           Object.defineProperty(docObj, 'keyProps', {
             get: () => {
+              if (!docObj.getKeyProps) {
+                return {};
+              }
               return docObj.getKeyProps();
             },
           });
@@ -264,7 +267,9 @@ module.exports = (globalId, keyProps, cache, gIds) => {
             });
           }
 
-          docObj.saveToCache();
+          if (docObj.saveToCache) {
+            docObj.saveToCache();
+          }
         }
 
         return docObj;
