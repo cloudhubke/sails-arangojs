@@ -108,6 +108,37 @@ module.exports = require('machine').build({
       );
     }
 
+    _.each(models, (modelinfo) => {
+      let keyProps = modelinfo.keyProps || [];
+      let modelDefaults = {};
+      let modelAttributes = {};
+
+      for (let key in modelinfo.definition) {
+        const autoMigrations = modelinfo.definition[key].autoMigrations || {};
+        const unique = Boolean(autoMigrations.unique);
+
+        if (modelinfo.definition[key].defaultsTo) {
+          modelDefaults[key] = modelinfo.definition[key].defaultsTo;
+        }
+
+        modelAttributes[key] = {
+          type: modelinfo.definition[key].type,
+          required: Boolean(
+            modelinfo.definition[key].required ||
+              _.has(modelinfo.definition[key], 'defaultsTo')
+          ),
+        };
+
+        if (unique) {
+          keyProps.push(key);
+        }
+      }
+
+      modelinfo.modelAttributes = modelAttributes;
+      modelinfo.modelDefaults = modelDefaults;
+      modelinfo.keyProps = _.uniq(keyProps);
+    });
+
     // TODO
     // Primary Key for ArangoDb models starts with _key insteat of id
 
@@ -150,9 +181,6 @@ module.exports = require('machine').build({
       meta: _.omit(config, ['adapter', 'url', 'identity', 'schema']),
     }).switch({
       error(err) {
-        console.log('====================================');
-        console.log(err);
-        console.log('====================================');
         return exits.error(
           `Consistency violation: Unexpected error creating db connection manager:\n\`\`\`\n${err}`
         );
@@ -245,11 +273,20 @@ module.exports = require('machine').build({
               identity: modelinfo.identity,
               globalId: modelinfo.globalId,
               ModelObjectConstructor: modelinfo.ModelObjectConstructor,
-              keyProps: modelinfo.keyProps || [],
+              keyProps: modelinfo.keyProps,
+              modelDefaults: modelinfo.modelDefaults,
+              modelAttributes: modelinfo.modelAttributes,
               cache: modelinfo.cache,
             };
 
+            // if (modelinfo.tableName === 'guarantorshiprequest') {
+            //   console.log('====================================');
+            //   console.log(definition.modelAttributes);
+            //   console.log('====================================');
+            // }
+
             const ModelObjectName = `${modelinfo.globalId}Object`;
+
             if (!global[ModelObjectName]) {
               global[ModelObjectName] = new Function(
                 `return function ${ModelObjectName}(dsName){
@@ -272,25 +309,11 @@ module.exports = require('machine').build({
                 };`
               )();
 
-              let keyProps = [...(modelinfo.keyProps || [])];
-
-              for (let key in modelinfo.definition) {
-                const autoMigrations =
-                  modelinfo.definition[key].autoMigrations || {};
-                const unique = Boolean(autoMigrations.unique);
-
-                if (unique) {
-                  keyProps.push(key);
-                }
-              }
-
-              keyProps = _.uniq(keyProps);
-
               Object.assign(
                 global[ModelObjectName],
                 StaticMethods(
                   modelinfo.globalId,
-                  keyProps,
+                  modelinfo.keyProps,
                   Boolean(modelinfo.cache)
                 )
               );

@@ -2,7 +2,7 @@ function getObject(globalId) {
   return String(global[`${globalId}Dbo`]);
 }
 
-module.exports = (globalId, keyProps) => {
+module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
   const globalid = `${globalId}`.toLocaleLowerCase();
   const methods = () => ({
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -11,21 +11,92 @@ module.exports = (globalId, keyProps) => {
 
     globalId: `"${globalId}"`,
     keyProps: JSON.stringify(keyProps),
+    modelDefaults: JSON.stringify(modelDefaults || {}),
+    modelAttributes: JSON.stringify(modelAttributes || {}),
 
-    create: function (params) {
-      const doc = db.globalid.insert(params, { returnNew: true }).new;
-      return globalIdDbo.initialize(doc);
+    create: function (...params) {
+      const validateParams = (docParams) => {
+        const attributes = globalIdDbo.modelAttributes;
+        for (let key in attributes) {
+          const type =
+            attributes[key].type === 'json' ? 'object' : attributes[key].type;
+          const required = attributes[key].required;
+
+          if (docParams[key] && typeof docParams[key] !== type) {
+            throw new Error(
+              `${key} attribute in ${globalIdDbo.globalId} should be of type ${type}`
+            );
+          }
+
+          if (
+            docParams[key] !== 0 &&
+            docParams[key] !== false &&
+            !docParams[key] &&
+            required
+          ) {
+            throw new Error(
+              `${key} attribute in ${globalIdDbo.globalId} is required`
+            );
+          }
+        }
+
+        return true;
+      };
+
+      if (params.length > 2) {
+        const docParams = {
+          ...globalIdDbo.modelDefaults,
+          ...params[2],
+          createdAt: Date.now(),
+        };
+
+        validateParams(docParams);
+
+        params[2] = docParams;
+        params[3] = { returnNew: true };
+      } else {
+        if (Array.isArray(params[0])) {
+          throw new Error(`Arrays are not supported`);
+        } else {
+          const docParams = {
+            ...globalIdDbo.modelDefaults,
+            ...params[0],
+            createdAt: Date.now(),
+          };
+
+          validateParams(docParams);
+
+          params[0] = docParams;
+          params[1] = { returnNew: true };
+        }
+      }
+
+      const doc = db.globalid.insert(...params).new;
+      const docObj = globalIdDbo.initialize(doc);
+      if (typeof docObj.onGetOne === 'function') {
+        docObj.onGetOne();
+      }
+      return docObj;
     },
 
     getDocument: function (params) {
       const doc = db.globalid.document(params);
-      return globalIdDbo.initialize(doc);
+      const docObj = globalIdDbo.initialize(doc);
+      if (typeof docObj.onGetOne === 'function') {
+        docObj.onGetOne();
+      }
+
+      return docObj;
     },
 
     firstExample: function (params) {
       const doc = db.globalid.firstExample(params);
       if (doc) {
-        return globalIdDbo.initialize(doc);
+        const docObj = globalIdDbo.initialize(doc);
+        if (typeof docObj.onGetOne === 'function') {
+          docObj.onGetOne();
+        }
+        return docObj;
       }
       return null;
     },
@@ -43,10 +114,11 @@ module.exports = (globalId, keyProps) => {
         obj.id = doc._key;
       }
 
-      let props = {};
-      for (let prop of globalIdDbo.keyProps) {
-        props[prop] = doc[prop];
-      }
+      Object.defineProperty(obj, 'globalId', {
+        get: () => {
+          return globalIdDbo.globalId;
+        },
+      });
 
       Object.defineProperty(obj, 'instanceName', {
         get: () => {
@@ -95,7 +167,14 @@ module.exports = (globalId, keyProps) => {
         const updateValues = callback(this);
         const updatedDoc = db._update(
           this,
-          { ...updateValues },
+          { ...updateValues, updatedAt: Date.now() },
+          { returnNew: true }
+        ).new;
+        this.reInitialize(updatedDoc);
+      } else if (typeof callback === 'object') {
+        const updatedDoc = db._update(
+          this,
+          { ...callback, updatedAt: Date.now() },
           { returnNew: true }
         ).new;
         this.reInitialize(updatedDoc);

@@ -34,15 +34,12 @@ if (!global.getDocument) {
       });
       return obj;
     } catch (error) {
-      console.log('====================================');
-      console.log(error);
-      console.log('====================================');
       throw error;
     }
   };
 }
 
-module.exports = (globalId, keyProps, cache, gIds) => {
+module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
   const create = async function (params, dsName) {
     try {
       if (params.Email) {
@@ -70,6 +67,9 @@ module.exports = (globalId, keyProps, cache, gIds) => {
 
       if (newdoc) {
         const doc = global[`${globalId}Object`].initialize(newdoc, dsName);
+        if (typeof doc.onGetOne === 'function') {
+          doc.onGetOne();
+        }
         return doc;
       }
       return null;
@@ -106,10 +106,21 @@ module.exports = (globalId, keyProps, cache, gIds) => {
       }
 
       if (doc) {
+        let docObj;
         if (dsName) {
-          return global[`${globalId}Object`].initialize(doc, dsName);
+          docObj = global[`${globalId}Object`].initialize(doc, dsName);
         }
-        return global[`${globalId}Object`].initialize(doc);
+        docObj = global[`${globalId}Object`].initialize(doc);
+
+        if (typeof docObj.onGetOne === 'function') {
+          if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
+            await docObj.onGetOne();
+          } else {
+            docObj.onGetOne();
+          }
+        }
+
+        return docObj;
       }
 
       return null;
@@ -150,7 +161,9 @@ module.exports = (globalId, keyProps, cache, gIds) => {
         obj.saveToCache();
       } else {
         throw new Error(
-          `${globalId} not available in ${dsName || 'default'} datastore`
+          `\n\n${globalId} not available in ${
+            dsName || 'default'
+          } datastore\n\n`
         );
       }
 
@@ -168,6 +181,7 @@ module.exports = (globalId, keyProps, cache, gIds) => {
     globalId,
     tableName: `${globalId}`.toLocaleLowerCase(),
     keyProps,
+    modelDefaults,
     cache,
     [`Available${globalId}s`]: {},
     findOneOrCreate: async function (params, dsName) {
@@ -195,7 +209,7 @@ module.exports = (globalId, keyProps, cache, gIds) => {
     [`create${globalId}`]: create,
     [`find${globalId}`]: findOne,
 
-    initialize: function initialize(doc, dsName) {
+    initialize: function initialize(doc, dsName, initOne) {
       try {
         if (doc instanceof global[`${globalId}Object`]) {
           if (dsName && dsName !== doc.tenantcode) {
@@ -216,16 +230,8 @@ module.exports = (globalId, keyProps, cache, gIds) => {
 
           for (let key of Object.keys(doc)) {
             docObj[key] = doc[key];
+            docObj.id = doc._key;
           }
-
-          Object.defineProperty(docObj, 'keyProps', {
-            get: () => {
-              if (!docObj.getKeyProps) {
-                return {};
-              }
-              return docObj.getKeyProps();
-            },
-          });
 
           Object.defineProperty(docObj, 'tableName', {
             get: () => {
@@ -267,11 +273,27 @@ module.exports = (globalId, keyProps, cache, gIds) => {
             });
           }
 
+          if (typeof docObj.loadCalculatedProps === 'function') {
+            docObj.loadCalculatedProps();
+          }
+
           if (docObj.saveToCache) {
             docObj.saveToCache();
           }
-        }
 
+          if (initOne) {
+            if (typeof docObj.onGetOne === 'function') {
+              if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
+                return new Promise(async (resolve) => {
+                  await docObj.onGetOne();
+                  resolve(docObj);
+                });
+              } else {
+                docObj.onGetOne();
+              }
+            }
+          }
+        }
         return docObj;
       } catch (error) {
         throw error;

@@ -122,20 +122,8 @@ module.exports = {
     let dbObjects = `${getDocument}\n\n`;
 
     _.each(models, (model) => {
-      let keyProps = model.keyProps || [];
-
-      for (let key in model.definition) {
-        const autoMigrations = model.definition[key].autoMigrations || {};
-        const unique = Boolean(autoMigrations.unique);
-
-        if (unique) {
-          keyProps.push(key);
-        }
-      }
-      keyProps = _.uniq(keyProps);
-
       if (model.tenantType.includes(config.tenantType)) {
-        dbObjects = `${dbObjects}${DbObject(model.globalId, keyProps)}\n\n`;
+        dbObjects = `${dbObjects}${DbObject(model)}\n\n`;
       }
     });
 

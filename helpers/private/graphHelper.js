@@ -43,7 +43,7 @@ module.exports = {
               const collectionExists = await collection.exists();
 
               if (!collectionExists) {
-                await collection.create();
+                await collection.create({ type: 3 });
               }
 
               await Helpers.schema.buildSchema(
@@ -152,6 +152,7 @@ module.exports = {
       const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
       let gIds = [];
+
       for (let model of definitionsarray) {
         gIds.push(model.globalId);
       }
@@ -179,7 +180,8 @@ module.exports = {
             model.globalId,
             keyProps,
             Boolean(model.cache),
-            gIds
+            gIds,
+            model.modelDefaults
           );
 
           const DefaultPrototypeMethods = PrototypeMethods(model.globalId);
@@ -316,12 +318,29 @@ module.exports = {
 
       for (let model of definitionsarray) {
         dbListener.on(model.tableName, (doc, type) => {
-          if (
-            model.ModelObjectConstructor &&
-            typeof model.ModelObjectConstructor[type] === 'function'
-          ) {
-            const docObj = model.ModelObjectConstructor.initialize(doc, dsName);
+          if (!model.ModelObjectConstructor) {
+            return;
+          }
+
+          const docObj = model.ModelObjectConstructor.initialize(doc, dsName);
+
+          if (typeof model.ModelObjectConstructor[type] === 'function') {
             model.ModelObjectConstructor[type](docObj);
+          }
+
+          if (type === 'onInsertOrUpdate') {
+            if (
+              doc.updatedAt &&
+              typeof model.ModelObjectConstructor['onUpdate'] === 'function'
+            ) {
+              model.ModelObjectConstructor['onUpdate'](docObj);
+            } else {
+              if (
+                typeof model.ModelObjectConstructor['onInsert'] === 'function'
+              ) {
+                model.ModelObjectConstructor['onInsert'](docObj);
+              }
+            }
           }
         });
       }

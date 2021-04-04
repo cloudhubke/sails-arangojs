@@ -176,17 +176,19 @@ module.exports = require('machine').build({
 
     try {
       const selectRecords = cursor.map((doc) =>
-        global[`${WLModel.globalId}Object`].initialize(doc, dsName)
+        global[`${WLModel.globalId}Object`].initialize(
+          doc,
+          dsName,
+          cursor.length === 1
+        )
       );
 
       _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
       });
+
       return exits.success({ records: selectRecords });
     } catch (e) {
-      console.log('====================================');
-      console.log('EEE', e);
-      console.log('====================================');
       return exits.error(e);
     }
   },

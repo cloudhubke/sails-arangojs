@@ -34,7 +34,7 @@ module.exports = function validateSchema(model, schema, document) {
         }
         console.log(validate.errors);
         throw new Error(
-          `\n\Sanitization of the model ${model.tableName} has failed\n\n`
+          `\n\nSanitization of the model ${model.tableName} has failed\n\n`
         );
       }
 
