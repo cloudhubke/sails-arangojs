@@ -227,7 +227,8 @@ module.exports = require('machine').build({
       if (fetchRecords) {
         createdRecord = global[`${WLModel.globalId}Object`].initialize(
           result.new,
-          dsName
+          dsName,
+          true
         );
       }
     } catch (err) {

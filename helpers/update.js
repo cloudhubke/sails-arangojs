@@ -264,7 +264,11 @@ module.exports = require('machine').build({
 
         if (fetchRecords) {
           updatedRecords = result.map((r) =>
-            global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
+            global[`${WLModel.globalId}Object`].initialize(
+              r.new,
+              dsName,
+              result.length === 1
+            )
           );
         }
       }

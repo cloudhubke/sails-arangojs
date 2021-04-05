@@ -74,7 +74,12 @@ module.exports = (globalId) => {
       try {
         for (let key of Object.keys(doc)) {
           this[key] = doc[key];
-          this.id = doc._key;
+          if (doc.id) {
+            this._key = doc.id;
+          }
+          if (doc._key) {
+            this.id = doc._key;
+          }
         }
 
         this.loadCalculatedProps();

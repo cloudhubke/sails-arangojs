@@ -91,8 +91,8 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
         }
       }
 
-      for (let prop in otherprops) {
-        if (otherprops[prop] && !doc) {
+      if (!doc) {
+        for (let prop in otherprops) {
           if (dsName) {
             doc = await global[`_${globalId}`](dsName).findOne({
               [prop]: otherprops[prop],
@@ -109,21 +109,22 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
         let docObj;
         if (dsName) {
           docObj = global[`${globalId}Object`].initialize(doc, dsName);
+        } else {
+          docObj = global[`${globalId}Object`].initialize(doc);
         }
-        docObj = global[`${globalId}Object`].initialize(doc);
 
-        if (typeof docObj.onGetOne === 'function') {
-          if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
-            await docObj.onGetOne();
-          } else {
-            docObj.onGetOne();
-          }
-        }
+        // if (typeof docObj.onGetOne === 'function') {
+        //   if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
+        //     await docObj.onGetOne();
+        //   } else {
+        //     docObj.onGetOne();
+        //   }
+        // }
 
         return docObj;
+      } else {
+        return null;
       }
-
-      return null;
     } catch (error) {
       throw error;
     }
@@ -230,7 +231,12 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
           for (let key of Object.keys(doc)) {
             docObj[key] = doc[key];
-            docObj.id = doc._key;
+            if (doc.id) {
+              docObj._key = doc.id;
+            }
+            if (doc._key) {
+              docObj.id = doc._key;
+            }
           }
 
           Object.defineProperty(docObj, 'tableName', {
