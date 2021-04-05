@@ -113,9 +113,16 @@ module.exports = require('machine').build({
       let modelDefaults = {};
       let modelAttributes = {};
 
+      // if (modelinfo.tableName === 'accounttransaction') {
+      //   console.log('====================================');
+      //   console.log(modelinfo.definition.TransactionType);
+      //   console.log('====================================');
+      // }
+
       for (let key in modelinfo.definition) {
         const autoMigrations = modelinfo.definition[key].autoMigrations || {};
         const unique = Boolean(autoMigrations.unique);
+        const validations = modelinfo.definition[key].validations || {};
 
         if (modelinfo.definition[key].defaultsTo) {
           modelDefaults[key] = modelinfo.definition[key].defaultsTo;
@@ -128,6 +135,10 @@ module.exports = require('machine').build({
               _.has(modelinfo.definition[key], 'defaultsTo')
           ),
         };
+
+        if (validations.isIn && _.isArray(validations.isIn)) {
+          modelAttributes[key].isIn = [...validations.isIn];
+        }
 
         if (unique) {
           keyProps.push(key);

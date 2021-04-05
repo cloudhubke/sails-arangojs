@@ -21,6 +21,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           const type =
             attributes[key].type === 'json' ? 'object' : attributes[key].type;
           const required = attributes[key].required;
+          const isIn = attributes[key].isIn;
 
           if (docParams[key] && typeof docParams[key] !== type) {
             throw new Error(
@@ -36,6 +37,14 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           ) {
             throw new Error(
               `${key} attribute in ${globalIdDbo.globalId} is required`
+            );
+          }
+
+          if (isIn && !isIn.includes(docParams[key])) {
+            throw new Error(
+              `${key} should be one of ${isIn.join(', ')}. But found ${
+                docParams[key]
+              }`
             );
           }
         }

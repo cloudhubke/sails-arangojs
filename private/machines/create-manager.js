@@ -255,10 +255,12 @@ module.exports = {
           SystemSettings;
           bearerToken;
 
-          dbObjects;
-
           const dbServices = dbservices;
-          // make it global
+          if (dbServices.globals && typeof dbServices.globals === 'function') {
+            dbServices.globals();
+          }
+
+          dbObjects;
 
           const returnFunction = func;
 

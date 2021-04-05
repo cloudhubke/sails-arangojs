@@ -5,43 +5,49 @@ module.exports = (globalId) => {
   return {
     [`update${globalId}`]: async function initialize(callback) {
       try {
+        let updateValues;
         if (typeof callback === 'function') {
-          const updateValues = callback(this);
-          let updatedDoc;
-
-          if (this.merchantcode || this.tenantcode) {
-            updatedDoc = await global[`_${globalId}`](
-              this.merchantcode || this.tenantcode
-            )
-              .updateOne({ id: this.id })
-              .set({ ...updateValues });
-          } else {
-            updatedDoc = await global[`${globalId}`]
-              .updateOne({ id: this.id })
-              .set({ ...updateValues });
-          }
-
-          if (updatedDoc) {
-            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            // IMPORTANT! set to null
-            // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-            if (this.saveToCache) {
-              if (this.tenantcode) {
-                global[`${globalId}Object`][`Available${globalId}s`][
-                  `${this.tenantcode}/${updatedDoc.id}`
-                ] = null;
-              } else {
-                global[`${globalId}Object`][`Available${globalId}s`][
-                  updatedDoc.id
-                ] = null;
-              }
-            }
-            this.reInitialize(updatedDoc);
-          } else {
-            throw new Error(`Update could not reInitialize`);
-          }
+          updateValues = callback(this);
+        } else if (_.isPlainObject(callback)) {
+          updateValues = { ...callback };
         } else {
-          throw new Error(`Dbo update function expects a callback`);
+          throw new Error(
+            `Update parameter should be a callback or plain object`
+          );
+        }
+
+        let updatedDoc;
+
+        if (this.merchantcode || this.tenantcode) {
+          updatedDoc = await global[`_${globalId}`](
+            this.merchantcode || this.tenantcode
+          )
+            .updateOne({ id: this.id })
+            .set({ ...updateValues });
+        } else {
+          updatedDoc = await global[`${globalId}`]
+            .updateOne({ id: this.id })
+            .set({ ...updateValues });
+        }
+
+        if (updatedDoc) {
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // IMPORTANT! set to null
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          if (this.saveToCache) {
+            if (this.tenantcode) {
+              global[`${globalId}Object`][`Available${globalId}s`][
+                `${this.tenantcode}/${updatedDoc.id}`
+              ] = null;
+            } else {
+              global[`${globalId}Object`][`Available${globalId}s`][
+                updatedDoc.id
+              ] = null;
+            }
+          }
+          this.reInitialize(updatedDoc);
+        } else {
+          throw new Error(`Update could not reInitialize`);
         }
       } catch (error) {
         throw error;
