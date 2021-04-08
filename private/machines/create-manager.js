@@ -256,7 +256,11 @@ module.exports = {
           bearerToken;
 
           const dbServices = dbservices;
-          if (dbServices.globals && typeof dbServices.globals === 'function') {
+          if (
+            dbServices &&
+            dbServices.globals &&
+            typeof dbServices.globals === 'function'
+          ) {
             dbServices.globals();
           }
 
