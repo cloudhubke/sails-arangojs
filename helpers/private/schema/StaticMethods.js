@@ -93,14 +93,16 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
       if (!doc) {
         for (let prop in otherprops) {
-          if (dsName) {
-            doc = await global[`_${globalId}`](dsName).findOne({
-              [prop]: otherprops[prop],
-            });
-          } else {
-            doc = await global[`${globalId}`].findOne({
-              [prop]: otherprops[prop],
-            });
+          if (['string', 'number'].includes(typeof otherprops[prop])) {
+            if (dsName) {
+              doc = await global[`_${globalId}`](dsName).findOne({
+                [prop]: otherprops[prop],
+              });
+            } else {
+              doc = await global[`${globalId}`].findOne({
+                [prop]: otherprops[prop],
+              });
+            }
           }
         }
       }
