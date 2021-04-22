@@ -67,9 +67,15 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
       if (newdoc) {
         const doc = global[`${globalId}Object`].initialize(newdoc, dsName);
-        if (typeof doc.onGetOne === 'function') {
-          doc.onGetOne();
+        if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
+          return new Promise(async (resolve) => {
+            await docObj.onGetOne();
+            resolve(docObj);
+          });
+        } else {
+          docObj.onGetOne();
         }
+
         return doc;
       }
       return null;

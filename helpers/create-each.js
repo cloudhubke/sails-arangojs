@@ -198,6 +198,7 @@ module.exports = require('machine').build({
     const createdRecords = result.map((r) =>
       global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
     );
+
     try {
       _.each(createdRecords, (record) => {
         Helpers.query.processNativeRecord(record, WLModel, query.meta);

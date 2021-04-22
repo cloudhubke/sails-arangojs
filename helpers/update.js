@@ -263,13 +263,7 @@ module.exports = require('machine').build({
         result = await cursor.all();
 
         if (fetchRecords) {
-          updatedRecords = result.map((r) =>
-            global[`${WLModel.globalId}Object`].initialize(
-              r.new,
-              dsName,
-              result.length === 1
-            )
-          );
+          updatedRecords = result.map((r) => r.new);
         }
       }
     } catch (error) {
@@ -311,14 +305,22 @@ module.exports = require('machine').build({
 
     try {
       await Helpers.connection.releaseConnection(dbConnection);
-      const newrecords = updatedRecords.map(
+      let newrecords = await Promise.all(
+        updatedRecords.map((record) =>
+          global[`${WLModel.globalId}Object`].initialize(
+            record,
+            dsName,
+            updatedRecords.length === 1
+          )
+        )
+      );
+
+      newrecords = newrecords.map(
         (record) =>
           // eslint-disable-next-line implicit-arrow-linebreak
           Helpers.query.processNativeRecord(record, WLModel, query.meta)
         // eslint-disable-next-line function-paren-newline
       );
-      // Helpers.query.processNativeRecord(record.new, WLModel, query.meta);
-      // Helpers.query.processNativeRecord(record.old, WLModel, query.meta);
 
       return exits.success({ records: newrecords });
     } catch (e) {

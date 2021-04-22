@@ -175,11 +175,13 @@ module.exports = require('machine').build({
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
 
     try {
-      const selectRecords = cursor.map((doc) =>
-        global[`${WLModel.globalId}Object`].initialize(
-          doc,
-          dsName,
-          cursor.length === 1
+      const selectRecords = await Promise.all(
+        cursor.map((doc) =>
+          global[`${WLModel.globalId}Object`].initialize(
+            doc,
+            dsName,
+            cursor.length === 1
+          )
         )
       );
 
