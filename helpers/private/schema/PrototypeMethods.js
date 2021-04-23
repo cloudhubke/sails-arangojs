@@ -129,7 +129,7 @@ module.exports = (globalId) => {
     },
 
     getDocument: function getDocument({ _id }) {
-      return getDocument({ _id }, this.merchantcode);
+      return global.getDocument({ _id }, this.merchantcode);
     },
 
     nextId: async function nextId(name) {
