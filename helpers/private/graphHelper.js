@@ -324,21 +324,25 @@ module.exports = {
 
           const docObj = model.ModelObjectConstructor.initialize(doc, dsName);
 
-          if (typeof model.ModelObjectConstructor[type] === 'function') {
-            model.ModelObjectConstructor[type](docObj);
+          if (
+            typeof model.ModelObjectConstructor.prototype[type] === 'function'
+          ) {
+            docObj[type]();
           }
 
           if (type === 'onInsertOrUpdate') {
             if (
               doc.updatedAt &&
-              typeof model.ModelObjectConstructor['onUpdate'] === 'function'
+              typeof model.ModelObjectConstructor.prototype['onUpdate'] ===
+                'function'
             ) {
-              model.ModelObjectConstructor['onUpdate'](docObj);
+              docObj.onUpdate();
             } else {
               if (
-                typeof model.ModelObjectConstructor['onInsert'] === 'function'
+                typeof model.ModelObjectConstructor.prototype['onInsert'] ===
+                'function'
               ) {
-                model.ModelObjectConstructor['onInsert'](docObj);
+                docObj.onInsert();
               }
             }
           }
