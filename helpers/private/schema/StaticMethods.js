@@ -43,7 +43,7 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
   const create = async function (params, dsName) {
     try {
       if (params.Email) {
-        params.Email = `${params.Email}`.toLocaleLowerCase().trim();
+        params.Email = `${params.Email}`.toLowerCase().trim();
       }
 
       const doc = await global[`${globalId}Object`][`find${globalId}`](
@@ -188,7 +188,7 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     globalId,
-    tableName: `${globalId}`.toLocaleLowerCase(),
+    tableName: `${globalId}`.toLowerCase(),
     keyProps,
     modelDefaults,
     cache,
@@ -220,6 +220,10 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
     initialize: function initialize(doc, dsName, initOne) {
       try {
+        if (!doc._id || !`${doc._id}`.includes(globalId.toLowerCase())) {
+          throw new Error(`INVALID DOCUMENT INITIALIZED`);
+        }
+
         if (doc instanceof global[`${globalId}Object`]) {
           if (dsName && dsName !== doc.tenantcode) {
             return global[`${globalId}Object`].initialize({ ...doc }, dsName);
@@ -249,7 +253,7 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
           Object.defineProperty(docObj, 'tableName', {
             get: () => {
-              return `${globalId}`.toLocaleLowerCase();
+              return `${globalId}`.toLowerCase();
             },
           });
 

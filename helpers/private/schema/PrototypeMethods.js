@@ -78,6 +78,10 @@ module.exports = (globalId) => {
 
     reInitialize: function reInitialize(doc) {
       try {
+        if (!doc._id || !`${doc._id}`.includes(this.tableName)) {
+          throw new Error(`INVALID DOCUMENT INITIALIZED`);
+        }
+
         for (let key of Object.keys(doc)) {
           this[key] = doc[key];
           if (doc.id) {
