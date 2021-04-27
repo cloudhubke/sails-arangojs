@@ -122,7 +122,9 @@ module.exports = {
     let dbObjects = `${getDocument}\n\n`;
 
     _.each(models, (model) => {
-      if (model.tenantType.includes(config.tenantType)) {
+      const tenant = config.tenantType || 'default';
+
+      if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
         dbObjects = `${dbObjects}${DbObject(model)}\n\n`;
       }
     });

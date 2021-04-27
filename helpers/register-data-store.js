@@ -123,6 +123,7 @@ module.exports = require('machine').build({
         const autoMigrations = modelinfo.definition[key].autoMigrations || {};
         const unique = Boolean(autoMigrations.unique);
         const validations = modelinfo.definition[key].validations || {};
+        const rules = modelinfo.definition[key].rules || {};
 
         if (modelinfo.definition[key].defaultsTo) {
           modelDefaults[key] = modelinfo.definition[key].defaultsTo;
@@ -134,6 +135,7 @@ module.exports = require('machine').build({
             modelinfo.definition[key].required ||
               _.has(modelinfo.definition[key], 'defaultsTo')
           ),
+          rules,
         };
 
         if (validations.isIn && _.isArray(validations.isIn)) {
@@ -337,6 +339,7 @@ module.exports = require('machine').build({
             }
 
             dbSchema[modelinfo.tableName] = definition;
+
             if (!config.tenantType) {
               config.tenantType = 'default';
             }

@@ -339,10 +339,10 @@ module.exports = {
               docObj.onUpdate();
             } else {
               if (
-                typeof model.ModelObjectConstructor.prototype['onInsert'] ===
+                typeof model.ModelObjectConstructor.prototype['onCreate'] ===
                 'function'
               ) {
-                docObj.onInsert();
+                docObj.onCreate();
               }
             }
           }

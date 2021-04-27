@@ -4,6 +4,7 @@ function getObject(globalId) {
 
 module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
   const globalid = `${globalId}`.toLocaleLowerCase();
+
   const methods = () => ({
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // STATIC METHODS
@@ -13,53 +14,84 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     keyProps: JSON.stringify(keyProps),
     modelDefaults: JSON.stringify(modelDefaults || {}),
     modelAttributes: JSON.stringify(modelAttributes || {}),
+    validateParams: function (docParams) {
+      const attributes = globalIdDbo.modelAttributes;
 
-    create: function (...params) {
-      const validateParams = (docParams) => {
-        const attributes = globalIdDbo.modelAttributes;
-        for (let key in attributes) {
-          const type =
-            attributes[key].type === 'json' ? 'object' : attributes[key].type;
-          const required = attributes[key].required;
-          const isIn = attributes[key].isIn;
+      for (let key in attributes) {
+        if (key === 'id') {
+          continue;
+        }
+        const type =
+          attributes[key].type === 'json' ? 'object' : attributes[key].type;
+        const required = attributes[key].required;
+        const isIn = attributes[key].isIn;
+        const rules = attributes[key].rules || {};
 
-          if (docParams[key] && typeof docParams[key] !== type) {
-            throw new Error(
-              `${key} attribute in ${globalIdDbo.globalId} should be of type ${type}`
-            );
-          }
-
-          if (
-            docParams[key] !== 0 &&
-            docParams[key] !== false &&
-            !docParams[key] &&
-            required
-          ) {
-            throw new Error(
-              `${key} attribute in ${globalIdDbo.globalId} is required`
-            );
-          }
-
-          if (isIn && !isIn.includes(docParams[key])) {
-            throw new Error(
-              `${key} should be one of ${isIn.join(', ')}. But found ${
-                docParams[key]
-              }`
-            );
-          }
+        if (
+          Object.keys(docParams).includes(key) &&
+          typeof docParams[key] !== type
+        ) {
+          throw new Error(
+            `${key} attribute in ${globalIdDbo.globalId} should be of type ${type}`
+          );
         }
 
-        return true;
-      };
+        if (
+          docParams[key] !== 0 &&
+          docParams[key] !== false &&
+          !docParams[key] &&
+          required
+        ) {
+          throw new Error(
+            `${key} attribute in ${globalIdDbo.globalId} is required`
+          );
+        }
 
+        if (isIn && !isIn.includes(docParams[key])) {
+          throw new Error(
+            `${key} should be one of ${isIn.join(', ')}. But found ${
+              docParams[key]
+            }`
+          );
+        }
+
+        for (rule in rules) {
+          if (rule === 'minimum') {
+            if (docParams[key] < rules[rule]) {
+              throw new Error(`${key} should not be less than ${rules[rule]}`);
+            }
+          }
+          if (rule === 'maximum') {
+            if (docParams[key] < rules[rule]) {
+              throw new Error(`${key} should not be more than ${rules[rule]}`);
+            }
+          }
+
+          if (rule === 'required') {
+            if (typeof docParams[key] === 'object') {
+              for (let requiredkey of rules[rule]) {
+                if (!Object.keys(docParams[key]).includes(requiredkey)) {
+                  throw new Error(`${requiredkey} is required in ${key}`);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      return true;
+    },
+
+    create: function (...params) {
+      let docParams;
       if (params.length > 2) {
-        const docParams = {
+        docParams = {
           ...globalIdDbo.modelDefaults,
           ...params[2],
           createdAt: Date.now(),
         };
 
-        validateParams(docParams);
+        globalIdDbo.validateParams(docParams);
 
         params[2] = docParams;
         params[3] = { returnNew: true };
@@ -67,25 +99,32 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         if (Array.isArray(params[0])) {
           throw new Error(`Arrays are not supported`);
         } else {
-          const docParams = {
+          docParams = {
             ...globalIdDbo.modelDefaults,
             ...params[0],
             createdAt: Date.now(),
           };
 
-          validateParams(docParams);
+          globalIdDbo.validateParams(docParams);
 
           params[0] = docParams;
           params[1] = { returnNew: true };
         }
       }
 
-      const doc = db.globalid.insert(...params).new;
-      const docObj = globalIdDbo.initialize(doc);
-      if (typeof docObj.onGetOne === 'function') {
-        docObj.onGetOne();
+      try {
+        const doc = db.globalid.insert(...params).new;
+
+        const docObj = globalIdDbo.initialize(doc);
+        if (typeof docObj.onGetOne === 'function') {
+          docObj.onGetOne();
+        }
+        return docObj;
+      } catch (error) {
+        throw new Error(
+          `Error saving doc in globalid \n\n${error.toString()}\n\n`
+        );
       }
-      return docObj;
     },
 
     getDocument: function (params) {
@@ -174,6 +213,12 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     update: function (callback) {
       if (typeof callback === 'function') {
         const updateValues = callback(this);
+
+        globalIdDbo.validateParams({
+          ...this,
+          ...updateValues,
+          updatedAt: Date.now(),
+        });
         const updatedDoc = db._update(
           this,
           { ...updateValues, updatedAt: Date.now() },
@@ -181,6 +226,11 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         ).new;
         this.reInitialize(updatedDoc);
       } else if (typeof callback === 'object') {
+        globalIdDbo.validateParams({
+          ...this,
+          ...callback,
+          updatedAt: Date.now(),
+        });
         const updatedDoc = db._update(
           this,
           { ...callback, updatedAt: Date.now() },
@@ -216,6 +266,11 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       global[`${globalId}Dbo`].prototype[key]
     )}\n`;
   }
+  protypesString = `${protypesString}`.replace(
+    /globalIdDbo/g,
+    `${globalId}Dbo`
+  );
+  protypesString = `${protypesString}`.replace(/globalid/g, `${globalid}`);
 
   return `${objString}${methodsString}${protypesString}`;
 };
