@@ -37,10 +37,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         }
 
         if (
-          docParams[key] !== 0 &&
-          docParams[key] !== false &&
-          docParams[key] !== '' &&
-          !docParams[key] &&
+          (!Object.keys(docParams).includes(key) || docParams[key] === null) &&
           required
         ) {
           throw new Error(
