@@ -32,7 +32,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           typeof docParams[key] !== type
         ) {
           throw new Error(
-            `${key} attribute in ${globalIdDbo.globalId} should be of type ${type}`
+            `${key} attribute in ${
+              globalIdDbo.globalId
+            } should be of type ${type} - ${JSON.stringify(docParams)}`
           );
         }
 
@@ -41,7 +43,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           required
         ) {
           throw new Error(
-            `${key} attribute in ${globalIdDbo.globalId} is required`
+            `${key} attribute in ${
+              globalIdDbo.globalId
+            } is required - ${JSON.stringify(docParams)}`
           );
         }
 
@@ -49,19 +53,27 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           throw new Error(
             `${key} should be one of ${isIn.join(', ')}. But found ${
               docParams[key]
-            }`
+            } - ${JSON.stringify(docParams)}`
           );
         }
 
         for (rule in rules) {
           if (rule === 'minimum') {
             if (docParams[key] < rules[rule]) {
-              throw new Error(`${key} should not be less than ${rules[rule]}`);
+              throw new Error(
+                `${key} should not be less than ${
+                  rules[rule]
+                } - ${JSON.stringify(docParams)}`
+              );
             }
           }
           if (rule === 'maximum') {
             if (docParams[key] < rules[rule]) {
-              throw new Error(`${key} should not be more than ${rules[rule]}`);
+              throw new Error(
+                `${key} should not be more than ${
+                  rules[rule]
+                } -  ${JSON.stringify(docParams)}`
+              );
             }
           }
 
@@ -69,7 +81,11 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
             if (typeof docParams[key] === 'object') {
               for (let requiredkey of rules[rule]) {
                 if (!Object.keys(docParams[key]).includes(requiredkey)) {
-                  throw new Error(`${requiredkey} is required in ${key}`);
+                  throw new Error(
+                    `${requiredkey} is required in ${key} - ${JSON.stringify(
+                      docParams
+                    )}`
+                  );
                 }
               }
             }
