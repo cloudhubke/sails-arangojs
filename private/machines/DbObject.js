@@ -102,7 +102,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         docParams = {
           ...globalIdDbo.modelDefaults,
           ...params[2],
-          createdAt: Date.now(),
+          createdAt: params[2].createdAt || Date.now(),
         };
 
         globalIdDbo.validateParams(docParams);
