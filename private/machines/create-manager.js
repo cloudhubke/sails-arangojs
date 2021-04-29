@@ -175,9 +175,7 @@ module.exports = {
         const exists = await graph.exists();
         if (!exists) {
           // create graph
-          await graph.create({
-            edgeDefinitions: [],
-          });
+          await graph.create([]);
         }
       }
 
