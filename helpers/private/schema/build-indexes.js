@@ -29,7 +29,7 @@ module.exports = async function buildIndexes(
             await collection.ensureIndex({
               // name: obj.fields.join(''),
               fields: obj.fields,
-              type: 'hash',
+              type: 'persistent',
               unique: true,
               sparse: Boolean(obj.sparse),
             });
@@ -38,7 +38,7 @@ module.exports = async function buildIndexes(
             await collection.ensureIndex({
               // name: obj.fields.join(''),
               fields: obj.fields,
-              type: 'hash',
+              type: 'persistent',
               unique: false,
               sparse: Boolean(obj.sparse),
             });

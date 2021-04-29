@@ -32,7 +32,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
                   fields: [`${name}`],
                   name: `${name}`,
                   unique: true,
-                  type: 'hash',
+                  type: 'persistent',
                   sparse: Boolean(!attribute.required),
                 });
               } catch (error) {
@@ -70,7 +70,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
                 fields: [`${name}`],
                 name: `${name}`,
                 unique: true,
-                type: 'hash',
+                type: 'persistent',
                 sparse: Boolean(!attribute.required),
               });
             } catch (error) {
