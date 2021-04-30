@@ -1,6 +1,6 @@
 {
   "name": "sails-arangojs",
-  "version": "0.2.19",
+  "version": "0.2.20",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
   "scripts": {
