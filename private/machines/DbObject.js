@@ -217,7 +217,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       return null;
     },
 
-    initialize: function (doc) {
+    initialize: function (doc, fireOnGetOne = false) {
       if (doc instanceof globalIdDbo) {
         //Re Initialize
         doc.reInitialize(doc);
@@ -250,6 +250,10 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
 
       if (typeof obj.afterInitialize === 'function') {
         obj.afterInitialize();
+      }
+
+      if (fireOnGetOne && typeof docObj.onGetOne === 'function') {
+        obj.onGetOne();
       }
 
       return obj;
