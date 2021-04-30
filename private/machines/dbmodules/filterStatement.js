@@ -1,7 +1,6 @@
-const SqlString = require('sqlstring');
-const _ = require('@sailshq/lodash');
+const filterStatement = () => {
+  const SqlString = dbmodules.SqlString();
 
-module.exports = ({ pkColumnName }) => {
   function specialValue(val, key) {
     if (`${val}`.includes('(record.')) {
       return val;
@@ -10,9 +9,6 @@ module.exports = ({ pkColumnName }) => {
       return `${val}`.replace('$', '');
     }
 
-    if (key === pkColumnName) {
-      return `${SqlString.escape(val)}`;
-    }
     if (_.isObject(val)) {
       return JSON.stringify(val);
     }
@@ -25,7 +21,7 @@ module.exports = ({ pkColumnName }) => {
     return val;
   }
 
-  function getInStatement(arr) {
+  const getInStatement = (arr) => {
     let str = '';
     if (Array.isArray(arr) && arr.length > 0) {
       if (arr.length === 1) {
@@ -40,9 +36,9 @@ module.exports = ({ pkColumnName }) => {
     }
 
     return str;
-  }
+  };
 
-  function getHasStatement(val) {
+  const getHasStatement = (val) => {
     let str = '';
     if (_.isString(val) || _.isNumber(val)) {
       str = `${specialValue(val)}`;
@@ -50,9 +46,9 @@ module.exports = ({ pkColumnName }) => {
       throw new Error('the HAS statement expects a number or string.');
     }
     return str;
-  }
+  };
 
-  function getNotInStatement(arr) {
+  const getNotInStatement = (arr) => {
     let str = '';
     if (Array.isArray(arr) && arr.length > 0) {
       if (arr.length === 1) {
@@ -67,9 +63,9 @@ module.exports = ({ pkColumnName }) => {
     }
 
     return str;
-  }
+  };
 
-  function getBetweenStatement(arr) {
+  const getBetweenStatement = (arr) => {
     const btwn = [];
     if (Array.isArray(arr) && arr.length === 2) {
       btwn.push(arr[0]);
@@ -80,9 +76,9 @@ module.exports = ({ pkColumnName }) => {
       );
     }
     return `BETWEEN ${btwn.join(' AND ')}`;
-  }
+  };
 
-  function getComparison(obj) {
+  const getComparison = (obj) => {
     if (_.isEmpty(obj)) {
       return '';
     }
@@ -161,9 +157,9 @@ module.exports = ({ pkColumnName }) => {
       }
     });
     return str;
-  }
+  };
 
-  function getAndStatement(obj) {
+  const getAndStatement = (obj) => {
     const criteria = [];
     const str = null;
     if (_.isEmpty(obj)) {
@@ -241,9 +237,9 @@ module.exports = ({ pkColumnName }) => {
     }
 
     return criteria.join(' AND ');
-  }
+  };
 
-  function getOrStatement(arr) {
+  const getOrStatement = (arr) => {
     const orst = [];
     if (Array.isArray(arr) && arr.length > 1) {
       _.each(arr, (obj) => {
@@ -255,9 +251,9 @@ module.exports = ({ pkColumnName }) => {
       );
     }
     return orst.join(' OR ');
-  }
+  };
 
-  function getAndArrayStatement(arr) {
+  const getAndArrayStatement = (arr) => {
     const andst = [];
     if (Array.isArray(arr)) {
       _.each(arr, (obj) => {
@@ -267,9 +263,9 @@ module.exports = ({ pkColumnName }) => {
       throw new Error('We expect an array in the AND criteria');
     }
     return andst.join(' AND ');
-  }
+  };
 
-  function getLetStatements(obj) {
+  const getLetStatements = (obj) => {
     let str = '';
 
     for (const key in obj) {
@@ -277,17 +273,19 @@ module.exports = ({ pkColumnName }) => {
       // if(_.isObject(obj) || _.isArray(obj)){
 
       // }
-      if (`${val}`.slice(0, 1) === '$' && !`${val}`.includes('$record.')) {
-        val = `${val}`.replace('$', ' $');
+      if (`${val}`.slice(0, 1) === '$') {
+        val = `${val}`.replace('$', '$');
       }
       str = `${str}LET ${key} = ${specialValue(val)}\n`;
     }
 
     return str;
-  }
+  };
 
   return {
     getAndStatement,
     getLetStatements,
   };
 };
+
+module.exports = String(filterStatement);

@@ -151,6 +151,60 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       return docObj;
     },
 
+    find: function (params = {}, options = {}) {
+      const { getAndStatement, getLetStatements } = dbmodules.filterStatement();
+      // Execute aql using the driver acquired dbConnectio.
+      let aql = `FOR record in globalid \n`;
+
+      if (options.let) {
+        aql = `${aql}${getLetStatements(options.let)} \n`;
+      }
+
+      if (!_.isEmpty(params)) {
+        aql = `${aql} FILTER ${getAndStatement(params)} \n`;
+      }
+
+      if (options.sort) {
+        let str = '';
+        _.each(options.sort, (value, key) => {
+          str += `record.${key} ${value}`;
+        });
+        aql = `${aql} SORT ${str} \n`;
+      }
+
+      if (options.limit) {
+        if (options.skip) {
+          aql = `${aql} LIMIT ${options.skip}, ${options.limit} \n`;
+        } else {
+          aql = `${aql} LIMIT ${options.limit} \n`;
+        }
+      }
+      aql = `${aql} return record`;
+
+      return db._query(aql);
+    },
+
+    findOne: function (params, options) {
+      const { getAndStatement, getLetStatements } = dbmodules.filterStatement();
+
+      const aql = `FOR record in globalid FILTER ${getAndStatement(
+        params
+      )} RETURN record`;
+
+      const results = db._query(aql).toArray();
+      if (results.length > 1) {
+        throw new Error(`More than one record found`);
+      }
+      if (results[0]) {
+        const docObj = globalIdDbo.initialize(results[0]);
+        if (typeof docObj.onGetOne === 'function') {
+          docObj.onGetOne();
+        }
+        return docObj;
+      }
+      return null;
+    },
+
     firstExample: function (params) {
       const doc = db.globalid.firstExample(params);
       if (doc) {

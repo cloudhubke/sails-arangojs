@@ -1,3 +1,5 @@
+const dbmodules = require('./dbmodules');
+const SqlString = require('sqlstring');
 const DbObject = require('./DbObject');
 
 String.prototype.capitalize = function () {
@@ -246,16 +248,18 @@ module.exports = {
             return arangoRequest(requestOptions);
           };
 
+          dbmodules; //1
+
           const normalize = (data) => {
             data.id = data._key;
             delete data._rev;
             return data;
           };
 
-          SystemSettings;
-          bearerToken;
+          SystemSettings; //2
+          bearerToken; //3
 
-          const dbServices = dbservices;
+          const dbServices = dbservices; //4
           if (
             dbServices &&
             dbServices.globals &&
@@ -264,27 +268,38 @@ module.exports = {
             dbServices.globals();
           }
 
-          dbObjects;
+          dbObjects; //5
 
-          const returnFunction = func;
+          const returnFunction = func; //6
 
           return returnFunction(params);
         });
+
+        let actionStr = `${fanction}`
+          .replace('dbmodules', '?')
+          .replace('dbservices', '?')
+          .replace('dbObjects', '?')
+          .replace('func;', '?')
+          .replace('bearerToken;', '?')
+          .replace('SystemSettings;', '?');
+
+        actionStr = SqlString.format(actionStr, [
+          SqlString.raw(dbmodules),
+          `const SystemSettings = ${JSON.stringify(getSystemSettings())};`,
+          `const bearerToken = '${bearerToken}';`,
+          SqlString.raw(config.dbServices),
+          SqlString.raw(dbObjects),
+          SqlString.raw(String(action)),
+        ]);
 
         return dbConnection.executeTransaction(
           {
             read: _.uniq([...reads, '_jobs']),
             write: _.uniq([...writes, '_jobs']),
           },
-          `${fanction}`
-            .replace('dbObjects;', dbObjects)
-            .replace('bearerToken;', `const bearerToken = '${bearerToken}';`)
-            .replace(
-              'SystemSettings;',
-              `const SystemSettings  = ${JSON.stringify(getSystemSettings())};`
-            )
-            .replace('dbservices', config.dbServices)
-            .replace('func;', String(action)),
+          actionStr,
+          // .replace('dbmodules;', dbmodules)
+
           {
             params: {
               ...params,
