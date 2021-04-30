@@ -285,8 +285,10 @@ module.exports = {
 
         actionStr = SqlString.format(actionStr, [
           SqlString.raw(dbmodules),
-          `const SystemSettings = ${JSON.stringify(getSystemSettings())};`,
-          `const bearerToken = '${bearerToken}';`,
+          SqlString.raw(
+            `const SystemSettings = ${JSON.stringify(getSystemSettings())};`
+          ),
+          SqlString.raw(`const bearerToken = '${bearerToken}';`),
           SqlString.raw(config.dbServices),
           SqlString.raw(dbObjects),
           SqlString.raw(String(action)),
