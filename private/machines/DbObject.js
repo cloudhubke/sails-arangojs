@@ -252,7 +252,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         obj.afterInitialize();
       }
 
-      if (fireOnGetOne && typeof docObj.onGetOne === 'function') {
+      if (fireOnGetOne && typeof obj.onGetOne === 'function') {
         obj.onGetOne();
       }
 
