@@ -3,7 +3,7 @@
 const EventEmitter = require('events');
 
 const dbEvents = {
-  2300: 'onInsertOrUpdate',
+  2300: 'onCreateOrUpdate',
   2302: 'onDelete',
 };
 

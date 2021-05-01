@@ -336,7 +336,7 @@ module.exports = {
             docObj[type]();
           }
 
-          if (type === 'onInsertOrUpdate') {
+          if (type === 'onCreateOrUpdate') {
             if (
               doc.updatedAt &&
               typeof model.ModelObjectConstructor.prototype['onUpdate'] ===
