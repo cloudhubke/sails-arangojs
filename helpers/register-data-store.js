@@ -125,7 +125,7 @@ module.exports = require('machine').build({
         const validations = modelinfo.definition[key].validations || {};
         const rules = modelinfo.definition[key].rules || {};
 
-        if (modelinfo.definition[key].defaultsTo) {
+        if (_.has(modelinfo.definition[key], 'defaultsTo')) {
           modelDefaults[key] = modelinfo.definition[key].defaultsTo;
         }
 

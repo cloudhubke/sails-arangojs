@@ -49,12 +49,28 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           );
         }
 
-        if (isIn && !isIn.includes(docParams[key])) {
+        if (isIn && type === 'string' && !isIn.includes(docParams[key])) {
           throw new Error(
-            `${key} should be one of ${isIn.join(', ')}. But found ${
+            `${key} attribute (${type}) in ${
+              globalIdDbo.globalId
+            } should be one of ${isIn.join(', ')}. But found ${
               docParams[key]
             } - ${JSON.stringify(docParams)}`
           );
+        }
+
+        if (isIn && type === 'object') {
+          _.each(docParams[key], (str) => {
+            if (!isIn.includes(str)) {
+              throw new Error(
+                `${key} attribute (${type}) in ${
+                  globalIdDbo.globalId
+                } should be one of ${isIn.join(
+                  ', '
+                )}. But found ${str} - ${JSON.stringify(docParams)}`
+              );
+            }
+          });
         }
 
         for (rule in rules) {
@@ -98,6 +114,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
 
     create: function (...params) {
       let docParams;
+
       if (params.length > 2) {
         docParams = {
           ...globalIdDbo.modelDefaults,
