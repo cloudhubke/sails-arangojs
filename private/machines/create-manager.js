@@ -289,8 +289,8 @@ module.exports = {
             `const SystemSettings = ${JSON.stringify(getSystemSettings())};`
           ),
           SqlString.raw(`const bearerToken = '${bearerToken}';`),
-          SqlString.raw(config.dbServices),
-          SqlString.raw(dbObjects),
+          SqlString.raw(config.dbServices || '{}'),
+          SqlString.raw(dbObjects || ''),
           SqlString.raw(String(action)),
         ]);
 
