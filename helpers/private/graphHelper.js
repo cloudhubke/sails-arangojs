@@ -361,7 +361,6 @@ module.exports = {
       console.log('====================================');
       console.log(error.toString());
       console.log('====================================');
-      throw error;
     }
   },
 };
