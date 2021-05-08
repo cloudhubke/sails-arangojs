@@ -1,4 +1,5 @@
 const _ = require('@sailshq/lodash');
+const util = require('util');
 
 String.prototype.capitalizeCollection = function () {
   return this.charAt(0).toUpperCase() + this.slice(1);
@@ -66,17 +67,12 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
       }
 
       if (newdoc) {
-        const doc = global[`${globalId}Object`].initialize(newdoc, dsName);
-        if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
-          return new Promise(async (resolve) => {
-            await docObj.onGetOne();
-            resolve(docObj);
-          });
-        } else {
-          docObj.onGetOne();
-        }
-
-        return doc;
+        const docObj = global[`${globalId}Object`].initialize(
+          newdoc,
+          dsName,
+          true
+        );
+        return docObj;
       }
       return null;
     } catch (error) {
@@ -301,7 +297,10 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
           if (initOne) {
             if (typeof docObj.onGetOne === 'function') {
-              if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
+              if (
+                docObj.onGetOne.constructor.name === 'AsyncFunction' ||
+                util.types.isAsyncFunction(docObj.onGetOne)
+              ) {
                 return new Promise(async (resolve) => {
                   await docObj.onGetOne();
                   resolve(docObj);
