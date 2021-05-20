@@ -34,7 +34,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           throw new Error(
             `${key} attribute in ${
               globalIdDbo.globalId
-            } should be of type ${type} - ${JSON.stringify(docParams)}`
+            } should be of type ${type} - ${docParams._key || ''}`
           );
         }
 
@@ -43,9 +43,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           required
         ) {
           throw new Error(
-            `${key} attribute in ${
-              globalIdDbo.globalId
-            } is required - ${JSON.stringify(docParams)}`
+            `${key} attribute in ${globalIdDbo.globalId} is required - ${
+              docParams._key || ''
+            }`
           );
         }
 
@@ -55,7 +55,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
               globalIdDbo.globalId
             } should be one of ${isIn.join(', ')}. But found ${
               docParams[key]
-            } - ${JSON.stringify(docParams)}`
+            } - ${docParams._key || ''}`
           );
         }
 
@@ -65,9 +65,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
               throw new Error(
                 `${key} attribute (${type}) in ${
                   globalIdDbo.globalId
-                } should be one of ${isIn.join(
-                  ', '
-                )}. But found ${str} - ${JSON.stringify(docParams)}`
+                } should be one of ${isIn.join(', ')}. But found ${str} - ${
+                  docParams._key || ''
+                }`
               );
             }
           });
@@ -77,18 +77,18 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           if (rule === 'minimum') {
             if (docParams[key] < rules[rule]) {
               throw new Error(
-                `${key} should not be less than ${
-                  rules[rule]
-                } - ${JSON.stringify(docParams)}`
+                `${key} should not be less than ${rules[rule]} - ${
+                  docParams._key || ''
+                }`
               );
             }
           }
           if (rule === 'maximum') {
             if (docParams[key] < rules[rule]) {
               throw new Error(
-                `${key} should not be more than ${
-                  rules[rule]
-                } -  ${JSON.stringify(docParams)}`
+                `${key} should not be more than ${rules[rule]} -  ${
+                  docParams._key || ''
+                }`
               );
             }
           }
