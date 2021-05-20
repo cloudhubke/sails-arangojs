@@ -152,8 +152,11 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         }
         return docObj;
       } catch (error) {
+        const response = error.response || {};
         throw new Error(
-          `Error saving doc in globalid \n\n${error.toString()}\n\n`
+          `Error saving doc in globalid \n\n${JSON.stringify(
+            response.body || {}
+          )}\n\n ${JSON.stringify(params)}\n\n`
         );
       }
     },
