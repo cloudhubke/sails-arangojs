@@ -278,7 +278,7 @@ module.exports = {
             const response = error.response || {};
             throw new Error(
               `TX ERROR, PARAMS: ${JSON.stringify(params)} \n ${JSON.stringify(
-                response.data || {}
+                response.body || {}
               )}`
             );
           }
