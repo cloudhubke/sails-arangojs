@@ -277,7 +277,7 @@ module.exports = {
           } catch (error) {
             const response = error.response || {};
             throw new Error(
-              `TX ERROR, PARAMS: ${JSONS.stringify(params)} \n ${JSON.stringify(
+              `TX ERROR, PARAMS: ${JSON.stringify(params)} \n ${JSON.stringify(
                 response.data || {}
               )}`
             );
