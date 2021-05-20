@@ -241,38 +241,47 @@ module.exports = {
           const queues = require('@arangodb/foxx/queues');
           const arangoRequest = require('@arangodb/request');
 
-          const request = (options) => {
-            const requestOptions = Object.assign(options, {
-              auth: { bearer: params.bearerToken },
-            });
-            return arangoRequest(requestOptions);
-          };
+          try {
+            const request = (options) => {
+              const requestOptions = Object.assign(options, {
+                auth: { bearer: params.bearerToken },
+              });
+              return arangoRequest(requestOptions);
+            };
 
-          dbmodules; //1
+            dbmodules; //1
 
-          const normalize = (data) => {
-            data.id = data._key;
-            delete data._rev;
-            return data;
-          };
+            const normalize = (data) => {
+              data.id = data._key;
+              delete data._rev;
+              return data;
+            };
 
-          SystemSettings; //2
-          bearerToken; //3
+            SystemSettings; //2
+            bearerToken; //3
 
-          const dbServices = dbservices; //4
-          if (
-            dbServices &&
-            dbServices.globals &&
-            typeof dbServices.globals === 'function'
-          ) {
-            dbServices.globals();
+            const dbServices = dbservices; //4
+            if (
+              dbServices &&
+              dbServices.globals &&
+              typeof dbServices.globals === 'function'
+            ) {
+              dbServices.globals();
+            }
+
+            dbObjects; //5
+
+            const returnFunction = func; //6
+
+            return returnFunction(params);
+          } catch (error) {
+            const response = error.response || {};
+            throw new Error(
+              `TX ERROR, PARAMS: ${JSONS.stringify(params)} \n ${JSON.stringify(
+                response.data || {}
+              )}`
+            );
           }
-
-          dbObjects; //5
-
-          const returnFunction = func; //6
-
-          return returnFunction(params);
         });
 
         let actionStr = `${fanction}`
