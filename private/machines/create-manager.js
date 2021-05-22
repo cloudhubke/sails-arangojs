@@ -275,11 +275,7 @@ module.exports = {
 
             return returnFunction(params);
           } catch (error) {
-            throw new Error(
-              `TX ERROR, PARAMS: ${JSON.stringify(params)} \n ${JSON.stringify(
-                error.toString()
-              )}`
-            );
+            throw new Error(`TX ERROR \n ${JSON.stringify(error.toString())}`);
           }
         });
 
