@@ -18,7 +18,7 @@ function stringify(obj_from_json) {
   }
 
   const props = Object.keys(obj_from_json)
-    .map((key) => `${key}:${stringify(obj_from_json[key])}`)
+    .map((key) => `"${key}":${stringify(obj_from_json[key])}`)
     .join(',');
   return `{${props}}`;
 }
@@ -137,7 +137,7 @@ const stringifyUpdateValues = (values, method, letObj = {}) => {
               );
             }
           }
-          st = [...st, `${key}: ${specialValue(value)}`];
+          st = [...st, `"${key}": ${specialValue(value)}`];
         });
       });
     } else {
@@ -154,52 +154,55 @@ const stringifyUpdateValues = (values, method, letObj = {}) => {
     if (_.isPlainObject(value)) {
       if (_.isEmpty(value)) {
         if (_.isArray(value)) {
-          newvalues = [...newvalues, `${key}: []`];
+          newvalues = [...newvalues, `"${key}": []`];
         } else {
-          newvalues = [...newvalues, `${key}: {}`];
+          newvalues = [...newvalues, `"${key}": {}`];
         }
       }
 
       _.each(value, (v, k) => {
         switch (k) {
           case '$inc':
-            newvalues = [...newvalues, `${key}: ${getIncreaseValues(key, v)}`];
+            newvalues = [
+              ...newvalues,
+              `"${key}": ${getIncreaseValues(key, v)}`,
+            ];
             break;
           case '$pop':
-            newvalues = [...newvalues, `${key}: ${getPopValues(key, v)}`];
+            newvalues = [...newvalues, `"${key}": ${getPopValues(key, v)}`];
             break;
           case '$shift':
-            newvalues = [...newvalues, `${key}: ${getShiftValues(key, v)}`];
+            newvalues = [...newvalues, `"${key}": ${getShiftValues(key, v)}`];
             break;
           case '$unshift':
             newvalues = [
               ...newvalues,
-              `${key}:  ${getUnshiftValues(key, v, false)}`,
+              `"${key}":  ${getUnshiftValues(key, v, false)}`,
             ];
             break;
           case '$unshiftset':
             newvalues = [
               ...newvalues,
-              `${key}:  ${getUnshiftValues(key, v, true)}`,
+              `"${key}":  ${getUnshiftValues(key, v, true)}`,
             ];
             break;
           case '$push':
             newvalues = [
               ...newvalues,
-              `${key}: ${getPushValues(key, v, false)}`,
+              `"${key}": ${getPushValues(key, v, false)}`,
             ];
             break;
           case '$pushset':
             newvalues = [
               ...newvalues,
-              `${key}: ${getPushValues(key, v, true)}`,
+              `"${key}": ${getPushValues(key, v, true)}`,
             ];
             break;
           case '$pull':
-            newvalues = [...newvalues, `${key}: ${getPullValues(key, v)}`];
+            newvalues = [...newvalues, `"${key}": ${getPullValues(key, v)}`];
             break;
           default:
-            newvalues = [...newvalues, `${key}: ${specialValue(value)}`];
+            newvalues = [...newvalues, `"${key}": ${specialValue(value)}`];
             break;
         }
       });
@@ -212,7 +215,7 @@ const stringifyUpdateValues = (values, method, letObj = {}) => {
           newvalues = [...newvalues, ...getAndOrValues(value)];
           break;
         default:
-          newvalues = [...newvalues, `${key}: ${specialValue(value)}`];
+          newvalues = [...newvalues, `"${key}": ${specialValue(value)}`];
           break;
       }
     }

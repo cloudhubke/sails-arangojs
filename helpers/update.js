@@ -175,11 +175,8 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const {
-      dbConnection,
-      Transaction,
-      dsName,
-    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
+    const { dbConnection, Transaction, dsName } =
+      Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let session;
     let result;
