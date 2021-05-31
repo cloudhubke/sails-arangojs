@@ -155,7 +155,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         const response = error.response || {};
         throw new Error(
           `Error saving doc in globalid \n\n${error.toString()}\n\n ${JSON.stringify(
-            params
+            {}
           )}\n\n`
         );
       }
