@@ -440,6 +440,44 @@ module.exports = {
     });
   },
 
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+  // REPLACE A DOCUMENT WITH A NEW DOC
+  // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+  replace(datastoreName, query, done) {
+    // Look up the datastore entry (manager/driver/config).
+    const datastore = registeredDatastores[datastoreName];
+
+    // Sanity check:
+    if (_.isUndefined(datastore)) {
+      return done(
+        new Error(
+          `Consistency violation: Cannot do that with datastore (\`${datastoreName}\`) because no matching datastore entry is registered in this adapter!  This is usually due to a race condition (e.g. a lifecycle callback still running after the ORM has been torn down), or it could be due to a bug in this adapter.  (If you get stumped, reach out at https://sailsjs.com/support.)`
+        )
+      );
+    }
+    const models = registeredModels[datastoreName];
+
+    return Helpers.replace({
+      datastore,
+      models,
+      query,
+    }).switch({
+      error: function error(err) {
+        return done(err);
+      },
+      notUnique: function error(errInfo) {
+        return done(flaverr('E_UNIQUE', errInfo));
+      },
+      success: function success(report) {
+        if (report) {
+          return done(undefined, report.records);
+        }
+        return done();
+      },
+    });
+  },
+
   /**
 
    * upsert matching records.

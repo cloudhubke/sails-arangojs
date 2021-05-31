@@ -248,7 +248,7 @@ module.exports = function compileStatement(options) {
     values: values || {},
   };
 
-  if (method === 'upsert' || method === 'update') {
+  if (method === 'upsert' || method === 'update' || method === 'replace') {
     obj.criteria = stringifyUpdateValues(
       {
         ...passedcriteria.where,

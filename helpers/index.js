@@ -9,6 +9,7 @@ module.exports = {
   create: require('./create'),
   createEach: require('./create-each'),
   update: require('./update'),
+  replace: require('./replace'),
   upsert: require('./upsert'),
   destroy: require('./destroy'),
   count: require('./count'),

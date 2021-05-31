@@ -3378,7 +3378,6 @@ npm@^6.14.9:
     cmd-shim "^3.0.3"
     columnify "~1.5.4"
     config-chain "^1.1.12"
-    debuglog "*"
     detect-indent "~5.0.0"
     detect-newline "^2.1.0"
     dezalgo "~1.0.3"
@@ -3393,7 +3392,6 @@ npm@^6.14.9:
     has-unicode "~2.0.1"
     hosted-git-info "^2.8.8"
     iferr "^1.0.2"
-    imurmurhash "*"
     infer-owner "^1.0.4"
     inflight "~1.0.6"
     inherits "^2.0.4"
@@ -3412,14 +3410,8 @@ npm@^6.14.9:
     libnpx "^10.2.4"
     lock-verify "^2.1.0"
     lockfile "^1.0.4"
-    lodash._baseindexof "*"
     lodash._baseuniq "~4.6.0"
-    lodash._bindcallback "*"
-    lodash._cacheindexof "*"
-    lodash._createcache "*"
-    lodash._getnative "*"
     lodash.clonedeep "~4.5.0"
-    lodash.restparam "*"
     lodash.union "~4.6.0"
     lodash.uniq "~4.5.0"
     lodash.without "~4.4.0"
@@ -4290,9 +4282,9 @@ sails-disk@^1.1.0:
     machinepack-fs "^12.0.1"
     nedb "1.8.0"
 
-sails-orm-hook@^3.18.0:
-  version "3.18.0"
-  resolved "https://registry.yarnpkg.com/sails-orm-hook/-/sails-orm-hook-3.18.0.tgz#a68e4c84dc4bc4f0348fa7544f0416ed7dda7381"
+sails-orm-hook@^3.20.0:
+  version "3.20.0"
+  resolved "https://registry.yarnpkg.com/sails-orm-hook/-/sails-orm-hook-3.20.0.tgz#a96c6310c221d9d5b8ccaefcb8814236de8d00a2"
   dependencies:
     "@sailshq/lodash" "^3.10.2"
     async "2.0.1"
@@ -4303,7 +4295,7 @@ sails-orm-hook@^3.18.0:
     prompt "0.2.14"
     sails-disk "^1.1.0"
     waterline-utils "^1.0.0"
-    waternile "^0.30.0"
+    waternile "^0.31.0"
 
 semantic-release@^17.2.3:
   version "17.2.3"
@@ -5050,9 +5042,9 @@ waternile-adapter-tests@^1.0.15:
     waterline-utils "^1.3.2"
     waternile "github:cloudhubke/waternile"
 
-waternile@^0.30.0:
-  version "0.30.0"
-  resolved "https://registry.yarnpkg.com/waternile/-/waternile-0.30.0.tgz#3bb769a30f6d004e3bf0263b9f2a661d44613148"
+waternile@^0.31.0:
+  version "0.31.0"
+  resolved "https://registry.yarnpkg.com/waternile/-/waternile-0.31.0.tgz#d38dfea9b8c5b1da522a1428d5c15909548ddc19"
   dependencies:
     "@sailshq/lodash" "^3.10.2"
     anchor "^1.2.0"
