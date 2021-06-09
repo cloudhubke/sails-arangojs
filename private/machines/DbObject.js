@@ -29,6 +29,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
 
         if (
           Object.keys(docParams).includes(key) &&
+          docParams[key] !== null &&
           typeof docParams[key] !== type
         ) {
           throw new Error(
@@ -305,30 +306,45 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     update: function (callback) {
       if (typeof callback === 'function') {
         const updateValues = callback(this);
-
-        globalIdDbo.validateParams({
-          ...this,
-          ...updateValues,
-          updatedAt: Date.now(),
-        });
-        const updatedDoc = db._update(
-          this,
-          { ...updateValues, updatedAt: Date.now() },
-          { returnNew: true }
-        ).new;
-        this.reInitialize(updatedDoc);
+        try {
+          globalIdDbo.validateParams({
+            ...this,
+            ...updateValues,
+            updatedAt: Date.now(),
+          });
+          const updatedDoc = db._update(
+            this,
+            { ...updateValues, updatedAt: Date.now() },
+            { returnNew: true }
+          ).new;
+          this.reInitialize(updatedDoc);
+        } catch (error) {
+          throw new Error(
+            `updating doc ${JSON.stringify({
+              ...this,
+              ...updateValues,
+              updatedAt: Date.now(),
+            })} ${error.toString()}`
+          );
+        }
       } else if (typeof callback === 'object') {
-        globalIdDbo.validateParams({
-          ...this,
-          ...callback,
-          updatedAt: Date.now(),
-        });
-        const updatedDoc = db._update(
-          this,
-          { ...callback, updatedAt: Date.now() },
-          { returnNew: true }
-        ).new;
-        this.reInitialize(updatedDoc);
+        try {
+          globalIdDbo.validateParams({
+            ...this,
+            ...callback,
+            updatedAt: Date.now(),
+          });
+          const updatedDoc = db._update(
+            this,
+            { ...callback, updatedAt: Date.now() },
+            { returnNew: true }
+          ).new;
+          this.reInitialize(updatedDoc);
+        } catch (error) {
+          throw new Error(
+            `updating doc ${JSON.stringify(callback)} ${error.toString()}`
+          );
+        }
       } else {
         throw new Error(`Dbo update function expects a callback`);
       }
