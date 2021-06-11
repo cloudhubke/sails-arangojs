@@ -174,13 +174,18 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
 
+    const metaOptions = {
+      fireOnGetOne: true,
+      ...query.meta,
+    };
+
     try {
       const selectRecords = await Promise.all(
         cursor.map((doc) =>
           global[`${WLModel.globalId}Object`].initialize(
             doc,
             dsName,
-            cursor.length === 1
+            cursor.length === 1 && metaOptions.fireOnGetOne
           )
         )
       );

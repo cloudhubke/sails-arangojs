@@ -147,10 +147,8 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       try {
         const doc = db.globalid.insert(...params).new;
 
-        const docObj = globalIdDbo.initialize(doc);
-        if (typeof docObj.onGetOne === 'function') {
-          docObj.onGetOne();
-        }
+        const docObj = globalIdDbo.initialize(doc, true);
+
         return docObj;
       } catch (error) {
         const response = error.response || {};
@@ -162,12 +160,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       }
     },
 
-    getDocument: function (params) {
+    getDocument: function (params, options = { fireOnGetOne: true }) {
       const doc = db.globalid.document(params);
-      const docObj = globalIdDbo.initialize(doc);
-      if (typeof docObj.onGetOne === 'function') {
-        docObj.onGetOne();
-      }
+      const docObj = globalIdDbo.initialize(doc, options.fireOnGetOne);
 
       return docObj;
     },
@@ -205,7 +200,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
       return db._query(aql);
     },
 
-    findOne: function (params, options) {
+    findOne: function (params, options = { fireOnGetOne: true }) {
       const { getAndStatement, getLetStatements } = dbmodules.filterStatement();
 
       const aql = `FOR record in globalid FILTER ${getAndStatement(
@@ -217,22 +212,16 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         throw new Error(`More than one record found`);
       }
       if (results[0]) {
-        const docObj = globalIdDbo.initialize(results[0]);
-        if (typeof docObj.onGetOne === 'function') {
-          docObj.onGetOne();
-        }
+        const docObj = globalIdDbo.initialize(results[0], options.fireOnGetOne);
         return docObj;
       }
       return null;
     },
 
-    firstExample: function (params) {
+    firstExample: function (params, options = { fireOnGetOne: true }) {
       const doc = db.globalid.firstExample(params);
       if (doc) {
-        const docObj = globalIdDbo.initialize(doc);
-        if (typeof docObj.onGetOne === 'function') {
-          docObj.onGetOne();
-        }
+        const docObj = globalIdDbo.initialize(doc, options.fireOnGetOne);
         return docObj;
       }
       return null;
