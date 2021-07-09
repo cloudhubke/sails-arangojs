@@ -126,15 +126,19 @@ module.exports = require('machine').build({
 
     const {
       dbConnection,
+      aql,
       graph,
+      graphCollections,
       graphEnabled,
+      dsName,
+      edges,
     } = Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let collections = [];
     let collection;
 
     if (graphEnabled) {
-      collections = await graph.listVertexCollections();
+      collections = graphCollections;
     }
 
     try {
@@ -149,13 +153,21 @@ module.exports = require('machine').build({
         collection = vertexCollection.collection;
 
         if (WLModel.classType === 'Edge') {
-          const egdeCollection = graph.edgeCollection(`${statement.tableName}`);
+          const edgeCollection = graph.edgeCollection(`${statement.tableName}`);
           collection = edgeCollection.collection;
         }
 
         let ids = where[pkColumnName];
 
-        if (!ids) {
+        if (_.isString(ids)) {
+          ids = [ids];
+        }
+
+        if (_.isObject(ids) && (_.has('$in') || _.has('in'))) {
+          ids = ids.in || ids.$in;
+        }
+
+        if (!ids || _.isEmpty(ids)) {
           return exits.badConnection(
             new Error(
               `Please provide the ${statement.tableName}'s ${pkColumnName} or _id for destroy function. It is null or undefined`
@@ -163,43 +175,15 @@ module.exports = require('machine').build({
           );
         }
 
-        if (where[pkColumnName].in && Array.isArray(where[pkColumnName].in)) {
-          ids = where[pkColumnName].in;
-        } else {
-          ids = [where[pkColumnName]];
-        }
-
-        if (where[pkColumnName].$in && Array.isArray(where[pkColumnName].$in)) {
-          ids = where[pkColumnName].$in;
-        } else {
-          ids = [where[pkColumnName]];
-        }
-
         if (fetchRecords) {
-          const promise = ids.map(async (id) => {
-            try {
-              return await collection.document(id);
-            } catch (error) {
-              return null;
-            }
-          });
+          const cursor = await dbConnection.query(
+            aql`FOR rec in ${collection} FILTER rec._key IN ${ids} RETURN rec`
+          );
 
-          removedRecords = await Promise.all(promise);
+          removedRecords = await cursor.all();
         }
 
-        const results = ids.map(
-          (id) =>
-            new Promise(async (resolve) => {
-              try {
-                result = await collection.remove(id);
-              } catch (error) {
-                //
-              }
-              resolve(id);
-            })
-        );
-
-        await Promise.all(results);
+        await collection.removeAll(ids);
       } else {
         let sql = `FOR record in ${statement.tableName}`;
 
@@ -223,6 +207,9 @@ module.exports = require('machine').build({
 
       Helpers.connection.releaseConnection(session, leased);
     } catch (error) {
+      console.log('====================================');
+      console.log('EERR', error);
+      console.log('====================================');
       if (session) {
         await Helpers.connection.releaseConnection(session, leased);
       }
@@ -233,7 +220,11 @@ module.exports = require('machine').build({
       return exits.success();
     }
 
-    removedRecords = [...(removedRecords || [])].filter((r) => Boolean(r));
+    removedRecords = [...(removedRecords || [])]
+      .filter((r) => Boolean(r))
+      .map((doc) =>
+        global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
+      );
 
     try {
       _.each(removedRecords, (nativeRecord) => {

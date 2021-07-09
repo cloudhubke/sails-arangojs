@@ -142,6 +142,7 @@ module.exports = require('machine').build({
       Transaction,
       dbConnection,
       graph,
+      graphCollections,
       graphEnabled,
       dsName,
     } = Helpers.connection.getConnection(inputs.datastore, query.meta);
@@ -152,7 +153,7 @@ module.exports = require('machine').build({
     let collection;
 
     if (graphEnabled) {
-      collections = await graph.listVertexCollections();
+      collections = graphCollections;
     }
 
     try {
@@ -196,8 +197,9 @@ module.exports = require('machine').build({
         collection = vertexCollection.collection;
 
         if (WLModel.classType === 'Edge') {
-          const egdeCollection = graph.edgeCollection(`${statement.tableName}`);
-          collection = edgeCollection.collection;
+          // const egdeCollection = graph.edgeCollection(`${statement.tableName}`);
+          // collection = edgeCollection.collection;
+          throw new Error(`Please use createEdge method for this model`);
         }
 
         const result = await collection.save(statement.values);

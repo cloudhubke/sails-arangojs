@@ -122,9 +122,22 @@ module.exports = {
     `;
 
     let dbObjects = `${getDocument}\n\n`;
+    let collections = [];
+    let vertices = [];
+    let edges = [];
+    let url = `http://${config.host}:${config.port || 8529}`;
 
     _.each(models, (model) => {
       const tenant = config.tenantType || 'default';
+      collections.push(model.tableName);
+
+      if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
+        if (model.classType == 'edge') {
+          edges.push(global[`${model.globalId}Dbo`]);
+        } else {
+          vertices.push(global[`${model.globalId}Dbo`]);
+        }
+      }
 
       if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
         dbObjects = `${dbObjects}${DbObject(model)}\n\n`;
@@ -132,8 +145,9 @@ module.exports = {
     });
 
     const dbConnection = new Database({
-      url: `http://${config.host}:${config.port || 8529}`,
+      url,
     });
+
     dbConnection.useDatabase(`${config.database}`);
     dbConnection.useBasicAuth(`${config.user}`, `${config.password || ''}`);
 
@@ -242,14 +256,21 @@ module.exports = {
           const arangoRequest = require('@arangodb/request');
 
           try {
+            bearerToken; //1
             const request = (options) => {
               const requestOptions = Object.assign(options, {
-                auth: { bearer: params.bearerToken },
+                auth: { bearer: bearerToken },
               });
+
               return arangoRequest(requestOptions);
             };
 
-            dbmodules; //1
+            global.dbCollections = params.dbCollections;
+
+            process.env.bearerToken = bearerToken;
+            process.env.dbCollections = JSON.stringify(params.collections);
+
+            dbmodules; //2
 
             const normalize = (data) => {
               data.id = data._key;
@@ -257,8 +278,7 @@ module.exports = {
               return data;
             };
 
-            SystemSettings; //2
-            bearerToken; //3
+            SystemSettings; //3
 
             const dbServices = dbservices; //4
             if (
@@ -288,11 +308,11 @@ module.exports = {
           .replace('SystemSettings;', '?');
 
         actionStr = SqlString.format(actionStr, [
+          SqlString.raw(`const bearerToken = '${bearerToken}';`),
           SqlString.raw(dbmodules),
           SqlString.raw(
             `const SystemSettings = ${JSON.stringify(getSystemSettings())};`
           ),
-          SqlString.raw(`const bearerToken = '${bearerToken}';`),
           SqlString.raw(config.dbServices || '{}'),
           SqlString.raw(dbObjects || ''),
           SqlString.raw(String(action)),
@@ -309,6 +329,7 @@ module.exports = {
           {
             params: {
               ...params,
+              collections,
             },
             waitForSync: true,
             ...options,
@@ -316,12 +337,21 @@ module.exports = {
         );
       };
 
+      let graphCollections = [];
+
+      if (config.graph) {
+        const vertexCollections = await graph.listVertexCollections();
+        const edgeCollections = await graph.listEdgeCollections();
+        graphCollections = [...vertexCollections, ...edgeCollections];
+      }
+
       return exits.success({
         manager: {
           dbConnection,
           createDatabase,
           graphEnabled: config.graph,
           graph,
+          graphCollections,
           graphName,
           aql,
           Transaction,
@@ -329,6 +359,11 @@ module.exports = {
           getSystemSettings,
           updateSystemSettings,
           dsName: config.identity === 'default' ? undefined : config.identity,
+          url,
+          config,
+          vertices,
+          bearerToken,
+          edges,
         },
         meta: config,
       });

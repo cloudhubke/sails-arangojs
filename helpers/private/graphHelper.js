@@ -4,6 +4,7 @@ const validateSchema = require('./schema/validate-schema');
 const StaticMethods = require('./schema/StaticMethods');
 const PrototypeMethods = require('./schema/PrototypeMethods');
 const ArangoReal = require('./connection/ArangoReal');
+const EventSource = require('eventsource');
 
 const sleep = (duration) => {
   return new Promise((resolve) => {
@@ -316,7 +317,7 @@ module.exports = {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   afterRegister: async (manager, definitionsarray) => {
     try {
-      const { dbConnection, dsName } = manager;
+      const { dbConnection, dsName, config, url, bearerToken } = manager;
 
       const dbListener = new ArangoReal({
         db: dbConnection,

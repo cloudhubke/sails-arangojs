@@ -1,6 +1,6 @@
 {
   "name": "sails-arangojs",
-  "version": "0.2.43",
+  "version": "0.2.44",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
   "scripts": {
@@ -44,6 +44,7 @@
     "@sailshq/lodash": "^3.10.2",
     "ajv": "^7.0.3",
     "arangojs": "^7.3.0",
+    "eventsource": "^1.1.0",
     "flaverr": "^1.10.0",
     "machine": "^15.2.2",
     "sails-orm-hook": "^3.21.0",
