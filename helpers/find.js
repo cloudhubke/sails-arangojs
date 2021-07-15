@@ -154,13 +154,15 @@ module.exports = require('machine').build({
           .map((f) => `${f}: ${variables.includes(f) ? f : `record.${f}`}`)
           .join(', \n')} \n}`;
       } else {
-        sql = `${sql} return record`;
+        sql = `${sql} return record `;
       }
 
       if (trx) {
-        cursor = await trx.step(() => dbConnection.query(`${sql}`));
+        cursor = await trx.step(() =>
+          dbConnection.query(`${sql}`, {}, { count: true })
+        );
       } else {
-        cursor = await dbConnection.query(`${sql}`);
+        cursor = await dbConnection.query(`${sql}`, {}, { count: true });
       }
 
       Helpers.connection.releaseConnection(dbConnection);
@@ -191,7 +193,7 @@ module.exports = require('machine').build({
         global[`${WLModel.globalId}Object`].initialize(
           doc,
           dsName,
-          cursor.length === 1 && metaOptions.fireOnGetOne
+          cursor.count === 1 && metaOptions.fireOnGetOne
         )
       );
 

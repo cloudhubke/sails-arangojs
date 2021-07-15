@@ -168,11 +168,7 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
     const selectRecords = await cursor.map((doc) =>
-      global[`${WLModel.globalId}Object`].initialize(
-        doc,
-        dsName,
-        cursor.length === 1
-      )
+      global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
     );
 
     try {
