@@ -77,6 +77,12 @@ module.exports = require('machine').build({
       return exits.error(e);
     }
 
+    let trx;
+
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
+    }
+
     //  ╔═╗╔═╗╔╗╔╦  ╦╔═╗╦═╗╔╦╗  ┌┬┐┌─┐  ┌─┐┌┬┐┌─┐┌┬┐┌─┐┌┬┐┌─┐┌┐┌┌┬┐
     //  ║  ║ ║║║║╚╗╔╝║╣ ╠╦╝ ║    │ │ │  └─┐ │ ├─┤ │ ├┤ │││├┤ │││ │
     //  ╚═╝╚═╝╝╚╝ ╚╝ ╚═╝╩╚═ ╩    ┴ └─┘  └─┘ ┴ ┴ ┴ ┴ └─┘┴ ┴└─┘┘└┘ ┴
@@ -151,9 +157,11 @@ module.exports = require('machine').build({
         sql = `${sql} return record`;
       }
 
-      cursor = await dbConnection.query(`${sql}`);
-      // cursor = await dbConnection.query(`${sql}`);
-      // Close dbConnection
+      if (trx) {
+        cursor = await trx.step(() => dbConnection.query(`${sql}`));
+      } else {
+        cursor = await dbConnection.query(`${sql}`);
+      }
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
