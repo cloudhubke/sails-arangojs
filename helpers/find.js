@@ -189,13 +189,15 @@ module.exports = require('machine').build({
     };
 
     try {
-      const selectRecords = await cursor.map((doc) =>
+      let selectRecords = await cursor.map((doc) =>
         global[`${WLModel.globalId}Object`].initialize(
           doc,
           dsName,
           cursor.count === 1 && metaOptions.fireOnGetOne
         )
       );
+
+      selectRecords = await Promise.all(selectRecords);
 
       _.each(selectRecords, (nativeRecord) => {
         Helpers.query.processNativeRecord(nativeRecord, WLModel, query.meta);
