@@ -109,7 +109,26 @@ module.exports = {
         String.prototype.capitalize = function () {
           return this.charAt(0).toUpperCase() + this.slice(1);
         };
-        const getDocument = function({_id}){
+        const getDocument = function(searchValue){
+
+          let _id = '';
+
+          if (_.isString(searchValue) && searchValue.includes('/')) {
+            _id = searchValue;
+          }
+    
+          if (
+            _.isObject(searchValue) &&
+            searchValue._id &&
+            searchValue._id.includes('/')
+          ) {
+            _id = searchValue._id;
+          }
+    
+          if (!_id) {
+            throw new Error('_id attribute should either be an object or a string');
+          }
+
           let coll=_id.split('/')[0].capitalize();
 
           switch (coll) {
@@ -167,13 +186,6 @@ module.exports = {
         console.log(`Created db ${dbName}`);
         console.log('====================================');
       } catch (err) {
-        console.log('====================================');
-        console.log(
-          `http://${config.host}:${config.port || 8529}`,
-          dbName,
-          rootPassword
-        );
-        console.log('====================================');
         throw new Error(err);
       }
     };

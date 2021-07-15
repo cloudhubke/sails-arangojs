@@ -71,6 +71,7 @@ module.exports = require('machine').build({
 
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
 
     // Grab the pk column name (for use below)
     let pkColumnName;
@@ -110,6 +111,10 @@ module.exports = require('machine').build({
     //   ┴ └─┘  ┴└─└─┘ ┴ └─┘┴└─┘└┘
     if (_.has(query.meta, 'fetch') && query.meta.fetch) {
       fetchRecords = true;
+    }
+
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
     }
 
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
@@ -175,15 +180,20 @@ module.exports = require('machine').build({
           );
         }
 
-        if (fetchRecords) {
-          const cursor = await dbConnection.query(
-            aql`FOR rec in ${collection} FILTER rec._key IN ${ids} RETURN rec`
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() =>
+            collection.removeAll(ids, { returnOld: fetchRecords })
           );
-
-          removedRecords = await cursor.all();
+        } else {
+          cursor = await collection.removeAll(ids, { returnOld: fetchRecords });
         }
 
-        await collection.removeAll(ids);
+        if (fetchRecords) {
+          removedRecords = await cursor.map((doc) =>
+            global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
+          );
+        }
       } else {
         let sql = `FOR record in ${statement.tableName}`;
 
@@ -197,19 +207,22 @@ module.exports = require('machine').build({
           sql = `${sql}  LET removed = OLD RETURN removed`;
         }
 
-        const cursor = await dbConnection.query(sql);
-        cursor._result = await cursor.all();
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() => dbConnection.query(sql));
+        } else {
+          cursor = await dbConnection.query(sql);
+        }
 
         if (fetchRecords) {
-          removedRecords = cursor._result;
+          removedRecords = await cursor.map((doc) =>
+            global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
+          );
         }
       }
 
       Helpers.connection.releaseConnection(session, leased);
     } catch (error) {
-      console.log('====================================');
-      console.log('EERR', error);
-      console.log('====================================');
       if (session) {
         await Helpers.connection.releaseConnection(session, leased);
       }
@@ -219,12 +232,6 @@ module.exports = require('machine').build({
     if (!fetchRecords) {
       return exits.success();
     }
-
-    removedRecords = [...(removedRecords || [])]
-      .filter((r) => Boolean(r))
-      .map((doc) =>
-        global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
-      );
 
     try {
       _.each(removedRecords, (nativeRecord) => {

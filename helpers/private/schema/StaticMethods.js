@@ -6,10 +6,24 @@ String.prototype.capitalizeCollection = function () {
 };
 
 if (!global.getDocument) {
-  global.getDocument = async function getDocument({ _id }, merchantcode) {
+  global.getDocument = async function getDocument(searchValue, merchantcode) {
     try {
-      if (!_id || !_.isString(_id) || !`${_id}`.includes('/')) {
-        throw new Error(`_id is required in getDocument`);
+      let _id = '';
+
+      if (_.isString(searchValue) && `${searchValue}`.includes('/')) {
+        _id = searchValue;
+      }
+
+      if (
+        _.isObject(searchValue) &&
+        searchValue._id &&
+        `${searchValue._id}`.includes('/')
+      ) {
+        _id = `${searchValue._id}`;
+      }
+
+      if (!_id) {
+        throw new Error(`_id attribute should either be an object or a string`);
       }
 
       const tableName = `${_id}`.split('/')[0].capitalizeCollection();
@@ -40,7 +54,14 @@ if (!global.getDocument) {
   };
 }
 
-module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
+module.exports = ({
+  globalId,
+  tableName,
+  keyProps,
+  cache,
+  gIds,
+  modelDefaults,
+}) => {
   const create = async function (params, dsName) {
     try {
       if (params.Email) {
@@ -184,7 +205,7 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     globalId,
-    tableName: `${globalId}`.toLowerCase(),
+    tableName: `${tableName}`.toLowerCase(),
     keyProps,
     modelDefaults,
     cache,
@@ -216,7 +237,7 @@ module.exports = (globalId, keyProps, cache, gIds, modelDefaults) => {
 
     initialize: function initialize(doc, dsName, initOne) {
       try {
-        if (!doc._id || !`${doc._id}`.includes(globalId.toLowerCase())) {
+        if (!doc._id || !`${doc._id}`.includes(tableName)) {
           throw new Error(`INVALID DOCUMENT INITIALIZED`);
         }
 

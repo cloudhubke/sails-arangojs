@@ -13,6 +13,10 @@
 //  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝    ╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝
 //
 
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.slice(1);
+};
+
 module.exports = require('machine').build({
   friendlyName: 'Register Data Store',
 
@@ -108,16 +112,21 @@ module.exports = require('machine').build({
       );
     }
 
+    let gIds = [];
+
     _.each(models, (modelinfo) => {
       let keyProps = modelinfo.keyProps || [];
       let modelDefaults = {};
       let modelAttributes = {};
 
-      // if (modelinfo.tableName === 'accounttransaction') {
-      //   console.log('====================================');
-      //   console.log(modelinfo.definition.TransactionType);
-      //   console.log('====================================');
-      // }
+      if (!modelinfo.globalId && modelinfo.tableName) {
+        modelinfo.globalId = `${modelinfo.tableName}`.capitalize();
+      }
+
+      if (!modelinfo.globalId) {
+        throw new Error(`Model globalId Error`);
+      }
+      gIds.push(modelinfo.globalId);
 
       for (let key in modelinfo.definition) {
         const autoMigrations = modelinfo.definition[key].autoMigrations || {};
@@ -292,12 +301,6 @@ module.exports = require('machine').build({
               cache: modelinfo.cache,
             };
 
-            // if (modelinfo.tableName === 'guarantorshiprequest') {
-            //   console.log('====================================');
-            //   console.log(definition.modelAttributes);
-            //   console.log('====================================');
-            // }
-
             const ModelObjectName = `${modelinfo.globalId}Object`;
 
             if (!global[ModelObjectName]) {
@@ -324,11 +327,14 @@ module.exports = require('machine').build({
 
               Object.assign(
                 global[ModelObjectName],
-                StaticMethods(
-                  modelinfo.globalId,
-                  modelinfo.keyProps,
-                  Boolean(modelinfo.cache)
-                )
+                StaticMethods({
+                  globalId: modelinfo.globalId,
+                  tableName: modelinfo.tableName,
+                  keyProps: modelinfo.keyProps,
+                  gIds,
+                  modelDefaults: modelinfo.modelDefaults,
+                  cache: Boolean(modelinfo.cache),
+                })
               );
 
               definition.ModelObjectConstructor = global[ModelObjectName];

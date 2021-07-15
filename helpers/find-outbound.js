@@ -162,8 +162,7 @@ module.exports = require('machine').build({
       });
 
       sql = `${sql} RETURN {vertex, edge }`;
-      const cursor = await dbConnection.query(sql);
-      result = await cursor.all();
+      result = await dbConnection.query(sql);
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
@@ -173,16 +172,16 @@ module.exports = require('machine').build({
       return exits.badConnection(error);
     }
 
-    const newresult = result
-      .map(({ vertex, edge }) => ({
-        vertex: vertex
-          ? Helpers.query.processNativeRecord(vertex, WLModel, query.meta)
-          : null,
-        edge: edge
-          ? Helpers.query.processNativeRecord(edge, WLModel, query.meta)
-          : null,
-      }))
-      .filter((r) => r.vertex !== null && r.edge !== null);
+    let newresult = await result.map(({ vertex, edge }) => ({
+      vertex: vertex
+        ? Helpers.query.processNativeRecord(vertex, WLModel, query.meta)
+        : null,
+      edge: edge
+        ? Helpers.query.processNativeRecord(edge, WLModel, query.meta)
+        : null,
+    }));
+
+    newresult = newresult.filter((r) => r.vertex !== null && r.edge !== null);
 
     return exits.success({ record: newresult });
   },

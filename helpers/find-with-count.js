@@ -162,7 +162,6 @@ module.exports = require('machine').build({
       }
 
       cursor = await dbConnection.query(`${sql}`);
-      cursor._result = await cursor.all();
 
       countCursor = await dbConnection.query(`${countSql}`);
       countCursor._result = await countCursor.all();
@@ -186,7 +185,7 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = cursor._result.map((doc) =>
+    const selectRecords = await cursor.map((doc) =>
       global[`${WLModel.globalId}Object`].initialize(doc, dsName)
     );
 

@@ -183,13 +183,14 @@ module.exports = {
           model.globalId &&
           model.ModelObjectConstructor
         ) {
-          const DefaultStaticMethods = StaticMethods(
-            model.globalId,
-            keyProps,
-            Boolean(model.cache),
-            gIds,
-            model.modelDefaults
-          );
+          const DefaultStaticMethods = StaticMethods({
+            globalId: model.globalId,
+            tableName: model.tableName,
+            keyProps: keyProps,
+            cache: Boolean(model.cache),
+            gIds: gIds,
+            modelDefaults: model.modelDefaults,
+          });
 
           const DefaultPrototypeMethods = PrototypeMethods(model.globalId);
 

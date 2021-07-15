@@ -84,6 +84,7 @@ module.exports = require('machine').build({
     }
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
     let mergeObjects = false;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
@@ -134,6 +135,9 @@ module.exports = require('machine').build({
     if (_.has(query.meta, 'fetch') && query.meta.fetch) {
       fetchRecords = true;
     }
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
+    }
 
     if (_.has(query.meta, 'mergeObjects') && !query.meta.mergeObjects) {
       mergeObjects = false;
@@ -180,11 +184,15 @@ module.exports = require('machine').build({
         sql = `${sql} RETURN {new: NEW, old: OLD}`;
       }
 
-      const cursor = await dbConnection.query(sql);
-      result = await cursor.all();
+      let cursor;
+      if (trx) {
+        cursor = await trx.step(() => dbConnection.query(sql));
+      } else {
+        cursor = await dbConnection.query(sql);
+      }
 
       if (fetchRecords) {
-        updatedRecords = result.map((r) =>
+        updatedRecords = await cursor.map((r) =>
           global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
         );
       }

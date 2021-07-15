@@ -146,7 +146,6 @@ module.exports = require('machine').build({
       }
 
       cursor = await dbConnection.query(sql);
-      cursor._result = await cursor.all();
 
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
@@ -168,13 +167,11 @@ module.exports = require('machine').build({
     //  ╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  │││├─┤ │ │└┐┌┘├┤   ├┬┘├┤ │  │ │├┬┘ │││ └─┐ │
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process records (mutate in-place) to wash away adapter-specific eccentricities.
-    const selectRecords = await Promise.all(
-      cursor._result.map((doc) =>
-        global[`${WLModel.globalId}Object`].initialize(
-          doc,
-          dsName,
-          cursor.length === 1
-        )
+    const selectRecords = await cursor.map((doc) =>
+      global[`${WLModel.globalId}Object`].initialize(
+        doc,
+        dsName,
+        cursor.length === 1
       )
     );
 

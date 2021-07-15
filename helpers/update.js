@@ -101,6 +101,7 @@ module.exports = require('machine').build({
     }
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
     let mergeObjects = true;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
@@ -161,6 +162,10 @@ module.exports = require('machine').build({
     //   ┴ └─┘  ┴└─└─┘ ┴ └─┘┴└─┘└┘
     if (_.has(query.meta, 'fetch') && query.meta.fetch) {
       fetchRecords = true;
+    }
+
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
     }
 
     if (_.has(query.meta, 'mergeObjects') && !query.meta.mergeObjects) {
@@ -232,11 +237,17 @@ module.exports = require('machine').build({
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
 
-        const cursor = await dbConnection.query(sql);
-        result = await cursor.all();
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() => dbConnection.query(sql));
+        } else {
+          cursor = await dbConnection.query(sql);
+        }
+
+        // result = await cursor.all();
 
         if (fetchRecords) {
-          updatedRecords = result.map((r) => r.new);
+          updatedRecords = await cursor.map((r) => r.new);
         }
       } else {
         let sql = `FOR record in ${statement.tableName} \n`;
@@ -256,11 +267,17 @@ module.exports = require('machine').build({
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
 
-        const cursor = await dbConnection.query(sql);
-        result = await cursor.all();
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() => dbConnection.query(sql));
+        } else {
+          cursor = await dbConnection.query(sql);
+        }
+
+        // result = await cursor.all();
 
         if (fetchRecords) {
-          updatedRecords = result.map((r) => r.new);
+          updatedRecords = await cursor.map((r) => r.new);
         }
       }
     } catch (error) {

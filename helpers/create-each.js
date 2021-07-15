@@ -65,6 +65,11 @@ module.exports = require('machine').build({
       friendlyName: 'Not Unique',
       outputExample: '===',
     },
+
+    error: {
+      friendlyName: 'create records error',
+      description: 'There was an error creating records',
+    },
   },
 
   fn: async function create(inputs, exits) {
@@ -94,6 +99,7 @@ module.exports = require('machine').build({
 
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
@@ -142,6 +148,10 @@ module.exports = require('machine').build({
       fetchRecords = true;
     }
 
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
+    }
+
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
     //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
     //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
@@ -150,29 +160,22 @@ module.exports = require('machine').build({
     //  └─┘┴└─  └─┘└─┘└─┘  ┴─┘└─┘┴ ┴└─┘└─┘─┴┘  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
     // Spawn a new connection for running queries on.
 
-    const {
-      dbConnection,
-      Transaction,
-      dsName,
-    } = Helpers.connection.getConnection(inputs.datastore, query.meta);
+    const { dbConnection, Transaction, dsName } =
+      Helpers.connection.getConnection(inputs.datastore, query.meta);
 
     let result;
 
     try {
-      result = await Transaction({
-        action: function (params) {
-          const col = db._collection(params.collection);
-          const results = col.insert(params.values, params.options);
-
-          return results;
-        },
-        writes: [`${statement.tableName}`],
-        params: {
-          collection: `${statement.tableName}`,
-          values: statement.values || [],
-          options: { returnNew: fetchRecords, overwrite: true },
-        },
-      });
+      const collection = dbConnection.collection(`${statement.tableName}`);
+      if (trx) {
+        result = await trx.step(() =>
+          collection.save(statement.values, { returnNew: fetchRecords })
+        );
+      } else {
+        result = await collection.save(statement.values, {
+          returnNew: fetchRecords,
+        });
+      }
     } catch (error) {
       if (dbConnection) {
         Helpers.connection.releaseConnection(dbConnection);
@@ -195,9 +198,22 @@ module.exports = require('machine').build({
     //  ╩  ╩╚═╚═╝╚═╝╚═╝╚═╝╚═╝  ┘└┘┴ ┴ ┴ ┴ └┘ └─┘  ┴└─└─┘└─┘└─┘┴└──┴┘└─└─┘─┘
     // Process record(s) (mutate in-place) to wash away adapter-specific eccentricities.
 
-    const createdRecords = result.map((r) =>
-      global[`${WLModel.globalId}Object`].initialize(r.new, dsName)
-    );
+    let createdRecords = [];
+    let error;
+
+    try {
+      createdRecords = await result.map((r) => {
+        if (r.error && r.errorMessage) {
+          throw new Error(
+            `\n\nThere was an error creating some records.\n${r.errorMessage}\n\n`
+          );
+        } else {
+          return global[`${WLModel.globalId}Object`].initialize(r.new, dsName);
+        }
+      });
+    } catch (error) {
+      return exits.error(error);
+    }
 
     try {
       _.each(createdRecords, (record) => {

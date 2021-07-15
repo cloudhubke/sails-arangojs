@@ -152,7 +152,6 @@ module.exports = require('machine').build({
       }
 
       cursor = await dbConnection.query(`${sql}`);
-      cursor = await cursor.all();
       // cursor = await dbConnection.query(`${sql}`);
       // Close dbConnection
 
@@ -180,13 +179,11 @@ module.exports = require('machine').build({
     };
 
     try {
-      const selectRecords = await Promise.all(
-        cursor.map((doc) =>
-          global[`${WLModel.globalId}Object`].initialize(
-            doc,
-            dsName,
-            cursor.length === 1 && metaOptions.fireOnGetOne
-          )
+      const selectRecords = await cursor.map((doc) =>
+        global[`${WLModel.globalId}Object`].initialize(
+          doc,
+          dsName,
+          cursor.length === 1 && metaOptions.fireOnGetOne
         )
       );
 

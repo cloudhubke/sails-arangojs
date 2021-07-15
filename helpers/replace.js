@@ -101,6 +101,7 @@ module.exports = require('machine').build({
     }
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
     let mergeObjects = false;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
@@ -163,6 +164,10 @@ module.exports = require('machine').build({
       fetchRecords = true;
     }
 
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
+    }
+
     // if (_.has(query.meta, 'mergeObjects') && !query.meta.mergeObjects) {
     //   mergeObjects = false;
     // }
@@ -203,11 +208,15 @@ module.exports = require('machine').build({
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
 
-        const cursor = await dbConnection.query(sql);
-        result = await cursor.all();
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() => dbConnection.query(sql));
+        } else {
+          cursor = await dbConnection.query(sql);
+        }
 
         if (fetchRecords) {
-          updatedRecords = result.map((r) => r.new);
+          updatedRecords = cursor;
         }
       } else {
         let sql = `FOR record in ${statement.tableName} \n`;
@@ -225,11 +234,15 @@ module.exports = require('machine').build({
           sql = `${sql} RETURN {new: NEW, old: OLD}`;
         }
 
-        const cursor = await dbConnection.query(sql);
-        result = await cursor.all();
+        let cursor;
+        if (trx) {
+          cursor = await trx.step(() => dbConnection.query(sql));
+        } else {
+          cursor = await dbConnection.query(sql);
+        }
 
         if (fetchRecords) {
-          updatedRecords = result.map((r) => r.new);
+          updatedRecords = cursor;
         }
       }
     } catch (error) {
@@ -271,13 +284,11 @@ module.exports = require('machine').build({
 
     try {
       await Helpers.connection.releaseConnection(dbConnection);
-      let newrecords = await Promise.all(
-        updatedRecords.map((record) =>
-          global[`${WLModel.globalId}Object`].initialize(
-            record,
-            dsName,
-            updatedRecords.length === 1
-          )
+      let newrecords = await updatedRecords.map((record) =>
+        global[`${WLModel.globalId}Object`].initialize(
+          record.new,
+          dsName,
+          updatedRecords.length === 1
         )
       );
 

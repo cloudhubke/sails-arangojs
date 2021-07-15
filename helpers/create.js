@@ -83,6 +83,7 @@ module.exports = require('machine').build({
 
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
@@ -128,6 +129,10 @@ module.exports = require('machine').build({
     //   ┴ └─┘  ┴└─└─┘ ┴ └─┘┴└─┘└┘
     if (_.has(query.meta, 'fetch') && query.meta.fetch) {
       fetchRecords = true;
+    }
+
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
     }
 
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
@@ -202,27 +207,46 @@ module.exports = require('machine').build({
           throw new Error(`Please use createEdge method for this model`);
         }
 
-        const result = await collection.save(statement.values);
+        let result;
+
+        if (trx) {
+          result = await trx.step(() =>
+            collection.save(statement.values, { returnNew: fetchRecords })
+          );
+        } else {
+          result = await collection.save(statement.values, {
+            returnNew: fetchRecords,
+          });
+        }
 
         if (fetchRecords) {
-          createdRecord = await collection.document(result[pkColumnName]);
-
           createdRecord = global[`${WLModel.globalId}Object`].initialize(
-            createdRecord,
-            dsName
+            result.new,
+            dsName,
+            true
           );
         }
       } else {
         collection = dbConnection.collection(`${statement.tableName}`);
 
-        const opts = { returnNew: fetchRecords };
-        const result = await collection.save(statement.values, opts);
+        let result;
+        if (trx) {
+          result = await trx.step(() =>
+            collection.save(statement.values, { returnNew: fetchRecords })
+          );
+        } else {
+          result = await collection.save(statement.values, {
+            returnNew: fetchRecords,
+          });
+        }
 
-        createdRecord = global[`${WLModel.globalId}Object`].initialize(
-          result.new,
-          dsName,
-          true
-        );
+        if (fetchRecords) {
+          createdRecord = global[`${WLModel.globalId}Object`].initialize(
+            result.new,
+            dsName,
+            true
+          );
+        }
       }
     } catch (err) {
       if (graph) {

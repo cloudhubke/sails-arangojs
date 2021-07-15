@@ -116,6 +116,7 @@ module.exports = require('machine').build({
 
     // Set a flag to determine if records are being returned
     let fetchRecords = false;
+    let trx;
 
     //  ╔═╗╦═╗╔═╗  ╔═╗╦═╗╔═╗╔═╗╔═╗╔═╗╔═╗  ┬─┐┌─┐┌─┐┌─┐┬─┐┌┬┐┌─┐
     //  ╠═╝╠╦╝║╣───╠═╝╠╦╝║ ║║  ║╣ ╚═╗╚═╗  ├┬┘├┤ │  │ │├┬┘ ││└─┐
@@ -164,6 +165,10 @@ module.exports = require('machine').build({
       fetchRecords = true;
     }
 
+    if (_.has(query.meta, 'trx') && query.meta.trx) {
+      trx = query.meta.trx;
+    }
+
     //  ╔═╗╔═╗╔═╗╦ ╦╔╗╔  ┌─┐┌─┐┌┐┌┌┐┌┌─┐┌─┐┌┬┐┬┌─┐┌┐┌
     //  ╚═╗╠═╝╠═╣║║║║║║  │  │ │││││││├┤ │   │ ││ ││││
     //  ╚═╝╩  ╩ ╩╚╩╝╝╚╝  └─┘└─┘┘└┘┘└┘└─┘└─┘ ┴ ┴└─┘┘└┘
@@ -208,7 +213,6 @@ module.exports = require('machine').build({
         );
       }
 
-      const opts = { returnNew: fetchRecords };
       let collection = await dbConnection.collection(`${statement.tableName}`);
       const exists = await collection.exists();
       if (!exits) {
@@ -219,10 +223,21 @@ module.exports = require('machine').build({
         } catch (error) {}
       }
 
-      const result = await collection.save(
-        { ...statement.values, _from: params.from, _to: params.to },
-        opts
-      );
+      let result;
+
+      if (trx) {
+        result = await trx.step(() =>
+          collection.save(
+            { ...statement.values, _from: params.from, _to: params.to },
+            { returnNew: fetchRecords }
+          )
+        );
+      } else {
+        result = await collection.save(
+          { ...statement.values, _from: params.from, _to: params.to },
+          { returnNew: fetchRecords }
+        );
+      }
 
       if (fetchRecords) {
         createdRecord = global[`${WLModel.globalId}Object`].initialize(
