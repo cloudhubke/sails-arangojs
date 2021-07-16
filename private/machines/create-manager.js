@@ -251,7 +251,7 @@ module.exports = {
         return { ...SystemSettings };
       };
 
-      Transaction = ({
+      const Transaction = ({
         action = '',
         reads = [],
         writes = [],
