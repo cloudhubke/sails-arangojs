@@ -84,7 +84,7 @@ module.exports = function preProcessRecord(options) {
         // remove the field
         delete record[primaryKeyColumnName];
       } else {
-        record[primaryKeyColumnName] = `${pkValue}`.toLowerCase();
+        record[primaryKeyColumnName] = `${pkValue}`;
       }
       return record;
     });
