@@ -60,7 +60,7 @@ class ArangoReal extends EventEmitter {
         const ticktock = () => {
           if (this._stopped) return;
 
-          this.db.request(
+          this.result = this.db.request(
             {
               path: `${this._loggerFollowPath}?from=${lastLogTick}`,
               method: 'get',
