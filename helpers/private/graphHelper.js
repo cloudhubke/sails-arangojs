@@ -360,9 +360,6 @@ module.exports = {
       dbListener.start();
     } catch (error) {
       console.log('after Register Error');
-      console.log('====================================');
-      console.log(error.toString());
-      console.log('====================================');
     }
   },
 };

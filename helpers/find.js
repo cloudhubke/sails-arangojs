@@ -167,9 +167,6 @@ module.exports = require('machine').build({
 
       Helpers.connection.releaseConnection(dbConnection);
     } catch (error) {
-      console.log('====================================');
-      console.log('ERRR', error);
-      console.log('====================================');
       if (error.code === 404) {
         return exits.success([]);
       }
