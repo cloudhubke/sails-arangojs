@@ -78,18 +78,18 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           if (rule === 'minimum') {
             if (docParams[key] < rules[rule]) {
               throw new Error(
-                `${key} should not be less than ${rules[rule]} - ${
-                  docParams._key || ''
-                }`
+                `${key} should not be less than ${rules[rule]} - its ${
+                  docParams[key]
+                } in ${docParams._key || ''}`
               );
             }
           }
           if (rule === 'maximum') {
-            if (docParams[key] < rules[rule]) {
+            if (docParams[key] > rules[rule]) {
               throw new Error(
-                `${key} should not be more than ${rules[rule]} -  ${
-                  docParams._key || ''
-                }`
+                `${key} should not be more than ${rules[rule]} -  its ${
+                  docParams[key]
+                } in ${docParams._key || ''}`
               );
             }
           }
