@@ -74,7 +74,7 @@ class ArangoReal extends EventEmitter {
                   headers,
                   body
                 );
-                this.stop();
+                // this.stop();
                 return;
               } // if
 
