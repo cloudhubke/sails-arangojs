@@ -1,5 +1,7 @@
 function getObject(globalId) {
-  return String(global[`${globalId}Dbo`]);
+  return `//${`${globalId}Dbo`.toUpperCase()} \n   
+  
+  ${String(global[`${globalId}Dbo`])}`;
 }
 
 module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
@@ -368,6 +370,10 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     `${globalId}Dbo`
   );
   protypesString = `${protypesString}`.replace(/globalid/g, `${globalid}`);
+
+  // console.log('====================================');
+  // console.log(`${objString}${methodsString}${protypesString}`);
+  // console.log('====================================');
 
   return `${objString}${methodsString}${protypesString}`;
 };

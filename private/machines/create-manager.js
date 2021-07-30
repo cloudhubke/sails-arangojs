@@ -141,7 +141,9 @@ module.exports = {
     `;
 
     let dbObjects = `${getDocument}\n\n`;
+    let deleteDbObjects = '';
     let collections = [];
+    let dbos = [];
     let vertices = [];
     let edges = [];
     let url = `http://${config.host}:${config.port || 8529}`;
@@ -149,6 +151,7 @@ module.exports = {
     _.each(models, (model) => {
       const tenant = config.tenantType || 'default';
       collections.push(model.tableName);
+      dbos.push(`${model.globalId}Dbo`);
 
       if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
         if (model.classType == 'edge') {
@@ -160,6 +163,9 @@ module.exports = {
 
       if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
         dbObjects = `${dbObjects}${DbObject(model)}\n\n`;
+        deleteDbObjects = `${deleteDbObjects}
+        ${model.globalId}Dbo = null;
+        \n`;
       }
     });
 
@@ -269,18 +275,13 @@ module.exports = {
 
           try {
             bearerToken; //1
-            const request = (options) => {
+            let request = (options) => {
               const requestOptions = Object.assign(options, {
                 auth: { bearer: bearerToken },
               });
 
               return arangoRequest(requestOptions);
             };
-
-            global.dbCollections = params.dbCollections;
-
-            process.env.bearerToken = bearerToken;
-            process.env.dbCollections = JSON.stringify(params.collections);
 
             dbmodules; //2
 
@@ -292,7 +293,7 @@ module.exports = {
 
             SystemSettings; //3
 
-            const dbServices = dbservices; //4
+            let dbServices = dbservices; //4
             if (
               dbServices &&
               dbServices.globals &&
@@ -303,9 +304,16 @@ module.exports = {
 
             dbObjects; //5
 
-            const returnFunction = func; //6
+            let returnFunction = func; //6
 
-            return returnFunction(params);
+            const txResult = returnFunction(params);
+
+            request = null;
+            dbServices = null;
+            returnFunction = null;
+            deleteDbObjects; //7
+
+            return txResult;
           } catch (error) {
             throw new Error(`TX ERROR \n ${JSON.stringify(error.toString())}`);
           }
@@ -317,7 +325,8 @@ module.exports = {
           .replace('dbObjects', '?')
           .replace('func;', '?')
           .replace('bearerToken;', '?')
-          .replace('SystemSettings;', '?');
+          .replace('SystemSettings;', '?')
+          .replace('deleteDbObjects;', '?');
 
         actionStr = SqlString.format(actionStr, [
           SqlString.raw(`const bearerToken = '${bearerToken}';`),
@@ -328,6 +337,7 @@ module.exports = {
           SqlString.raw(config.dbServices || '{}'),
           SqlString.raw(dbObjects || ''),
           SqlString.raw(String(action)),
+          SqlString.raw(deleteDbObjects),
         ]);
 
         return dbConnection.executeTransaction(
@@ -341,7 +351,7 @@ module.exports = {
           {
             params: {
               ...params,
-              collections,
+              dbObjects: dbos,
             },
             waitForSync: true,
             ...options,
