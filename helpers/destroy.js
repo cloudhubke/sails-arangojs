@@ -226,7 +226,8 @@ module.exports = require('machine').build({
       if (session) {
         await Helpers.connection.releaseConnection(session, leased);
       }
-      exits.badConnection(error);
+
+      return exits.error(error);
     }
 
     if (!fetchRecords) {
