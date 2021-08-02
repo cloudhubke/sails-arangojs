@@ -300,7 +300,7 @@ module.exports = require('machine').build({
         );
       }
 
-      return exits.badConnection(errorData || error);
+      return exits.error(new Error(error.toString()));
     }
 
     // If `fetch` is NOT enabled, we're done.

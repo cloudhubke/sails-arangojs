@@ -250,10 +250,6 @@ module.exports = {
       );
     }
 
-    console.log('====================================');
-    console.log('TRD');
-    console.log('====================================');
-
     return Helpers.teardown({
       identity: datastoreName,
       datastores: registeredDatastores,

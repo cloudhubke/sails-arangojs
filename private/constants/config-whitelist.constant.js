@@ -11,6 +11,7 @@ module.exports = [
   'dbServices',
   'tenantType',
   'sanitize',
+  'onDbConnect',
   // SSL Options:
   'ssl',
   'sslValidate',

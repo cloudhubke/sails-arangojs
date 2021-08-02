@@ -222,7 +222,7 @@ const stringifyUpdateValues = (values, method, letObj = {}) => {
   });
 
   newvalues = _.uniq(newvalues);
-  return `{${newvalues.join(', ')}}`;
+  return `{${newvalues.join(', ')}}`.replace(/:undefined/g, ':null');
 };
 
 module.exports = stringifyUpdateValues;
