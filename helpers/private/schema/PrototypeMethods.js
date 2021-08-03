@@ -3,7 +3,7 @@ module.exports = (globalId) => {
   // PROTOTYPES
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   return {
-    [`update${globalId}`]: async function initialize(callback) {
+    [`update${globalId}`]: async function update(callback, trx) {
       try {
         let updateValues;
         if (typeof callback === 'function') {
@@ -23,11 +23,17 @@ module.exports = (globalId) => {
             this.merchantcode || this.tenantcode
           )
             .updateOne({ id: this.id })
-            .set({ ...updateValues });
+            .set({ ...updateValues })
+            .meta({
+              trx,
+            });
         } else {
           updatedDoc = await global[`${globalId}`]
             .updateOne({ id: this.id })
-            .set({ ...updateValues });
+            .set({ ...updateValues })
+            .meta({
+              trx,
+            });
         }
 
         if (updatedDoc) {
