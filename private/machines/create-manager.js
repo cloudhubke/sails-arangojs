@@ -126,7 +126,7 @@ module.exports = {
           }
     
           if (!_id) {
-            throw new Error('_id attribute should either be an object or a string');
+            throw new Error('_id attribute should either be an object or a string. Found: ' + JSON.stringify(searchValue) );
           }
 
           let coll=_id.split('/')[0].capitalize();

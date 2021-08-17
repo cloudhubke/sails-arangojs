@@ -278,6 +278,15 @@ module.exports = {
             }
 
             normalized = await dsModel(dsName).normalize(docParams);
+            normalized.createdAt =
+              docParams.createdAt || normalized.createdAt || Date.now();
+            normalized.updatedAt =
+              docParams.updatedAt || normalized.updatedAt || Date.now();
+            if (normalized.Timestamp) {
+              normalized.Timestamp =
+                docParams.Timestamp || normalized.Timestamp || Date.now();
+            }
+
             const isValid = validateSchema(model, schema, {
               ...normalized,
               _key,
