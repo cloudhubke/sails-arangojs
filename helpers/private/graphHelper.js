@@ -366,6 +366,38 @@ module.exports = {
         });
       }
 
+      for (let model of definitionsarray) {
+        if (
+          typeof model.ModelObjectConstructor.prototype['onGetOne'] ===
+          'function'
+        ) {
+          const strFn = String(
+            model.ModelObjectConstructor.prototype['onGetOne']
+          );
+
+          if (
+            strFn.includes('getOne') ||
+            strFn.includes('.onGetOne') ||
+            strFn.includes('findOne') ||
+            strFn.includes('getDocument') ||
+            strFn.includes(`'onGetOne'`) ||
+            strFn.includes(`"onGetOne"`)
+          ) {
+            const e = `Error in model ${model.globalId}.\nThe following functions cannot be called inside a ONGETONE(onGetOne) method:
+            onGetOne\n
+            getOne\n
+            findOne\n
+            getDocument\n                  
+          This is to avoid infinite loops. Consider using .findDocument`;
+
+            console.log('====================================');
+            console.log(e);
+            console.log('====================================');
+            throw new Error(e);
+          }
+        }
+      }
+
       dbListener.start();
     } catch (error) {
       console.log('after Register Error');

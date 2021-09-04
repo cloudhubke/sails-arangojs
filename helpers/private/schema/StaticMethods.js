@@ -380,9 +380,11 @@ module.exports = ({
               ) {
                 return new Promise(async (resolve) => {
                   await docObj.onGetOne();
+                  console.log(`fire ${docObj.globalId}`);
                   resolve(docObj);
                 });
               } else {
+                console.log(`fire ${docObj.globalId}`);
                 docObj.onGetOne();
               }
             }
