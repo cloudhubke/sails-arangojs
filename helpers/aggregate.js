@@ -107,6 +107,9 @@ module.exports = require('machine').build({
 
     let cursor;
     try {
+      console.log('====================================');
+      console.log(statement.aggregatestatement);
+      console.log('====================================');
       cursor = await dbConnection.query(statement.aggregatestatement);
       cursor._result = await cursor.all();
 

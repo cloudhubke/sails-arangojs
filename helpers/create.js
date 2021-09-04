@@ -110,6 +110,7 @@ module.exports = require('machine').build({
     // on Waterline Query Statements.
 
     let statement;
+
     try {
       statement = Helpers.query.compileStatement({
         pkColumnName,

@@ -25,6 +25,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         }
         const type =
           attributes[key].type === 'json' ? 'object' : attributes[key].type;
+
         const required = attributes[key].required;
         const isIn = attributes[key].isIn;
         const rules = attributes[key].rules || {};

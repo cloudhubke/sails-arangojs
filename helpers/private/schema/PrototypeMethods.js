@@ -3,7 +3,7 @@ module.exports = (globalId) => {
   // PROTOTYPES
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   return {
-    [`update${globalId}`]: async function update(callback, trx) {
+    update: async function update(callback, trx) {
       try {
         let updateValues;
         if (typeof callback === 'function') {
@@ -55,6 +55,16 @@ module.exports = (globalId) => {
         } else {
           throw new Error(`Update could not reInitialize`);
         }
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    destroy: async function destroy(trx) {
+      try {
+        await this[`_${globalId}`].destroy({ id: this.id }).meta({
+          trx,
+        });
       } catch (error) {
         throw error;
       }
@@ -133,9 +143,6 @@ module.exports = (globalId) => {
           ] = this;
         }
       }
-    },
-    update: function update(...props) {
-      return this[`update${globalId}`](...props);
     },
 
     getDocument: function getDocument({ _id }) {

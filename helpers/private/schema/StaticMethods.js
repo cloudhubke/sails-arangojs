@@ -70,7 +70,7 @@ module.exports = ({
         params.Email = `${params.Email}`.toLowerCase().trim();
       }
 
-      const doc = await global[`${globalId}Object`][`find${globalId}`](
+      const doc = await global[`${globalId}Object`].findOne(
         {
           id: params.id,
         },
@@ -89,15 +89,7 @@ module.exports = ({
         newdoc = await global[globalId].create(params).fetch();
       }
 
-      if (newdoc) {
-        const docObj = global[`${globalId}Object`].initialize(
-          newdoc,
-          dsName,
-          true
-        );
-        return docObj;
-      }
-      return null;
+      return newdoc;
     } catch (error) {
       throw error;
     }
@@ -132,26 +124,73 @@ module.exports = ({
         }
       }
 
-      if (doc) {
-        let docObj;
+      return doc;
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  const findDocument = async function (params, dsName) {
+    try {
+      const { id, ...otherprops } = params || {};
+
+      if (cache) {
         if (dsName) {
-          docObj = global[`${globalId}Object`].initialize(doc, dsName);
+          if (
+            id &&
+            global[`${globalId}Object`][`Available${globalId}s`][
+              `${dsName}/${id}`
+            ]
+          ) {
+            return global[`${globalId}Object`][`Available${globalId}s`][
+              `${dsName}/${id}`
+            ];
+          }
         } else {
-          docObj = global[`${globalId}Object`].initialize(doc);
+          if (id && global[`${globalId}Object`][`Available${globalId}s`][id]) {
+            return global[`${globalId}Object`][`Available${globalId}s`][id];
+          }
         }
-
-        // if (typeof docObj.onGetOne === 'function') {
-        //   if (docObj.onGetOne.constructor.name === 'AsyncFunction') {
-        //     await docObj.onGetOne();
-        //   } else {
-        //     docObj.onGetOne();
-        //   }
-        // }
-
-        return docObj;
-      } else {
-        return null;
       }
+
+      let doc;
+
+      if (id) {
+        if (dsName) {
+          doc = await global[`_${globalId}`](dsName).findOne({ id: id }).meta({
+            fireOnGetOne: false,
+          });
+        } else {
+          doc = await global[`${globalId}`].findOne({ id: id }).meta({
+            fireOnGetOne: false,
+          });
+        }
+      }
+
+      if (!doc) {
+        for (let prop in otherprops) {
+          if (['string', 'number'].includes(typeof otherprops[prop])) {
+            if (dsName) {
+              doc = await global[`_${globalId}`](dsName)
+                .findOne({
+                  [prop]: otherprops[prop],
+                })
+                .meta({
+                  fireOnGetOne: false,
+                });
+            } else {
+              doc = await global[`${globalId}`]
+                .findOne({
+                  [prop]: otherprops[prop],
+                })
+                .meta({
+                  fireOnGetOne: false,
+                });
+            }
+          }
+        }
+      }
+      return doc;
     } catch (error) {
       throw error;
     }
@@ -180,10 +219,7 @@ module.exports = ({
         }
       }
 
-      const obj = await global[`${globalId}Object`][`find${globalId}`](
-        params,
-        dsName
-      );
+      const obj = await global[`${globalId}Object`].findOne(params, dsName);
 
       if (obj && obj.id) {
         obj.saveToCache();
@@ -232,10 +268,6 @@ module.exports = ({
         throw error;
       }
     },
-
-    [`get${globalId}`]: getOne,
-    [`create${globalId}`]: create,
-    [`find${globalId}`]: findOne,
 
     initialize: function initialize(doc, dsName, initOne) {
       try {
@@ -320,6 +352,28 @@ module.exports = ({
 
           if (initOne) {
             if (typeof docObj.onGetOne === 'function') {
+              const strFn = String(docObj.onGetOne);
+
+              if (
+                strFn.includes('getOne') ||
+                strFn.includes('.onGetOne') ||
+                strFn.includes('findOne') ||
+                strFn.includes('getDocument') ||
+                strFn.includes(`'onGetOne'`) ||
+                strFn.includes(`"onGetOne"`)
+              ) {
+                const e = `The following functions cannot be called inside a ONGETONE(onGetOne) method:
+                onGetOne\n
+                getOne\n
+                findOne\n
+                getDocument\n                  
+              This is to avoid infinite loops. Consider using .findDocument`;
+
+                console.log('====================================');
+                console.log(e);
+                console.log('====================================');
+                throw new Error(e);
+              }
               if (
                 docObj.onGetOne.constructor.name === 'AsyncFunction' ||
                 util.types.isAsyncFunction(docObj.onGetOne)
@@ -344,6 +398,7 @@ module.exports = ({
     // ALIASES
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
+    findDocument,
     findOne,
     getOne,
     create,
