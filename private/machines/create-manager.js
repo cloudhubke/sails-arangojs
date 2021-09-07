@@ -315,7 +315,11 @@ module.exports = {
 
             return txResult;
           } catch (error) {
-            throw new Error(`TX ERROR \n ${JSON.stringify(error.toString())}`);
+            throw new Error(
+              `TX ERROR \n ${JSON.stringify(error.toString())}`
+                .replace(/\\n/g, '\n')
+                .replace(/\\"/g, '"')
+            );
           }
         });
 
