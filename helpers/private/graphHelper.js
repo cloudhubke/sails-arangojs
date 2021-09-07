@@ -383,12 +383,13 @@ module.exports = {
             strFn.includes(`'onGetOne'`) ||
             strFn.includes(`"onGetOne"`)
           ) {
-            const e = `Error in model ${model.globalId}.\nThe following functions cannot be called inside a ONGETONE(onGetOne) method:
-            onGetOne\n
-            getOne\n
-            findOne\n
-            getDocument\n                  
-          This is to avoid infinite loops. Consider using .findDocument`;
+            const e = `\nInvalid function implementation onGetOne inside ${model.globalId}.
+            The following functions cannot be called inside a ONGETONE(onGetOne) method:
+            onGetOne
+            getOne
+            findOne
+            getDocument                
+            This is to avoid infinite loops. Consider using .findDocument\n`;
 
             console.log('====================================');
             console.log(e);
@@ -400,7 +401,7 @@ module.exports = {
 
       dbListener.start();
     } catch (error) {
-      console.log('after Register Error');
+      throw error;
     }
   },
 };

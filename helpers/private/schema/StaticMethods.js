@@ -38,7 +38,7 @@ if (!global.getDocument) {
 
       let obj;
       if (merchantcode) {
-        obj = await global[`${tableName}Object`][`get${tableName}`](
+        obj = await global[`${tableName}Object`][`getOne`](
           {
             _id: _id,
           },
@@ -46,7 +46,7 @@ if (!global.getDocument) {
         );
         return obj;
       }
-      obj = await global[`${tableName}Object`][`get${tableName}`]({
+      obj = await global[`${tableName}Object`][`getOne`]({
         _id: _id,
       });
       return obj;
@@ -362,12 +362,13 @@ module.exports = ({
                 strFn.includes(`'onGetOne'`) ||
                 strFn.includes(`"onGetOne"`)
               ) {
-                const e = `The following functions cannot be called inside a ONGETONE(onGetOne) method:
-                onGetOne\n
-                getOne\n
-                findOne\n
-                getDocument\n                  
-              This is to avoid infinite loops. Consider using .findDocument`;
+                const e = `Invalid function implementation onGetOne inside ${docObj.globalId}.
+                The following functions cannot be called inside a ONGETONE(onGetOne) method:
+                onGetOne
+                getOne
+                findOne
+                getDocument                
+                This is to avoid infinite loops. Consider using .findDocument`;
 
                 console.log('====================================');
                 console.log(e);
@@ -380,11 +381,9 @@ module.exports = ({
               ) {
                 return new Promise(async (resolve) => {
                   await docObj.onGetOne();
-                  console.log(`fire ${docObj.globalId}`);
                   resolve(docObj);
                 });
               } else {
-                console.log(`fire ${docObj.globalId}`);
                 docObj.onGetOne();
               }
             }
