@@ -92,6 +92,7 @@ module.exports = require('machine').build({
     // on Waterline Query Statements.
 
     let statement;
+
     try {
       statement = Helpers.query.compileStatement({
         pkColumnName,
@@ -162,6 +163,7 @@ module.exports = require('machine').build({
       });
 
       sql = `${sql} RETURN {vertex, edge }`;
+
       result = await dbConnection.query(sql);
 
       Helpers.connection.releaseConnection(dbConnection);

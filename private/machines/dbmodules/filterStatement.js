@@ -48,6 +48,16 @@ const filterStatement = () => {
     return str;
   };
 
+  function getNotHasStatement(val) {
+    let str = '';
+    if (_.isString(val) || _.isNumber(val)) {
+      str = `${specialValue(val)}`;
+    } else {
+      throw new Error('the NOT HAS statement expects a number or string.');
+    }
+    return str;
+  }
+
   const getNotInStatement = (arr) => {
     let str = '';
     if (Array.isArray(arr) && arr.length > 0) {
@@ -100,7 +110,6 @@ const filterStatement = () => {
         case '$ne':
           str = `!= ${specialValue(value)}`;
           return;
-
         case '>':
           str = `> ${specialValue(value)}`;
           return;
@@ -133,7 +142,6 @@ const filterStatement = () => {
         case '$notlike':
           str = `NOT LIKE ${`${specialValue(value)}`.toLowerCase()}`;
           return;
-
         case '$in':
           str = getInStatement(value);
           return;
@@ -142,6 +150,8 @@ const filterStatement = () => {
           return;
         case '$has':
           str = getHasStatement(value);
+        case '$nothas':
+          str = getNotHasStatement(value);
           return;
         case '$nin':
           str = getNotInStatement(value);

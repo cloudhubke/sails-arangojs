@@ -52,6 +52,16 @@ module.exports = ({ pkColumnName }) => {
     return str;
   }
 
+  function getNotHasStatement(val) {
+    let str = '';
+    if (_.isString(val) || _.isNumber(val)) {
+      str = `${specialValue(val)}`;
+    } else {
+      throw new Error('the NOT HAS statement expects a number or string.');
+    }
+    return str;
+  }
+
   function getNotInStatement(arr) {
     let str = '';
     if (Array.isArray(arr) && arr.length > 0) {
@@ -147,6 +157,9 @@ module.exports = ({ pkColumnName }) => {
         case '$has':
           str = getHasStatement(value);
           return;
+        case '$nothas':
+          str = getNotHasStatement(value);
+          return;
         case '$nin':
           str = getNotInStatement(value);
           return;
@@ -203,6 +216,11 @@ module.exports = ({ pkColumnName }) => {
       if (_.isObject(value)) {
         if (_.has(value, '$has') || _.has(value, 'has')) {
           criteria.push(`${getComparison(value)} IN record.${key} `);
+          return;
+        }
+
+        if (_.has(value, '$nothas') || _.has(value, 'nothas')) {
+          criteria.push(`${getComparison(value)} NOT IN record.${key} `);
           return;
         }
 
