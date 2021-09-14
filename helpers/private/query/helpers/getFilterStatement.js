@@ -42,6 +42,30 @@ module.exports = ({ pkColumnName }) => {
     return str;
   }
 
+  function getAllInStatement(arr) {
+    let str = '';
+    if (Array.isArray(arr) && arr.length > 0) {
+      const elements = arr.map((v) => (typeof v === 'string' ? `'${v}'` : v));
+      str = `ALL IN [${elements}]`;
+    } else {
+      throw new Error('the IN statement expects an array of values.');
+    }
+
+    return str;
+  }
+
+  function getAnyInStatement(arr) {
+    let str = '';
+    if (Array.isArray(arr) && arr.length > 0) {
+      const elements = arr.map((v) => (typeof v === 'string' ? `'${v}'` : v));
+      str = `ANY IN [${elements}]`;
+    } else {
+      throw new Error('the IN statement expects an array of values.');
+    }
+
+    return str;
+  }
+
   function getHasStatement(val) {
     let str = '';
     if (_.isString(val) || _.isNumber(val)) {
@@ -154,6 +178,13 @@ module.exports = ({ pkColumnName }) => {
         case 'in':
           str = getInStatement(value);
           return;
+        case '$allin':
+          str = getAllInStatement(value);
+          return;
+        case '$anyin':
+          str = getAnyInStatement(value);
+          return;
+
         case '$has':
           str = getHasStatement(value);
           return;

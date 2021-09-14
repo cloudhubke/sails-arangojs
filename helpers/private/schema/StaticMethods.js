@@ -97,7 +97,7 @@ module.exports = ({
 
   const findOne = async function (params, dsName) {
     try {
-      const { id, ...otherprops } = params || {};
+      const { id, _id, ...otherprops } = params || {};
 
       let doc;
       if (id) {
@@ -108,8 +108,20 @@ module.exports = ({
         }
       }
 
+      if (!doc && _id) {
+        if (dsName) {
+          doc = await global[`_${globalId}`](dsName).findOne({ _id: _id });
+        } else {
+          doc = await global[`${globalId}`].findOne({ _id: _id });
+        }
+      }
+
       if (!doc) {
         for (let prop in otherprops) {
+          if (!keyProps.includes(prop)) {
+            throw new Error(`${prop} is not a key props`);
+          }
+
           if (['string', 'number'].includes(typeof otherprops[prop])) {
             if (dsName) {
               doc = await global[`_${globalId}`](dsName).findOne({

@@ -363,6 +363,22 @@ module.exports = {
               }
             }
           }
+
+          if (type === 'onDelete') {
+            if (
+              typeof model.ModelObjectConstructor.prototype['onDelete'] ===
+              'function'
+            ) {
+              return docObj.onDelete();
+            }
+
+            if (
+              typeof model.ModelObjectConstructor.prototype['onDestroy'] ===
+              'function'
+            ) {
+              return docObj.onDestroy();
+            }
+          }
         });
       }
 
