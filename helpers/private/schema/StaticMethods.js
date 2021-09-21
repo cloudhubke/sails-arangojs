@@ -118,8 +118,9 @@ module.exports = ({
 
       if (!doc) {
         for (let prop in otherprops) {
-          if (!keyProps.includes(prop)) {
-            throw new Error(`${prop} is not a key props`);
+          if (!keyProps.includes(prop) || Boolean(doc)) {
+            // throw new Error(`${prop} is not a key props`);
+            continue;
           }
 
           if (['string', 'number'].includes(typeof otherprops[prop])) {
