@@ -256,6 +256,23 @@ module.exports = require('machine').build({
       }
 
       if (err.code === 409) {
+        const response = err.response || {};
+        const body = response.body || {};
+        const errorMessage = body.errorMessage || '';
+        if (errorMessage.includes('type hash over')) {
+          const key = errorMessage
+            .split('type hash over')[1]
+            .trim()
+            .split(' ')[0]
+            .replace(/'/g, '')
+            .trim();
+
+          if (key) {
+            return exits.notUnique(new Error(`${key} is not unique`));
+          } else {
+            return exits.notUnique(err);
+          }
+        }
         return exits.notUnique(err);
       }
       return exits.badConnection(new Error(`\n\n Error ${err} \n\n`));
