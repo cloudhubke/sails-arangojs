@@ -192,7 +192,7 @@ module.exports = require('machine').build({
       //  ╠╦╝║ ║║║║  │ │├─┘ ││├─┤ │ ├┤   │─┼┐│ │├┤ ├┬┘└┬┘
       //  ╩╚═╚═╝╝╚╝  └─┘┴  ─┴┘┴ ┴ ┴ └─┘  └─┘└└─┘└─┘┴└─ ┴
 
-      const updatevalues = `${statement.values}`.replace(/OLD./g, 'record.');
+      const updatevalues = `${statement.values}`.replace(/OLD\./g, 'record.');
 
       if (statement.primarywhere._id) {
         let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;

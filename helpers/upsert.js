@@ -167,9 +167,11 @@ module.exports = require('machine').build({
 
       const updatecriteria = statement.criteria;
 
-      const upsertvalues = statement.values;
-
-      const { insertvalues } = statement;
+      const upsertvalues = `${statement.values}`.replace(/OLD\./g, 'record.');
+      const insetvalues = `${statement.insertvalues}`.replace(
+        /OLD\./g,
+        'record.'
+      );
 
       let sql = `
       UPSERT ${updatecriteria}
