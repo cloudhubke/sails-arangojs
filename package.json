@@ -1,5 +1,5 @@
 {
-  "name": "sails-arangojs",
+  "name": "@cloudhub-js/sails-arangojs",
   "version": "0.2.71",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
@@ -56,7 +56,7 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
     "semantic-release": "^17.2.3",
-    "waternile-adapter-tests": "^1.0.15"
+    "@cloudhub-js/waternile-adapter-tests": "^1.0.15"
   },
   "waterlineAdapter": {
     "type": "sails-arangojs",
