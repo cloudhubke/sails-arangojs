@@ -131,11 +131,15 @@ module.exports = {
 
           let coll=_id.split('/')[0].capitalize();
 
-          switch (coll) {
-            ${modelCases()}          
-            default: {
-              throw new Error('getDocument could not find document ' + _id);
+          try {
+            switch (coll) {
+              ${modelCases()}          
+              default: {
+                throw new Error('getDocument could not find document ' + _id);
+              }
             }
+          } catch (error) {
+            throw new Error('getDocument could not find document ' + _id + ': ' + error.toString());
           }
         }
     `;

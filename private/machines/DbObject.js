@@ -312,11 +312,10 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           this.reInitialize(updatedDoc);
         } catch (error) {
           throw new Error(
-            `updating doc ${JSON.stringify({
-              ...this,
+            `problem with updating doc ${this._key}\n\n ${JSON.stringify({
               ...updateValues,
               updatedAt: Date.now(),
-            })} ${error.toString()}`
+            })}\n\n ${error.toString()}`
           );
         }
       } else if (typeof callback === 'object') {
@@ -334,7 +333,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           this.reInitialize(updatedDoc);
         } catch (error) {
           throw new Error(
-            `updating doc ${JSON.stringify(callback)} ${error.toString()}`
+            `problem updating doc ${this._key} \n\n ${JSON.stringify(
+              callback
+            )}\n\n ${error.toString()}`
           );
         }
       } else {
