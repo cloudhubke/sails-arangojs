@@ -37,6 +37,15 @@ module.exports = {
           let collection = vertexCollection.collection;
 
           if (model.classType === 'Edge') {
+            const edgeCollection = graph.edgeCollection(`${model.tableName}`);
+            collection = edgeCollection.collection;
+
+            const collectionExists = await collection.exists();
+
+            if (!collectionExists) {
+              await collection.create({ type: 3 });
+            }
+
             const dbcollection = await Transaction({
               action: function (params) {
                 let collection;
@@ -58,17 +67,8 @@ module.exports = {
 
             if (dbcollection !== 'edge') {
               throw new Error(
-                `You must create a vertex of ${model.tableName} first`
+                `You must create an edge of ${model.tableName} first in ${dsName}`
               );
-            }
-
-            const edgeCollection = graph.edgeCollection(`${model.tableName}`);
-            collection = edgeCollection.collection;
-
-            const collectionExists = await collection.exists();
-
-            if (!collectionExists) {
-              await collection.create({ type: 3 });
             }
 
             await Helpers.schema.buildSchema(
