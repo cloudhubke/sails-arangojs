@@ -227,6 +227,7 @@ module.exports = {
   teardown(datastoreName, done) {
     // Look up the datastore entry (manager/driver/config).
     const dsEntry = registeredDatastores[datastoreName];
+
     // Sanity checks:
     if (!datastoreName) {
       return done(
@@ -256,6 +257,9 @@ module.exports = {
       modelDefinitions: registeredModels,
     }).switch({
       error: function error(err) {
+        console.log('====================================');
+        console.log(err);
+        console.log('====================================');
         return done(err);
       },
       success: function success() {

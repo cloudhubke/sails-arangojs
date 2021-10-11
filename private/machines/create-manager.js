@@ -11,7 +11,7 @@ module.exports = {
   friendlyName: 'Create manager',
 
   description:
-    'Build and initialize a connection manager instance (in Mongo, this is `db`).',
+    'Build and initialize a connection manager instance (in Arango, this is `db`).',
 
   moreInfoUrl:
     'https://github.com/node-machine/driver-interface/blob/master/machines/create-manager.js',
@@ -32,7 +32,7 @@ module.exports = {
     meta: {
       friendlyName: 'Meta (custom)',
       description:
-        'A dictionary of additional options to pass in when instantiating the Mongo client instance. (e.g. `{ssl: true}`)',
+        'A dictionary of additional options to pass in when instantiating the Arango client instance. (e.g. `{ssl: true}`)',
       moreInfoUrl:
         'https://github.com/node-machine/driver-interface/blob/3f3a150ef4ece40dc0d105006e2766e81af23719/constants/meta.input.js',
       example: '===',
@@ -41,10 +41,10 @@ module.exports = {
 
   exits: {
     success: {
-      description: 'Connected to Mongo successfully.',
+      description: 'Connected to Arango successfully.',
       outputFriendlyName: 'Report',
       outputDescription:
-        'The `manager` property is a Mongo client instance.  The `meta` property is unused.',
+        'The `manager` property is a Arango client instance.  The `meta` property is unused.',
       // outputExample: {
       //   manager: '===',
       //   meta: '==='
@@ -67,7 +67,7 @@ module.exports = {
 
     failed: {
       description:
-        'Could not connect to Mongo using the specified connection URL.',
+        'Could not connect to Arango using the specified connection URL.',
       extendedDescription:
         'If this exit is called, it might mean any of the following:\n' +
         ' + the credentials encoded in the connection string are incorrect\n' +
