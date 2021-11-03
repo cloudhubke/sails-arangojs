@@ -293,6 +293,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     reInitialize: function (doc) {
       for (let key of Object.keys(doc)) {
         this[key] = doc[key];
+        this.id = doc._key;
       }
     },
     update: function (callback) {
