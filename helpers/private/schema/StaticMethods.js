@@ -57,6 +57,7 @@ if (!global.getDocument) {
 }
 
 module.exports = ({
+  classType,
   globalId,
   tableName,
   keyProps,
@@ -331,6 +332,11 @@ module.exports = ({
               return globalId;
             },
           });
+          Object.defineProperty(docObj, 'classType', {
+            get: () => {
+              return classType;
+            },
+          });
 
           Object.defineProperty(docObj, '_Transaction', {
             get: () => {
@@ -339,6 +345,15 @@ module.exports = ({
                   .Transaction;
               }
               return sails.getDatastore().manager.Transaction;
+            },
+          });
+          Object.defineProperty(docObj, '_dbConnection', {
+            get: () => {
+              if (docObj.tenantcode) {
+                return sails.getDatastore(docObj.tenantcode).manager
+                  .dbConnection;
+              }
+              return sails.getDatastore().manager.dbConnection;
             },
           });
 

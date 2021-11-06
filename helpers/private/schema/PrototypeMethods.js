@@ -1,8 +1,78 @@
+const _ = require('lodash');
 module.exports = (globalId) => {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // PROTOTYPES
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   return {
+    onCheckLinks: async function () {
+      try {
+        if (this.classType === 'Edge') {
+          return;
+        }
+
+        const plainDoc = { ...this };
+        let links = [];
+        for (let key in plainDoc) {
+          if (plainDoc[key] && plainDoc[key]._id) {
+            links.push({
+              PropertyName: key,
+              _id: plainDoc[key]._id,
+            });
+          }
+        }
+
+        links = _.uniqBy(links, '_id');
+
+        if (links.length <= 0) {
+          return;
+        }
+
+        let collection;
+
+        if (!this._links) {
+          collection = this._dbConnection.collection('links');
+          const result = await collection.exists(); // true
+          if (!result) {
+            await collection.create({ type: 3 });
+          }
+        }
+
+        if (this._links && this._links.classType !== 'Edge') {
+          console.log('💥💥💥 LINKING ERROR💥💥💥');
+          console.log('====================================');
+          console.log('Links collection should be of type edge');
+          console.log('====================================');
+          return;
+        }
+
+        await this._Transaction({
+          action: function ({ _id, links }) {
+            //First remove existing links if any;
+            collectionName = `${_id}`.split('/')[0];
+            db._query(
+              `FOR rec in links FILTER rec._from=='${_id}' REMOVE rec in links`
+            );
+            for (let link of links) {
+              db.links.save(
+                { _id },
+                { _id: link._id },
+                {
+                  Timestamp: Date.now(),
+                  PropertyName: link.PropertyName,
+                }
+              );
+            }
+          },
+          writes: ['links'],
+          params: {
+            _id: this._id,
+            links: links,
+          },
+        });
+      } catch (error) {
+        console.log(error.toString());
+      }
+    },
     update: async function update(callback, trx) {
       try {
         let updateValues;
@@ -74,7 +144,7 @@ module.exports = (globalId) => {
       if (typeof this.afterInitialize === 'function') {
         if (this.afterInitialize.constructor.name === 'AsyncFunction') {
           console.log(
-            'Its not advisable that `afterInitialize` function should be async or should call other collections: Aborting.'
+            `Its not advisable that 'afterInitialize' function in ${globalId} should be async or should call other collections: Aborting.`
           );
         } else {
           this.afterInitialize();

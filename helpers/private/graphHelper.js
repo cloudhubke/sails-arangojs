@@ -19,7 +19,14 @@ let registeredObjectModels = [];
 module.exports = {
   constructGraph: async (manager, definitionsarray, exits) => {
     try {
-      const { graph, Transaction, graphEnabled, dsName } = manager;
+      const { graph, Transaction, dbConnection, graphEnabled, dsName } =
+        manager;
+
+      linksCollection = dbConnection.collection('links');
+      const linksCollectionExists = await linksCollection.exists(); // true
+      if (!linksCollectionExists) {
+        await linksCollection.create({ type: 3 });
+      }
 
       if (graphEnabled) {
         const graphInfo = await graph.get();
@@ -34,6 +41,7 @@ module.exports = {
           let vertexCollection = await graph.vertexCollection(
             `${model.tableName}`
           );
+
           let collection = vertexCollection.collection;
 
           if (model.classType === 'Edge') {
@@ -218,6 +226,7 @@ module.exports = {
           model.ModelObjectConstructor
         ) {
           const DefaultStaticMethods = StaticMethods({
+            classType: model.classType,
             globalId: model.globalId,
             tableName: model.tableName,
             keyProps: keyProps,
@@ -396,6 +405,7 @@ module.exports = {
                 docObj.onCreate();
               }
             }
+            docObj.onCheckLinks();
           }
 
           if (type === 'onDelete') {

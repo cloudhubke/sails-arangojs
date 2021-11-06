@@ -46,17 +46,18 @@
     "arangojs": "^7.3.0",
     "eventsource": "^1.1.0",
     "flaverr": "^1.10.0",
+    "lodash": "^4.17.21",
     "machine": "^15.2.2",
     "sqlstring": "^2.3.1",
     "uniqid": "^5.0.3",
     "waterline-utils": "^1.4.2"
   },
   "devDependencies": {
+    "@cloudhub-js/waternile-adapter-tests": "^1.0.15",
     "eslint": "^5.4.0",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.17.2",
-    "semantic-release": "^17.2.3",
-    "@cloudhub-js/waternile-adapter-tests": "^1.0.15"
+    "semantic-release": "^17.2.3"
   },
   "waterlineAdapter": {
     "type": "sails-arangojs",

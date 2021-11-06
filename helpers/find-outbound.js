@@ -133,7 +133,9 @@ module.exports = require('machine').build({
       let sql = '';
 
       sql = `FOR vertex, edge, path IN OUTBOUND '${where._id}' ${
-        graphName ? `GRAPH '${graphName}'` : statement.edgeCollections
+        statement.edgeCollections
+          ? statement.edgeCollections
+          : `GRAPH '${graphName}'`
       }`;
 
       if (statement.letStatements) {
