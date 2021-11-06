@@ -30,7 +30,6 @@ module.exports = (globalId) => {
             });
           }
         }
-
         links = _.uniqBy(links, '_id');
 
         if (links.length <= 0) {
