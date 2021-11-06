@@ -19,6 +19,16 @@ module.exports = (globalId) => {
               _id: plainDoc[key]._id,
             });
           }
+          if (Array.isArray(plainDoc[key])) {
+            plainDoc[key].forEach((item) => {
+              if (item && item._id) {
+                links.push({
+                  PropertyName: key,
+                  _id: item._id,
+                });
+              }
+            });
+          }
         }
 
         links = _.uniqBy(links, '_id');
@@ -53,9 +63,10 @@ module.exports = (globalId) => {
               `FOR rec in links FILTER rec._from=='${_id}' REMOVE rec in links`
             );
             for (let link of links) {
+              const { _id: link_id, ...linkData } = link;
               db.links.save(
                 { _id },
-                { _id: link._id },
+                { _id: link_id },
                 {
                   Timestamp: Date.now(),
                   PropertyName: link.PropertyName,
