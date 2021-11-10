@@ -249,14 +249,14 @@ module.exports = async function buildSchema(
 
         if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
           throw new Error(
-            `linkProperties option is required in model ${tableName}.  Must be array of collection names.`
+            `linkCollections option is required in model ${tableName} for the field ${fldName}.  Must be array of collection names.`
           );
         }
 
         _.each(rules.linkCollections, (linkCollection) => {
           if (!collections.includes(linkCollection)) {
             throw new Error(
-              `invalid linkProperties option in ${tableName}. unknown collection ${linkCollection}`
+              `invalid linkCollections option in ${tableName} for the field ${fldName}. unknown collection ${linkCollection}`
             );
           }
         });
@@ -314,14 +314,14 @@ module.exports = async function buildSchema(
 
         if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
           throw new Error(
-            `linkProperties option is required in model ${tableName}. Must be array of collection names.`
+            `linkCollections option is required in model ${tableName}  for the field ${fldName}. Must be array of collection names.`
           );
         }
 
         _.each(rules.linkCollections, (linkCollection) => {
           if (!collections.includes(linkCollection)) {
             throw new Error(
-              `invalid linkProperties option in ${tableName}. unknown collection ${linkCollection}`
+              `invalid linkCollections option in ${tableName}  for the field ${fldName}. unknown collection ${linkCollection}`
             );
           }
         });
