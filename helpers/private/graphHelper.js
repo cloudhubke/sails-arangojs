@@ -19,14 +19,7 @@ let registeredObjectModels = [];
 module.exports = {
   constructGraph: async (manager, definitionsarray, exits) => {
     try {
-      const { graph, Transaction, dbConnection, graphEnabled, dsName } =
-        manager;
-
-      linksCollection = dbConnection.collection('links');
-      const linksCollectionExists = await linksCollection.exists(); // true
-      if (!linksCollectionExists) {
-        await linksCollection.create({ type: 3 });
-      }
+      const { graph, Transaction, graphEnabled, dsName } = manager;
 
       if (graphEnabled) {
         const graphInfo = await graph.get();
@@ -82,7 +75,8 @@ module.exports = {
             await Helpers.schema.buildSchema(
               model.tableName,
               model,
-              collection
+              collection,
+              definitionsarray
             );
 
             await Helpers.schema.buildIndexes(
@@ -157,7 +151,8 @@ module.exports = {
             await Helpers.schema.buildSchema(
               model.tableName,
               model,
-              collection
+              collection,
+              definitionsarray
             );
 
             await Helpers.schema.buildIndexes(
@@ -198,7 +193,7 @@ module.exports = {
 
   buildObjects: function buildObjects(manager, definitionsarray, dsName) {
     try {
-      const { graph, graphEnabled, dbConnection, Transaction } = manager;
+      // const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
       let gIds = [];
 
@@ -266,7 +261,7 @@ module.exports = {
   },
 
   sanitizeDb: async (manager, definitionsarray, dsName) => {
-    const { graph, graphEnabled, dbConnection, Transaction } = manager;
+    const { Transaction } = manager;
 
     await sleep(2000);
 
@@ -370,7 +365,7 @@ module.exports = {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   afterRegister: async (manager, definitionsarray) => {
     try {
-      const { dbConnection, dsName, config, url, bearerToken } = manager;
+      const { dbConnection, dsName } = manager;
 
       const dbListener = new ArangoReal({
         db: dbConnection,
@@ -405,7 +400,6 @@ module.exports = {
                 docObj.onCreate();
               }
             }
-            docObj.onCheckLinks();
           }
 
           if (type === 'onDelete') {

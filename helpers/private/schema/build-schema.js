@@ -10,10 +10,17 @@
 const _ = require('@sailshq/lodash');
 const flaverr = require('flaverr');
 
-module.exports = async function buildSchema(tableName, definition, collection) {
+module.exports = async function buildSchema(
+  tableName,
+  definition,
+  collection,
+  definitionsarray
+) {
   if (!definition || !tableName) {
     throw new Error('Build Schema/Table Name requires a valid definition.');
   }
+
+  const collections = definitionsarray.map((def) => def.tableName);
 
   const pk = definition.primaryKey;
   let createdIndexes = [];
@@ -230,7 +237,7 @@ module.exports = async function buildSchema(tableName, definition, collection) {
         const rules = attProps.rules || {};
 
         for (let key in rules) {
-          if (!['items', 'uniqueItems'].includes(key)) {
+          if (!['linkCollections', 'items', 'uniqueItems'].includes(key)) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
@@ -239,6 +246,20 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             );
           }
         }
+
+        if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
+          throw new Error(
+            `linkProperties option is required in model ${tableName}.  Must be array of collection names.`
+          );
+        }
+
+        _.each(rules.linkCollections, (linkCollection) => {
+          if (!collections.includes(linkCollection)) {
+            throw new Error(
+              `invalid linkProperties option in ${tableName}. unknown collection ${linkCollection}`
+            );
+          }
+        });
 
         if (rules.items && _.isPlainObject(rules.items)) {
           fldProps.items = { ...rules.items };
@@ -258,6 +279,9 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             }
           }
         }
+
+        fldProps.linkCollections = [...rules.linkCollections];
+
         if (rules.items && _.isArray(rules.items)) {
           fldProps.items = { ...rules.items };
         }
@@ -272,7 +296,12 @@ module.exports = async function buildSchema(tableName, definition, collection) {
 
         for (let key in rules) {
           if (
-            !['properties', 'additionalProperties', 'required'].includes(key)
+            ![
+              'properties',
+              'linkCollections',
+              'additionalProperties',
+              'required',
+            ].includes(key)
           ) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
@@ -282,6 +311,22 @@ module.exports = async function buildSchema(tableName, definition, collection) {
             );
           }
         }
+
+        if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
+          throw new Error(
+            `linkProperties option is required in model ${tableName}. Must be array of collection names.`
+          );
+        }
+
+        _.each(rules.linkCollections, (linkCollection) => {
+          if (!collections.includes(linkCollection)) {
+            throw new Error(
+              `invalid linkProperties option in ${tableName}. unknown collection ${linkCollection}`
+            );
+          }
+        });
+
+        fldProps.linkCollections = [...rules.linkCollections];
 
         if (rules.properties && _.isPlainObject(rules.properties)) {
           fldProps.properties = { ...rules.properties };
@@ -327,6 +372,10 @@ module.exports = async function buildSchema(tableName, definition, collection) {
           };
         }
       }
+
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+      //
+      // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
       if (
         attProps.type === 'json' &&
