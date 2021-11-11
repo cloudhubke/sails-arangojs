@@ -325,10 +325,6 @@ module.exports = async function buildSchema(
           );
         }
 
-        console.log('====================================');
-        console.log(tenants);
-        console.log('====================================');
-
         _.each(rules.linkCollections, (linkCollection) => {
           if (!collections.includes(linkCollection) && tenants.length <= 1) {
             throw new Error(
