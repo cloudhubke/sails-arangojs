@@ -21,6 +21,13 @@ module.exports = async function buildSchema(
   }
 
   const collections = definitionsarray.map((def) => def.tableName);
+  const tenants = [...definition.tenantType];
+
+  // if (tableName === 'deleted') {
+  //   console.log('====================================');
+  //   console.log(tenants, tenants.length);
+  //   console.log('====================================');
+  // }
 
   const pk = definition.primaryKey;
   let createdIndexes = [];
@@ -241,7 +248,7 @@ module.exports = async function buildSchema(
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
-                supported properties are 'items', 'uniqueItems'
+                supported properties are 'items', 'uniqueItems', linkCollections
                 `
             );
           }
@@ -254,7 +261,7 @@ module.exports = async function buildSchema(
         }
 
         _.each(rules.linkCollections, (linkCollection) => {
-          if (!collections.includes(linkCollection)) {
+          if (!collections.includes(linkCollection) && tenants.length <= 1) {
             throw new Error(
               `invalid linkCollections option in ${tableName} for the field ${fldName}. unknown collection ${linkCollection}`
             );
@@ -306,7 +313,7 @@ module.exports = async function buildSchema(
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
-                supported properties are 'properties', 'additionalProperties', 'required'
+                supported properties are 'properties', 'additionalProperties', 'required', linkCollections
                 `
             );
           }
@@ -318,8 +325,12 @@ module.exports = async function buildSchema(
           );
         }
 
+        console.log('====================================');
+        console.log(tenants);
+        console.log('====================================');
+
         _.each(rules.linkCollections, (linkCollection) => {
-          if (!collections.includes(linkCollection)) {
+          if (!collections.includes(linkCollection) && tenants.length <= 1) {
             throw new Error(
               `invalid linkCollections option in ${tableName}  for the field ${fldName}. unknown collection ${linkCollection}`
             );
