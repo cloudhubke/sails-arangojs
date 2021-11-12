@@ -141,6 +141,15 @@ module.exports = require('machine').build({
 
       // Execute sql using the driver acquired graph.
 
+      if (schema.properties) {
+        const newprops = {};
+        for (let prop in schema.properties) {
+          const { linkCollections, ...otherprops } = schema.properties[prop];
+          newprops[prop] = otherprops;
+        }
+        schema.properties = newprops;
+      }
+
       normalizedRecord = statement.values;
 
       validateSchema(WLModel, schema, {

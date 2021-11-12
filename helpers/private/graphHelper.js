@@ -307,6 +307,16 @@ module.exports = {
 
           const schema = (colschema || {}).rule;
 
+          if (schema.properties) {
+            const newprops = {};
+            for (let prop in schema.properties) {
+              const { linkCollections, ...otherprops } =
+                schema.properties[prop];
+              newprops[prop] = otherprops;
+            }
+            schema.properties = newprops;
+          }
+
           try {
             let docParams = {};
             for (let key in params) {

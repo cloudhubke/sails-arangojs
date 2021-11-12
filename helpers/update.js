@@ -74,7 +74,6 @@ module.exports = require('machine').build({
 
   fn: async function update(inputs, exits) {
     // Dependencies
-    const validateSchema = require('./private/schema/validate-schema');
     const _ = require('@sailshq/lodash');
     const Helpers = require('./private');
     const flaverr = require('flaverr');
