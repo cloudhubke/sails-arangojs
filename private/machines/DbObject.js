@@ -296,7 +296,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         this.id = doc._key;
       }
     },
-    update: function (callback) {
+    update: function (callback, options = {}) {
       if (typeof callback === 'function') {
         const updateValues = callback(this);
         try {
@@ -308,7 +308,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           const updatedDoc = db._update(
             this,
             { ...updateValues, updatedAt: Date.now() },
-            { returnNew: true }
+            { ...options, returnNew: true }
           ).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
@@ -329,7 +329,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           const updatedDoc = db._update(
             this,
             { ...callback, updatedAt: Date.now() },
-            { returnNew: true }
+            { ...options, returnNew: true }
           ).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
