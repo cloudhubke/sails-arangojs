@@ -35,7 +35,6 @@ class ArangoReal extends EventEmitter {
           this.stop();
           return;
         }
-
         let lastLogTick = body.tick;
         let type;
         let tid;

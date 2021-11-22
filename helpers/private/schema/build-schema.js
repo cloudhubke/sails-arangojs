@@ -23,12 +23,6 @@ module.exports = async function buildSchema(
   const collections = definitionsarray.map((def) => def.tableName);
   const tenants = [...definition.tenantType];
 
-  // if (tableName === 'deleted') {
-  //   console.log('====================================');
-  //   console.log(tenants, tenants.length);
-  //   console.log('====================================');
-  // }
-
   const pk = definition.primaryKey;
   let createdIndexes = [];
 
@@ -128,7 +122,6 @@ module.exports = async function buildSchema(
   }
 
   // Build up a string of column attributes
-
   // ENFORCE SCHEMA in DB
 
   if (['strict', 'moderate', 'new'].includes(definition.schemaValidation)) {

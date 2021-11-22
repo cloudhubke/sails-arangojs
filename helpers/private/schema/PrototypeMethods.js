@@ -169,5 +169,29 @@ module.exports = (globalId) => {
 
       return next;
     },
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // DELETE does not work because the WAL result only has the _key
+    // Until we are able to have events working, we live it here for now,
+    // But it will not work for the moment
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    onDelete: async function onDelete(trx) {
+      if (this._Deleted) {
+        await this._Deleted.create({
+          Document: { ...this },
+          Timestamp: Date.now(),
+        });
+      }
+
+      if (
+        typeof model.ModelObjectConstructor.prototype['onDestroy'] ===
+        'function'
+      ) {
+        return docObj.onDestroy();
+      } else if (
+        typeof model.ModelObjectConstructor.prototype['onRemove'] === 'function'
+      ) {
+        return docObj.onRemove();
+      }
+    },
   };
 };

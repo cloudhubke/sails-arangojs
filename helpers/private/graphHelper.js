@@ -21,6 +21,18 @@ module.exports = {
     try {
       const { graph, Transaction, graphEnabled, dsName } = manager;
 
+      const collections = definitionsarray.map((def) => def.tableName);
+
+      if (!collections.includes('trash')) {
+        console.log('====================================');
+        console.log(
+          `WARNING: trash collection is missing in ${
+            dsName || 'default'
+          } datastore`
+        );
+        console.log('====================================');
+      }
+
       if (graphEnabled) {
         const graphInfo = await graph.get();
 
@@ -418,13 +430,6 @@ module.exports = {
               'function'
             ) {
               return docObj.onDelete();
-            }
-
-            if (
-              typeof model.ModelObjectConstructor.prototype['onDestroy'] ===
-              'function'
-            ) {
-              return docObj.onDestroy();
             }
           }
         });

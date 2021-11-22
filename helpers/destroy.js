@@ -184,27 +184,19 @@ module.exports = require('machine').build({
         if (trx) {
           cursor = await trx.step(() =>
             collection.removeAll(ids, {
-              returnOld: fetchRecords || global._Deleted,
+              returnOld: fetchRecords,
             })
           );
         } else {
           cursor = await collection.removeAll(ids, {
-            returnOld: fetchRecords || global._Deleted,
+            returnOld: fetchRecords,
           });
         }
 
-        if (fetchRecords || global._Deleted) {
+        if (fetchRecords) {
           removedRecords = await cursor.map((doc) =>
             global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
           );
-
-          if (global._Deleted) {
-            await _Deleted(dsName).create({
-              ids,
-              Documents: removedRecords,
-              Timestamp: Date.now(),
-            });
-          }
         }
       } else {
         let sql = `FOR record in ${statement.tableName}`;
@@ -215,7 +207,7 @@ module.exports = require('machine').build({
 
         sql = `${sql} REMOVE record in ${statement.tableName}`;
 
-        if (fetchRecords || global._Deleted) {
+        if (fetchRecords) {
           sql = `${sql}  LET removed = OLD RETURN removed`;
         }
 
@@ -226,18 +218,10 @@ module.exports = require('machine').build({
           cursor = await dbConnection.query(sql);
         }
 
-        if (fetchRecords || global._Deleted) {
+        if (fetchRecords) {
           removedRecords = await cursor.map((doc) =>
             global[`${WLModel.globalId}Object`].initialize(doc, dsName, false)
           );
-
-          if (global._Deleted) {
-            await _Deleted(dsName).create({
-              ids: removedRecords.map((doc) => doc[pkColumnName]),
-              Documents: removedRecords,
-              Timestamp: Date.now(),
-            });
-          }
         }
       }
 
