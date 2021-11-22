@@ -23,15 +23,15 @@ module.exports = {
 
       const collections = definitionsarray.map((def) => def.tableName);
 
-      if (!collections.includes('trash')) {
-        console.log('====================================');
-        console.log(
-          `WARNING: trash collection is missing in ${
-            dsName || 'default'
-          } datastore`
-        );
-        console.log('====================================');
-      }
+      // if (!collections.includes('trash')) {
+      //   console.log('====================================');
+      //   console.log(
+      //     `WARNING: trash collection is missing in ${
+      //       dsName || 'default'
+      //     } datastore`
+      //   );
+      //   console.log('====================================');
+      // }
 
       if (graphEnabled) {
         const graphInfo = await graph.get();
