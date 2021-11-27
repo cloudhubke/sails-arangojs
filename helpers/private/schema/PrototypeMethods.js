@@ -4,7 +4,7 @@ module.exports = (globalId) => {
   // PROTOTYPES
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   return {
-    update: async function update(callback, trx) {
+    update: async function update(callback, trx, options = {}) {
       try {
         let updateValues;
         if (typeof callback === 'function') {
@@ -20,6 +20,9 @@ module.exports = (globalId) => {
         let updatedDoc;
 
         if (this.merchantcode || this.tenantcode) {
+          await global[`_${globalId}`](
+            this.merchantcode || this.tenantcode
+          ).normalize({ ...this, ...updateValues });
           updatedDoc = await global[`_${globalId}`](
             this.merchantcode || this.tenantcode
           )
@@ -27,16 +30,18 @@ module.exports = (globalId) => {
             .set({ ...updateValues })
             .meta({
               trx,
+              ...options,
             });
         } else {
+          await global[`${globalId}`].normalize({ ...this, ...updateValues });
           updatedDoc = await global[`${globalId}`]
             .updateOne({ id: this.id })
             .set({ ...updateValues })
             .meta({
               trx,
+              ...options,
             });
         }
-
         if (updatedDoc) {
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
           // IMPORTANT! set to null

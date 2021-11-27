@@ -237,7 +237,18 @@ module.exports = async function buildSchema(
         const rules = attProps.rules || {};
 
         for (let key in rules) {
-          if (!['linkCollections', 'items', 'uniqueItems'].includes(key)) {
+          if (
+            ![
+              'linkCollections',
+              'items',
+              'uniqueItems',
+              'minItems',
+              'maxItems',
+              'minContains',
+              'maxContains',
+              'contains',
+            ].includes(key)
+          ) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
@@ -285,6 +296,24 @@ module.exports = async function buildSchema(
         if (rules.items && _.isArray(rules.items)) {
           fldProps.items = { ...rules.items };
         }
+        if (rules.contains && _.isArray(rules.contains)) {
+          fldProps.contains = { ...rules.contains };
+        }
+
+        if (rules.minContains && typeof rules.minContains === 'number') {
+          fldProps.minContains = rules.minContains;
+        }
+        if (rules.maxContains && typeof rules.maxContains === 'number') {
+          fldProps.maxContains = rules.maxContains;
+        }
+
+        if (rules.minItems && typeof rules.minItems === 'number') {
+          fldProps.minItems = rules.minItems;
+        }
+        if (rules.maxItems && typeof rules.maxItems === 'number') {
+          fldProps.maxItems = rules.maxItems;
+        }
+
         if (rules.uniqueItems) {
           fldProps.uniqueItems = true;
         }

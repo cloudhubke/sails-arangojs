@@ -334,9 +334,9 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           this.reInitialize(updatedDoc);
         } catch (error) {
           throw new Error(
-            `problem updating doc ${this._key} \n\n ${JSON.stringify(
-              callback
-            )}\n\n ${error.toString()}`
+            `problem updating doc ${this._key} \n\n ${JSON.stringify({
+              ...callback,
+            })}\n\n ${error.toString()}`
           );
         }
       } else {
