@@ -293,7 +293,7 @@ module.exports = async function buildSchema(
         }
         fldProps.linkCollections = [...rules.linkCollections];
 
-        if (rules.validateLinks && _.isBoolean(rules.validateLinks)) {
+        if (_.isBoolean(rules.validateLinks)) {
           fldProps.validateLinks = rules.validateLinks;
         }
 
@@ -403,7 +403,7 @@ module.exports = async function buildSchema(
           }
         }
 
-        if (rules.validateLinks && _.isBoolean(rules.validateLinks)) {
+        if (_.isBoolean(rules.validateLinks)) {
           fldProps.validateLinks = rules.validateLinks;
         }
 
