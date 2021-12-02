@@ -328,6 +328,7 @@ module.exports = async function buildSchema(
             ![
               'properties',
               'linkCollections',
+              'validateLinks',
               'additionalProperties',
               'required',
             ].includes(key)
@@ -335,10 +336,16 @@ module.exports = async function buildSchema(
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
-                supported properties are 'properties', 'additionalProperties', 'required', linkCollections
+                supported properties are 'properties', 'additionalProperties', 'required', linkCollections, 'validateLinks'
                 `
             );
           }
+        }
+
+        if (rules.validateLinks && !_.isBoolean(rules.validateLinks)) {
+          throw new Error(
+            `validateLinks option in ${tableName}.${fldName} must be a boolean`
+          );
         }
 
         if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
