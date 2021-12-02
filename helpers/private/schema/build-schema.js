@@ -291,7 +291,6 @@ module.exports = async function buildSchema(
             }
           }
         }
-
         fldProps.linkCollections = [...rules.linkCollections];
 
         if (rules.validateLinks && _.isBoolean(rules.validateLinks)) {
@@ -358,7 +357,6 @@ module.exports = async function buildSchema(
             `linkCollections option is required in model ${tableName}  for the field ${fldName}. Must be array of collection names.`
           );
         }
-
         _.each(rules.linkCollections, (linkCollection) => {
           if (!collections.includes(linkCollection) && tenants.length <= 1) {
             throw new Error(
