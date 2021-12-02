@@ -294,6 +294,10 @@ module.exports = async function buildSchema(
 
         fldProps.linkCollections = [...rules.linkCollections];
 
+        if (rules.validateLinks && _.isBoolean(rules.validateLinks)) {
+          fldProps.validateLinks = rules.validateLinks;
+        }
+
         if (rules.items && _.isArray(rules.items)) {
           fldProps.items = { ...rules.items };
         }
@@ -400,6 +404,11 @@ module.exports = async function buildSchema(
             }
           }
         }
+
+        if (rules.validateLinks && _.isBoolean(rules.validateLinks)) {
+          fldProps.validateLinks = rules.validateLinks;
+        }
+
         if (
           rules.additionalProperties &&
           _.isPlainObject(rules.additionalProperties)
