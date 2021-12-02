@@ -239,6 +239,7 @@ module.exports = async function buildSchema(
         for (let key in rules) {
           if (
             ![
+              'validateLinks',
               'linkCollections',
               'items',
               'uniqueItems',
@@ -252,7 +253,7 @@ module.exports = async function buildSchema(
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
-                supported properties are 'items', 'uniqueItems', linkCollections
+                supported properties are 'items', 'uniqueItems', linkCollections, 'validateLinks'
                 `
             );
           }
