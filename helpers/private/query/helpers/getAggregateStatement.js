@@ -197,7 +197,7 @@ module.exports = ({ aggregateCriteria, pkColumnName, model }) => {
   const getAqlStatement = ({ value, key }) => {
     let aqlstatement = '';
 
-    if (key === '$filter') {
+    if (`${key}`.includes('$filter')) {
       aqlstatement = getAndStatement(value || {});
       if (aqlstatement) {
         aqlstatement = `FILTER ${aqlstatement}\n`;
