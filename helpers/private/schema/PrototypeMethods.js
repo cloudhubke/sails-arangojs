@@ -23,6 +23,12 @@ module.exports = (globalId) => {
           // await global[`_${globalId}`](
           //   this.merchantcode || this.tenantcode
           // ).normalize({ ...this, ...updateValues });
+
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // Removed .normalize because it will throw an error if we say
+          // {Array: {$pushset: {...updateValues}}}
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
           updatedDoc = await global[`_${globalId}`](
             this.merchantcode || this.tenantcode
           )
@@ -34,6 +40,10 @@ module.exports = (globalId) => {
             });
         } else {
           // await global[`${globalId}`].normalize({ ...this, ...updateValues });
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          // Removed .normalize because it will throw an error if we say
+          // {Array: {$pushset: {...updateValues}}}
+          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
           updatedDoc = await global[`${globalId}`]
             .updateOne({ id: this.id })
             .set({ ...updateValues })
