@@ -20,9 +20,9 @@ module.exports = (globalId) => {
         let updatedDoc;
 
         if (this.merchantcode || this.tenantcode) {
-          await global[`_${globalId}`](
-            this.merchantcode || this.tenantcode
-          ).normalize({ ...this, ...updateValues });
+          // await global[`_${globalId}`](
+          //   this.merchantcode || this.tenantcode
+          // ).normalize({ ...this, ...updateValues });
           updatedDoc = await global[`_${globalId}`](
             this.merchantcode || this.tenantcode
           )
@@ -33,7 +33,7 @@ module.exports = (globalId) => {
               ...options,
             });
         } else {
-          await global[`${globalId}`].normalize({ ...this, ...updateValues });
+          // await global[`${globalId}`].normalize({ ...this, ...updateValues });
           updatedDoc = await global[`${globalId}`]
             .updateOne({ id: this.id })
             .set({ ...updateValues })
