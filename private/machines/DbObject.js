@@ -306,7 +306,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
             updatedAt: Date.now(),
           });
           const updatedDoc = db._update(
-            this,
+            { _id: this._id },
             { ...updateValues, updatedAt: Date.now() },
             { ...options, returnNew: true }
           ).new;
@@ -329,7 +329,7 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
             updatedAt: Date.now(),
           });
           const updatedDoc = db._update(
-            this,
+            { _id: this._id },
             { ...callback, updatedAt: Date.now() },
             { ...options, returnNew: true }
           ).new;
