@@ -233,9 +233,9 @@ module.exports = async function buildSchema(
       }
 
       if (attProps.type === 'json') {
-        if (_.isArray(attProps.defaultsTo)) {
+        const rules = attProps.rules || {};
+        if (_.isArray(attProps.defaultsTo) || rules.type == 'array') {
           fldProps.type = 'array';
-          const rules = attProps.rules || {};
 
           for (let key in rules) {
             if (
@@ -324,8 +324,6 @@ module.exports = async function buildSchema(
           }
         } else {
           fldProps.type = 'object';
-          const rules = attProps.rules || {};
-
           for (let key in rules) {
             if (
               ![
