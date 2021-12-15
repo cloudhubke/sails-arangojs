@@ -232,188 +232,188 @@ module.exports = async function buildSchema(
         const rules = attProps.rules || {};
       }
 
-      if (attProps.type === 'json' && _.isArray(attProps.defaultsTo)) {
-        fldProps.type = 'array';
-        const rules = attProps.rules || {};
+      if (attProps.type === 'json') {
+        if (_.isArray(attProps.defaultsTo)) {
+          fldProps.type = 'array';
+          const rules = attProps.rules || {};
 
-        for (let key in rules) {
-          if (
-            ![
-              'validateLinks',
-              'linkCollections',
-              'items',
-              'uniqueItems',
-              'minItems',
-              'maxItems',
-              'minContains',
-              'maxContains',
-              'contains',
-            ].includes(key)
-          ) {
-            throw new Error(
-              `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
-                
-                supported properties are 'items', 'uniqueItems', linkCollections, 'validateLinks'
-                `
-            );
-          }
-        }
-
-        if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
-          throw new Error(
-            `linkCollections option is required in model ${tableName} for the field ${fldName}.  Must be array of collection names.`
-          );
-        }
-
-        _.each(rules.linkCollections, (linkCollection) => {
-          if (!collections.includes(linkCollection) && tenants.length <= 1) {
-            throw new Error(
-              `invalid linkCollections option in ${tableName} for the field ${fldName}. unknown collection ${linkCollection}`
-            );
-          }
-        });
-
-        if (rules.items && _.isPlainObject(rules.items)) {
-          fldProps.items = { ...rules.items };
-
-          if (fldProps.items.required && _.isArray(fldProps.items.required)) {
-            fldProps.items.required = [...fldProps.items.required].filter(
-              (r) => r !== '_key' && r !== '_id'
-            );
-
-            for (let r of fldProps.items.required) {
-              if (!fldProps.items.properties[r]) {
-                throw new Error(
-                  `${r} rules property ${r} in array items of ${tableName}.${fldName} is not included in the rules properties      
-                    `
-                );
-              }
-            }
-          }
-        }
-        fldProps.linkCollections = [...rules.linkCollections];
-
-        if (_.isBoolean(rules.validateLinks)) {
-          fldProps.validateLinks = rules.validateLinks;
-        }
-
-        if (rules.items && _.isArray(rules.items)) {
-          fldProps.items = { ...rules.items };
-        }
-        if (rules.contains && _.isArray(rules.contains)) {
-          fldProps.contains = { ...rules.contains };
-        }
-
-        if (rules.minContains && typeof rules.minContains === 'number') {
-          fldProps.minContains = rules.minContains;
-        }
-        if (rules.maxContains && typeof rules.maxContains === 'number') {
-          fldProps.maxContains = rules.maxContains;
-        }
-
-        if (rules.minItems && typeof rules.minItems === 'number') {
-          fldProps.minItems = rules.minItems;
-        }
-        if (rules.maxItems && typeof rules.maxItems === 'number') {
-          fldProps.maxItems = rules.maxItems;
-        }
-
-        if (rules.uniqueItems) {
-          fldProps.uniqueItems = true;
-        }
-      }
-
-      if (attProps.type === 'json' && _.isPlainObject(attProps.defaultsTo)) {
-        fldProps.type = 'object';
-        const rules = attProps.rules || {};
-
-        for (let key in rules) {
-          if (
-            ![
-              'properties',
-              'linkCollections',
-              'validateLinks',
-              'additionalProperties',
-              'required',
-            ].includes(key)
-          ) {
-            throw new Error(
-              `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
-                
-                supported properties are 'properties', 'additionalProperties', 'required', linkCollections, 'validateLinks'
-                `
-            );
-          }
-        }
-
-        if (rules.validateLinks && !_.isBoolean(rules.validateLinks)) {
-          throw new Error(
-            `validateLinks option in ${tableName}.${fldName} must be a boolean`
-          );
-        }
-
-        if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
-          throw new Error(
-            `linkCollections option is required in model ${tableName}  for the field ${fldName}. Must be array of collection names.`
-          );
-        }
-        _.each(rules.linkCollections, (linkCollection) => {
-          if (!collections.includes(linkCollection) && tenants.length <= 1) {
-            throw new Error(
-              `invalid linkCollections option in ${tableName}  for the field ${fldName}. unknown collection ${linkCollection}`
-            );
-          }
-        });
-
-        fldProps.linkCollections = [...rules.linkCollections];
-
-        if (rules.properties && _.isPlainObject(rules.properties)) {
-          fldProps.properties = { ...rules.properties };
-          for (let p in fldProps.properties) {
-            const obj = fldProps.properties[p] || {};
+          for (let key in rules) {
             if (
-              !['string', 'number', 'boolean', 'array', 'object'].includes(
-                obj.type
-              )
+              ![
+                'validateLinks',
+                'linkCollections',
+                'items',
+                'uniqueItems',
+                'minItems',
+                'maxItems',
+                'minContains',
+                'maxContains',
+                'contains',
+              ].includes(key)
             ) {
-              throw new Error(`
-                
-                Error setting schema validation ${p} in attribute ${fldName} of Model ${tableName} 
-
-                expects object of type 'string', 'number', 'boolean', 'array', 'object'
-                
-                `);
+              throw new Error(
+                `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
+                  
+                  supported properties are 'items', 'uniqueItems', linkCollections, 'validateLinks'
+                  `
+              );
             }
           }
 
-          if (rules.required && _.isArray(rules.required)) {
-            fldProps.required = [...rules.required].filter(
-              (r) => r !== '_key' && r !== '_id'
+          if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
+            throw new Error(
+              `linkCollections option is required in model ${tableName} for the field ${fldName}.  Must be array of collection names.`
             );
+          }
 
-            for (let r of fldProps.required) {
-              if (!fldProps.properties[r]) {
-                throw new Error(
-                  `${r} rules property for attribute ${fldName} in schema ${tableName} is not included in the rules properties
-                                     
-                    `
-                );
+          _.each(rules.linkCollections, (linkCollection) => {
+            if (!collections.includes(linkCollection) && tenants.length <= 1) {
+              throw new Error(
+                `invalid linkCollections option in ${tableName} for the field ${fldName}. unknown collection ${linkCollection}`
+              );
+            }
+          });
+
+          if (rules.items && _.isPlainObject(rules.items)) {
+            fldProps.items = { ...rules.items };
+
+            if (fldProps.items.required && _.isArray(fldProps.items.required)) {
+              fldProps.items.required = [...fldProps.items.required].filter(
+                (r) => r !== '_key' && r !== '_id'
+              );
+
+              for (let r of fldProps.items.required) {
+                if (!fldProps.items.properties[r]) {
+                  throw new Error(
+                    `${r} rules property ${r} in array items of ${tableName}.${fldName} is not included in the rules properties      
+                      `
+                  );
+                }
               }
             }
           }
-        }
+          fldProps.linkCollections = [...rules.linkCollections];
 
-        if (_.isBoolean(rules.validateLinks)) {
-          fldProps.validateLinks = rules.validateLinks;
-        }
+          if (_.isBoolean(rules.validateLinks)) {
+            fldProps.validateLinks = rules.validateLinks;
+          }
 
-        if (
-          rules.additionalProperties &&
-          _.isPlainObject(rules.additionalProperties)
-        ) {
-          fldProps.additionalProperties = {
-            ...rules.additionalProperties,
-          };
+          if (rules.items && _.isArray(rules.items)) {
+            fldProps.items = { ...rules.items };
+          }
+          if (rules.contains && _.isArray(rules.contains)) {
+            fldProps.contains = { ...rules.contains };
+          }
+
+          if (rules.minContains && typeof rules.minContains === 'number') {
+            fldProps.minContains = rules.minContains;
+          }
+          if (rules.maxContains && typeof rules.maxContains === 'number') {
+            fldProps.maxContains = rules.maxContains;
+          }
+
+          if (rules.minItems && typeof rules.minItems === 'number') {
+            fldProps.minItems = rules.minItems;
+          }
+          if (rules.maxItems && typeof rules.maxItems === 'number') {
+            fldProps.maxItems = rules.maxItems;
+          }
+
+          if (rules.uniqueItems) {
+            fldProps.uniqueItems = true;
+          }
+        } else {
+          fldProps.type = 'object';
+          const rules = attProps.rules || {};
+
+          for (let key in rules) {
+            if (
+              ![
+                'properties',
+                'linkCollections',
+                'validateLinks',
+                'additionalProperties',
+                'required',
+              ].includes(key)
+            ) {
+              throw new Error(
+                `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
+                    
+                    supported properties are 'properties', 'additionalProperties', 'required', linkCollections, 'validateLinks'
+                    `
+              );
+            }
+          }
+
+          if (rules.validateLinks && !_.isBoolean(rules.validateLinks)) {
+            throw new Error(
+              `validateLinks option in ${tableName}.${fldName} must be a boolean`
+            );
+          }
+
+          if (!rules.linkCollections || !Array.isArray(rules.linkCollections)) {
+            throw new Error(
+              `linkCollections option is required in model ${tableName}  for the field ${fldName}. Must be array of collection names.`
+            );
+          }
+          _.each(rules.linkCollections, (linkCollection) => {
+            if (!collections.includes(linkCollection) && tenants.length <= 1) {
+              throw new Error(
+                `invalid linkCollections option in ${tableName}  for the field ${fldName}. unknown collection ${linkCollection}`
+              );
+            }
+          });
+
+          fldProps.linkCollections = [...rules.linkCollections];
+
+          if (rules.properties && _.isPlainObject(rules.properties)) {
+            fldProps.properties = { ...rules.properties };
+            for (let p in fldProps.properties) {
+              const obj = fldProps.properties[p] || {};
+              if (
+                !['string', 'number', 'boolean', 'array', 'object'].includes(
+                  obj.type
+                )
+              ) {
+                throw new Error(`
+                    
+                    Error setting schema validation ${p} in attribute ${fldName} of Model ${tableName} 
+    
+                    expects object of type 'string', 'number', 'boolean', 'array', 'object'
+                    
+                    `);
+              }
+            }
+
+            if (rules.required && _.isArray(rules.required)) {
+              fldProps.required = [...rules.required].filter(
+                (r) => r !== '_key' && r !== '_id'
+              );
+
+              for (let r of fldProps.required) {
+                if (!fldProps.properties[r]) {
+                  throw new Error(
+                    `${r} rules property for attribute ${fldName} in schema ${tableName} is not included in the rules properties
+                                         
+                        `
+                  );
+                }
+              }
+            }
+          }
+
+          if (_.isBoolean(rules.validateLinks)) {
+            fldProps.validateLinks = rules.validateLinks;
+          }
+
+          if (
+            rules.additionalProperties &&
+            _.isPlainObject(rules.additionalProperties)
+          ) {
+            fldProps.additionalProperties = {
+              ...rules.additionalProperties,
+            };
+          }
         }
       }
 
