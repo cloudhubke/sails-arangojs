@@ -389,6 +389,7 @@ module.exports = {
           getSystemSettings,
           updateSystemSettings,
           dsName: config.identity === 'default' ? undefined : config.identity,
+          tenantType: config.tenantType || 'admin',
           url,
           config,
           vertices,
