@@ -204,17 +204,23 @@ module.exports = require('machine').build({
     }).switch({
       error(err) {
         return exits.error(
-          `Consistency violation: Unexpected error creating db connection manager:\n\`\`\`\n${err}`
+          `Consistency violation: Unexpected error creating db connection manager. ${`${config.url}`
+            .split('/')
+            .pop()} Details:\n\`\`\`\n${err}`
         );
       },
       malformed(report) {
         return exits.badConfiguration(
-          `The given connection URL is not valid for this database adapter.  Details:\n\`\`\`\n${report}`
+          `The given connection URL is not valid for this database adapter. ${`${config.url}`
+            .split('/')
+            .pop()}  Details:\n\`\`\`\n${report}`
         );
       },
       failed(report) {
         return exits.badConfiguration(
-          `Failed to connect with the given datastore configuration.  Details:\n\`\`\`\n${report}`
+          `Failed to connect with the given datastore configuration. ${`${config.url}`
+            .split('/')
+            .pop()}  Details:\n\`\`\`\n${report}`
         );
       },
       success: async (report) => {
