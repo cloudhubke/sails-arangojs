@@ -20,6 +20,10 @@ module.exports = async function buildSchema(
     throw new Error('Build Schema/Table Name requires a valid definition.');
   }
 
+  if (tableName === 'archive') {
+    return;
+  }
+
   const collections = definitionsarray.map((def) => def.tableName);
   const tenants = [...definition.tenantType];
 
