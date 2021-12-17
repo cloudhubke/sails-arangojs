@@ -203,22 +203,34 @@ module.exports = require('machine').build({
           }
         );
 
-        if (oldrecord && oldrecord[pkColumnName]) {
-          // remove the record
-          await collection.remove(`${criteria[pkColumnName]}`);
-        } else {
-          throw new Error('The document does not exist');
-        }
+        const trx = await dbConnection.beginTransaction({
+          write: [`${tableName}`], // collection instances can be passed directly
+        });
 
-        const opts = { returnNew: fetchRecords };
+        try {
+          if (oldrecord && oldrecord[pkColumnName]) {
+            // remove the record
+            await await trx.step(() =>
+              collection.remove(`${criteria[pkColumnName]}`)
+            );
+          } else {
+            throw new Error('The document does not exist');
+          }
 
-        result = await collection.save(
-          { ...oldrecord, ...statement.valuesToSet },
-          opts
-        );
+          const opts = { returnNew: fetchRecords };
 
-        if (fetchRecords) {
-          updatedRecords = [result.new];
+          result = await await trx.step(() =>
+            collection.save({ ...oldrecord, ...statement.valuesToSet }, opts)
+          );
+
+          if (fetchRecords) {
+            updatedRecords = [result.new];
+          }
+
+          await trx.commit();
+        } catch (error) {
+          await trx.abort();
+          throw error;
         }
       } else if (statement.primarywhere._id) {
         let sql = `LET record = DOCUMENT("${statement.primarywhere._id}")`;
