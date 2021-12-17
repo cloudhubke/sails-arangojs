@@ -232,6 +232,8 @@ module.exports = {
           model.globalId &&
           model.ModelObjectConstructor
         ) {
+          const pkColumnName = model.attributes[model.primaryKey].columnName;
+
           const DefaultStaticMethods = StaticMethods({
             classType: model.classType,
             globalId: model.globalId,
@@ -240,6 +242,7 @@ module.exports = {
             cache: Boolean(model.cache),
             gIds: gIds,
             modelDefaults: model.modelDefaults,
+            pkColumnName,
           });
 
           const DefaultPrototypeMethods = PrototypeMethods(model.globalId);

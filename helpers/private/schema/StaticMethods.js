@@ -64,6 +64,7 @@ module.exports = ({
   cache,
   gIds,
   modelDefaults,
+  pkColumnName,
 }) => {
   const create = async function (params, dsName) {
     try {
@@ -261,6 +262,7 @@ module.exports = ({
     keyProps,
     modelDefaults,
     cache,
+    pkColumnName,
     [`Available${globalId}s`]: {},
     findOneOrCreate: async function (params, dsName) {
       try {
@@ -319,6 +321,12 @@ module.exports = ({
           Object.defineProperty(docObj, 'tableName', {
             get: () => {
               return `${globalId}`.toLowerCase();
+            },
+          });
+
+          Object.defineProperty(docObj, 'pkColumnName', {
+            get: () => {
+              return `${pkColumnName}`.toLowerCase();
             },
           });
 

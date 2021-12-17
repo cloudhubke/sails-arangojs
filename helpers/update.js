@@ -142,6 +142,10 @@ module.exports = require('machine').build({
     // on Waterline Query Statements.
     let statement;
     try {
+      console.log('====================================');
+      console.log(query);
+
+      console.log('====================================');
       statement = Helpers.query.compileStatement({
         pkColumnName,
         model: query.using,

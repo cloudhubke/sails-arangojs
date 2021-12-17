@@ -1,4 +1,6 @@
 const _ = require('lodash');
+const Helpers = require('../');
+
 module.exports = (globalId) => {
   // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
   // PROTOTYPES
@@ -17,17 +19,26 @@ module.exports = (globalId) => {
           );
         }
 
+        const statement = Helpers.query.compileStatement({
+          pkColumnName: this.pkColumnName,
+          model: this.tableName,
+          method: 'update',
+          criteria: {
+            let: {},
+            where: { [this.pkColumnName]: this.id || this._key },
+            limit: 9007199254740991,
+            skip: 0,
+            sort: [],
+          },
+          values: updateValues,
+        });
+
         let updatedDoc;
 
         if (this.merchantcode || this.tenantcode) {
-          // await global[`_${globalId}`](
-          //   this.merchantcode || this.tenantcode
-          // ).normalize({ ...this, ...updateValues });
-
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-          // Removed .normalize because it will throw an error if we say
-          // {Array: {$pushset: {...updateValues}}}
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          await global[`_${globalId}`](
+            this.merchantcode || this.tenantcode
+          ).normalize({ ...this, ...statement.valuesToSet });
 
           updatedDoc = await global[`_${globalId}`](
             this.merchantcode || this.tenantcode
@@ -39,11 +50,11 @@ module.exports = (globalId) => {
               ...options,
             });
         } else {
-          // await global[`${globalId}`].normalize({ ...this, ...updateValues });
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-          // Removed .normalize because it will throw an error if we say
-          // {Array: {$pushset: {...updateValues}}}
-          // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+          await global[`${globalId}`].normalize({
+            ...this,
+            ...statement.valuesToSet,
+          });
+
           updatedDoc = await global[`${globalId}`]
             .updateOne({ id: this.id })
             .set({ ...updateValues })
