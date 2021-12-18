@@ -13,6 +13,8 @@ module.exports = function validateSchema(model, schema, document) {
       if (!valid) {
         console.log(`Schema validation failed for model ${model.tableName}`);
         console.log('====================================');
+
+        let errors = '';
         for (let errorObject of validate.errors) {
           const fldName = `${errorObject.dataPath || model.tableName}`.split(
             '/'
@@ -30,11 +32,12 @@ module.exports = function validateSchema(model, schema, document) {
             );
           } else {
             console.log(`${model.tableName} | ${errorObject.message}`);
+            errors = `${errors}\n${model.tableName} |=> ${errorObject.message}`;
           }
         }
         console.log(validate.errors);
         throw new Error(
-          `\n\nSanitization of the model ${model.tableName} has failed\n\n`
+          `\nValidation of record for the model ${model.tableName} has failed\n${errors}`
         );
       }
 
