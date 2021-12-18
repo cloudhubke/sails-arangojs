@@ -243,6 +243,7 @@ module.exports = {
             gIds: gIds,
             modelDefaults: model.modelDefaults,
             pkColumnName,
+            schema: model.schema,
           });
 
           const DefaultPrototypeMethods = PrototypeMethods(model.globalId);

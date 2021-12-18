@@ -375,7 +375,11 @@ module.exports = require('machine').build({
           // If auto build flag is true, construct the model collection
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-          await graphHelper.constructGraph(manager, definitionsarray, exits);
+          const graph = await graphHelper.constructGraph(
+            manager,
+            definitionsarray,
+            exits
+          );
 
           modelDefinitions[identity] = dbSchema;
 

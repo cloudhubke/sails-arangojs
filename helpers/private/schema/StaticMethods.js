@@ -1,5 +1,6 @@
 const _ = require('@sailshq/lodash');
 const util = require('util');
+const validateSchema = require('./validate-schema');
 
 String.prototype.capitalizeCollection = function () {
   return this.charAt(0).toUpperCase() + this.slice(1);
@@ -65,6 +66,7 @@ module.exports = ({
   gIds,
   modelDefaults,
   pkColumnName,
+  schema,
 }) => {
   const create = async function (params, dsName) {
     try {
@@ -263,6 +265,7 @@ module.exports = ({
     modelDefaults,
     cache,
     pkColumnName,
+    schema,
     [`Available${globalId}s`]: {},
     findOneOrCreate: async function (params, dsName) {
       try {
@@ -327,6 +330,12 @@ module.exports = ({
           Object.defineProperty(docObj, 'pkColumnName', {
             get: () => {
               return `${pkColumnName}`.toLowerCase();
+            },
+          });
+
+          Object.defineProperty(docObj, 'schema', {
+            get: () => {
+              return `${schema}`.toLowerCase();
             },
           });
 
@@ -426,6 +435,39 @@ module.exports = ({
           }
         }
         return docObj;
+      } catch (error) {
+        throw error;
+      }
+    },
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // validation
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+    validate: function validate(values) {
+      try {
+        let shema = schema || {};
+        schema = schema.rule || {};
+
+        if (schema.properties) {
+          const newprops = {};
+          for (let prop in schema.properties) {
+            const { linkCollections, validateLinks, ...otherprops } =
+              schema.properties[prop];
+            newprops[prop] = otherprops;
+          }
+          schema.properties = newprops;
+        }
+
+        validateSchema(
+          {
+            tableName,
+          },
+          schema,
+          {
+            ...values,
+          }
+        );
       } catch (error) {
         throw error;
       }

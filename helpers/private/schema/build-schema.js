@@ -12,7 +12,7 @@ const flaverr = require('flaverr');
 
 module.exports = async function buildSchema(
   tableName,
-  definition,
+  definition, //model
   collection,
   definitionsarray
 ) {
@@ -451,6 +451,8 @@ module.exports = async function buildSchema(
      
       `,
     };
+
+    definition.schema = schema;
 
     await collection.properties({ schema: schema });
   } else {
