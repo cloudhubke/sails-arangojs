@@ -4,8 +4,15 @@ function getObject(globalId) {
   ${String(global[`${globalId}Dbo`])}`;
 }
 
-module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
-  const globalid = `${globalId}`.toLocaleLowerCase();
+module.exports = ({
+  globalId,
+  tableName,
+  keyProps,
+  modelDefaults,
+  schema,
+  modelAttributes,
+}) => {
+  const globalid = `${globalId}`.toLowerCase();
 
   const methods = () => ({
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -13,9 +20,23 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     globalId: `"${globalId}"`,
+    tableName: `"${tableName}"`,
     keyProps: JSON.stringify(keyProps),
     modelDefaults: JSON.stringify(modelDefaults || {}),
     modelAttributes: JSON.stringify(modelAttributes || {}),
+    getSchema: function () {
+      const tableName = globalIdDbo.tableName;
+
+      if (globalIdDbo.schema) {
+        return globalIdDbo.schema;
+      } else {
+        globalIdDbo.schema = db
+          ._query(`RETURN SCHEMA_GET('${tableName}')`)
+          .toArray()[0];
+
+        return globalIdDbo.schema;
+      }
+    },
     validateParams: function (docParams) {
       const attributes = globalIdDbo.modelAttributes;
 
@@ -155,10 +176,20 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
         return docObj;
       } catch (error) {
         const response = error.response || {};
+
+        const errorStr = error.toString();
+
+        let velidationErrors = '';
+        if (errorStr.includes('Schema violation')) {
+          const schema = globalIdDbo.getSchema();
+          validationErrors = dbmodules.validateDocument(schema, docParams);
+        }
+
         throw new Error(
-          `Error saving doc in globalid \n\n${error.toString()}\n\n ${JSON.stringify(
-            docParams
-          )}\n\n`
+          `Error saving doc in globalid \n\n${
+            validationErrors ||
+            `${errorStr}\n\n ${JSON.stringify(docParams)}\n\n`
+          }`
         );
       }
     },
@@ -312,33 +343,41 @@ module.exports = ({ globalId, keyProps, modelDefaults, modelAttributes }) => {
           ).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
+          let velidationErrors = '';
+          if (errorStr.includes('Schema violation')) {
+            const schema = globalIdDbo.getSchema();
+            validationErrors = dbmodules.validateDocument(schema, updateValues);
+          }
+
           throw new Error(
-            `there was problem with updating doc ${
-              this._key
-            }\n\n ${JSON.stringify({
-              ...updateValues,
-              updatedAt: Date.now(),
-            })}\n\n ${error.toString()}`
+            `Error saving doc in globalid \n\n${
+              validationErrors ||
+              `${errorStr}\n\n ${JSON.stringify(updateValues)}\n\n`
+            }`
           );
         }
       } else if (typeof callback === 'object') {
+        const newDoc = { ...this, ...callback, updatedAt: Date.now() };
         try {
-          globalIdDbo.validateParams({
-            ...this,
-            ...callback,
-            updatedAt: Date.now(),
-          });
-          const updatedDoc = db._update(
-            { _id: this._id },
-            { ...callback, updatedAt: Date.now() },
-            { ...options, returnNew: true }
-          ).new;
+          globalIdDbo.validateParams(newDoc);
+          const updatedDoc = db._update({ _id: this._id }, newDoc, {
+            ...options,
+            returnNew: true,
+          }).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
+          const errorStr = error.toString();
+          let velidationErrors = '';
+          if (errorStr.includes('Schema violation')) {
+            const schema = globalIdDbo.getSchema();
+            validationErrors = dbmodules.validateDocument(schema, newDoc);
+          }
+
           throw new Error(
-            `there was problem updating doc ${this._key} \n\n ${JSON.stringify({
-              ...callback,
-            })}\n\n ${error.toString()}`
+            `Error saving doc in globalid \n\n${
+              validationErrors ||
+              `${errorStr}\n\n ${JSON.stringify(callback)}\n\n`
+            }`
           );
         }
       } else {

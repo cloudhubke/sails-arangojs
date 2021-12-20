@@ -388,6 +388,7 @@ module.exports = require('machine').build({
           }
 
           graphHelper.buildObjects(manager, definitionsarray, identity);
+
           graphHelper.afterRegister(manager, definitionsarray);
 
           if (config.onDbConnect && _.isFunction(config.onDbConnect)) {
