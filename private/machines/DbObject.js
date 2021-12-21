@@ -350,6 +350,7 @@ module.exports = ({
             validationErrors = dbmodules.validateDocument(schema, updateValues);
           }
 
+          // show errors
           throw new Error(
             `Error saving doc in globalid \n\n${
               validationErrors ||
