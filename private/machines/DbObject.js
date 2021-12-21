@@ -367,7 +367,7 @@ module.exports = ({
           this.reInitialize(updatedDoc);
         } catch (error) {
           const errorStr = error.toString();
-          let velidationErrors = '';
+          let validationErrors = '';
           if (errorStr.includes('Schema violation')) {
             const schema = globalIdDbo.getSchema();
             validationErrors = dbmodules.validateDocument(schema, newDoc);
