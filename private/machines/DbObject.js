@@ -188,7 +188,9 @@ module.exports = ({
         throw new Error(
           `Error saving doc in globalid \n\n${
             validationErrors ||
-            `${errorStr}\n\n ${JSON.stringify(docParams)}\n\n`
+            `${errorStr}\n\n ${JSON.stringify(docParams)}\n\n $${JSON.stringify(
+              docParams
+            )}`
           }`
         );
       }
@@ -343,7 +345,7 @@ module.exports = ({
           ).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
-          let velidationErrors = '';
+          let validationErrors = '';
           if (errorStr.includes('Schema violation')) {
             const schema = globalIdDbo.getSchema();
             validationErrors = dbmodules.validateDocument(schema, updateValues);
