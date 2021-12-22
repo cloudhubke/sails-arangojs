@@ -43,6 +43,10 @@ const validateDocument = (docSchema, Doc) => {
       }
 
       if (propSchema.type === 'number') {
+        if (typeof propValue !== 'number') {
+          setError(`Invalid value for property: ${prop}. Expected a number.`);
+        }
+
         if (propSchema.enum) {
           if (!propSchema.enum.includes(propValue)) {
             setError(
@@ -53,7 +57,7 @@ const validateDocument = (docSchema, Doc) => {
           }
         }
 
-        if (propSchema.minimum) {
+        if (typeof propSchema.minimum === 'number') {
           if (propValue < propSchema.minimum) {
             setError(
               `Invalid value for property: ${prop}. Minimum value is ${propSchema.minimum}`
@@ -61,7 +65,7 @@ const validateDocument = (docSchema, Doc) => {
           }
         }
 
-        if (propSchema.maximum) {
+        if (typeof propSchema.maximum === 'number') {
           if (propValue > propSchema.maximum) {
             setError(
               `Invalid value for property: ${prop}. Maximum value is ${propSchema.maximum}`
