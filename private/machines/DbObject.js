@@ -378,7 +378,7 @@ module.exports = ({
           throw new Error(
             `Error saving doc in globalid\n\n${
               validationErrors ||
-              `${errorStr}\n\n ${JSON.stringify(callback)}\n\n`
+              `${errorStr}\n\n ${JSON.stringify(newDoc)}\n\n`
             }`
           );
         }
