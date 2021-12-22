@@ -15,7 +15,7 @@ const validateDocument = (docSchema, Doc) => {
     }
 
     for (let required of schemaRequired) {
-      if (!doc[required]) {
+      if (typeof doc[required] === 'undefined') {
         setError(
           `Missing required property: ${required}${
             prop ? ` in field ${prop}.` : '.'
