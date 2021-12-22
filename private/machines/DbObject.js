@@ -344,6 +344,7 @@ module.exports = ({
           ).new;
           this.reInitialize(updatedDoc);
         } catch (error) {
+          const errorStr = error.toString();
           let validationErrors = '';
           if (errorStr.includes('Schema violation')) {
             const schema = globalIdDbo.getSchema();
