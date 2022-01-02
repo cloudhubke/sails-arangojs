@@ -140,6 +140,9 @@ module.exports = require('machine').build({
 
         if (key === 'limit' && statement.limit) {
           if (statement.skip) {
+            if (statement.skip < 0) {
+              statement.skip = statement.skip * -1;
+            }
             sql = `${sql} LIMIT ${statement.skip}, ${statement.limit} \n`;
           } else {
             sql = `${sql} LIMIT ${statement.limit} \n`;
