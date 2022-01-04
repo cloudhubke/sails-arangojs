@@ -37,105 +37,6 @@ module.exports = ({
         return globalIdDbo.schema;
       }
     },
-    validateParams: function (docParams) {
-      const attributes = globalIdDbo.modelAttributes;
-
-      for (let key in attributes) {
-        if (key === 'id') {
-          continue;
-        }
-        const type =
-          attributes[key].type === 'json' ? 'object' : attributes[key].type;
-
-        const required = attributes[key].required;
-        const isIn = attributes[key].isIn;
-        const rules = attributes[key].rules || {};
-
-        if (
-          Object.keys(docParams).includes(key) &&
-          docParams[key] !== null &&
-          typeof docParams[key] !== type
-        ) {
-          throw new Error(
-            `${key} attribute in ${
-              globalIdDbo.globalId
-            } should be of type ${type} - ${docParams._key || ''}`
-          );
-        }
-
-        if (
-          (!Object.keys(docParams).includes(key) || docParams[key] === null) &&
-          required
-        ) {
-          throw new Error(
-            `${key} attribute in ${globalIdDbo.globalId} is required - ${
-              docParams._key || ''
-            }`
-          );
-        }
-
-        if (isIn && type === 'string' && !isIn.includes(docParams[key])) {
-          throw new Error(
-            `${key} attribute (${type}) in ${
-              globalIdDbo.globalId
-            } should be one of ${isIn.join(', ')}. But found ${
-              docParams[key]
-            } - ${docParams._key || ''}`
-          );
-        }
-
-        if (isIn && type === 'object') {
-          _.each(docParams[key], (str) => {
-            if (!isIn.includes(str)) {
-              throw new Error(
-                `${key} attribute (${type}) in ${
-                  globalIdDbo.globalId
-                } should be one of ${isIn.join(', ')}. But found ${str} - ${
-                  docParams._key || ''
-                }`
-              );
-            }
-          });
-        }
-
-        for (rule in rules) {
-          if (rule === 'minimum') {
-            if (docParams[key] < rules[rule]) {
-              throw new Error(
-                `${key} should not be less than ${rules[rule]} - its ${
-                  docParams[key]
-                } in ${docParams._key || ''}`
-              );
-            }
-          }
-          if (rule === 'maximum') {
-            if (docParams[key] > rules[rule]) {
-              throw new Error(
-                `${key} should not be more than ${rules[rule]} -  its ${
-                  docParams[key]
-                } in ${docParams._key || ''}`
-              );
-            }
-          }
-
-          if (rule === 'required') {
-            if (typeof docParams[key] === 'object') {
-              for (let requiredkey of rules[rule]) {
-                if (!Object.keys(docParams[key]).includes(requiredkey)) {
-                  throw new Error(
-                    `${requiredkey} is required in ${key} - ${JSON.stringify(
-                      docParams
-                    )}`
-                  );
-                }
-              }
-            }
-          }
-        }
-      }
-
-      return true;
-    },
 
     create: function (...params) {
       let docParams;
@@ -146,8 +47,6 @@ module.exports = ({
           ...params[2],
           createdAt: params[2].createdAt || Date.now(),
         };
-
-        globalIdDbo.validateParams(docParams);
 
         params[2] = docParams;
         params[3] = { returnNew: true };
@@ -161,8 +60,6 @@ module.exports = ({
             createdAt: Date.now(),
           };
 
-          globalIdDbo.validateParams(docParams);
-
           params[0] = docParams;
           params[1] = { returnNew: true };
         }
@@ -175,8 +72,6 @@ module.exports = ({
 
         return docObj;
       } catch (error) {
-        const response = error.response || {};
-
         const errorStr = error.toString();
 
         let validationErrors = '';
@@ -329,62 +224,46 @@ module.exports = ({
       }
     },
     update: function (callback, options = {}) {
+      let updateDoc;
+
       if (typeof callback === 'function') {
         const updateValues = callback(this);
-        try {
-          globalIdDbo.validateParams({
-            ...this,
-            ...updateValues,
-            updatedAt: Date.now(),
-          });
-          const updatedDoc = db._update(
-            { _id: this._id },
-            { ...updateValues, updatedAt: Date.now() },
-            { ...options, returnNew: true }
-          ).new;
-          this.reInitialize(updatedDoc);
-        } catch (error) {
-          const errorStr = error.toString();
-          let validationErrors = '';
-          if (errorStr.includes('Schema violation')) {
-            const schema = globalIdDbo.getSchema();
-            validationErrors = dbmodules.validateDocument(schema, updateValues);
-          }
-
-          // show errors
-          throw new Error(
-            `Error saving doc in globalid \n\n${
-              validationErrors ||
-              `${errorStr}\n\n ${JSON.stringify(updateValues)}\n\n`
-            }`
-          );
-        }
+        updateDoc = {
+          ...this,
+          ...updateValues,
+          updatedAt: Date.now(),
+        };
       } else if (typeof callback === 'object') {
-        const newDoc = { ...this, ...callback, updatedAt: Date.now() };
-        try {
-          globalIdDbo.validateParams(newDoc);
-          const updatedDoc = db._update({ _id: this._id }, newDoc, {
-            ...options,
-            returnNew: true,
-          }).new;
-          this.reInitialize(updatedDoc);
-        } catch (error) {
-          const errorStr = error.toString();
-          let validationErrors = '';
-          if (errorStr.includes('Schema violation')) {
-            const schema = globalIdDbo.getSchema();
-            validationErrors = dbmodules.validateDocument(schema, newDoc);
-          }
-
-          throw new Error(
-            `Error saving doc in globalid\n\n${
-              validationErrors ||
-              `${errorStr}\n\n ${JSON.stringify(newDoc)}\n\n`
-            }`
-          );
-        }
+        updateDoc = {
+          ...this,
+          ...callback,
+          updatedAt: Date.now(),
+        };
       } else {
         throw new Error(`Dbo update function expects a callback`);
+      }
+
+      try {
+        const updatedDoc = db._update(
+          { _id: this._id },
+          { ...updateDoc },
+          { ...options, returnNew: true }
+        ).new;
+        this.reInitialize(updatedDoc);
+      } catch (error) {
+        const errorStr = error.toString();
+        let validationErrors = '';
+        if (errorStr.includes('Schema violation')) {
+          const schema = globalIdDbo.getSchema();
+          validationErrors = dbmodules.validateDocument(schema, updateDoc);
+        }
+        // show errors
+        throw new Error(
+          `Error saving doc in globalid \n\n${
+            validationErrors ||
+            `${errorStr}\n\n ${JSON.stringify(updateDoc)}\n\n`
+          }`
+        );
       }
     },
   });

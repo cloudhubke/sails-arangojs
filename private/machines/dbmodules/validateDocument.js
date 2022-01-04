@@ -5,7 +5,7 @@ const validateDocument = (docSchema, Doc) => {
     errorString += `${error}\n`;
   }
 
-  function validate(schema, doc, prop) {
+  function validate(schema, doc, parentProp) {
     let schemaProperties = schema.properties;
     let schemaRequired = schema.required || [];
 
@@ -15,10 +15,17 @@ const validateDocument = (docSchema, Doc) => {
     }
 
     for (let required of schemaRequired) {
-      if (typeof doc[required] === 'undefined') {
+      if (!doc) {
+        return setError(
+          `Missing required property: ${required}${
+            parentProp ? ` in field ${parentProp}.` : '.'
+          }`
+        );
+      }
+      if (typeof doc[required] === 'undefined' || doc[required] === null) {
         setError(
           `Missing required property: ${required}${
-            prop ? ` in field ${prop}.` : '.'
+            parentProp ? ` in field ${parentProp}.` : '.'
           }`
         );
       }
@@ -26,33 +33,49 @@ const validateDocument = (docSchema, Doc) => {
 
     for (let prop in schemaProperties) {
       let propSchema = schemaProperties[prop];
-      let propValue = doc[prop];
+      let propValue = doc ? doc[prop] : null;
 
-      console.log(prop, propValue);
+      const docKeys = Object.keys(doc);
+
+      if (!docKeys.includes(prop) && propSchema.required) {
+        setError(
+          `Missing required property: ${
+            parentProp ? `${parentProp}.` : ''
+          }${prop}${prop ? ` in field ${prop}.` : '.'}`
+        );
+      }
+
+      if (!docKeys.includes(prop)) {
+        continue;
+      }
 
       if (propSchema.type === 'string') {
         if (propSchema.enum) {
           if (!propSchema.enum.includes(propValue)) {
             setError(
-              `Invalid value for property: ${prop}. Expected one of: ${propSchema.enum.join(
-                ', '
-              )}`
+              `Invalid value for property: ${
+                parentProp ? `${parentProp}.` : ''
+              }${prop}. Expected one of: ${propSchema.enum.join(', ')}`
             );
           }
         }
       }
 
       if (propSchema.type === 'number') {
-        if (typeof propValue !== 'number') {
-          setError(`Invalid value for property: ${prop}. Expected a number.`);
+        if (propValue && typeof propValue !== 'number') {
+          setError(
+            `Invalid value for property: ${
+              parentProp ? `${parentProp}.` : ''
+            }${prop}. Expected a number.`
+          );
         }
 
         if (propSchema.enum) {
           if (!propSchema.enum.includes(propValue)) {
             setError(
-              `Invalid value for property: ${prop}. Required one of: ${propSchema.enum.join(
-                ', '
-              )}`
+              `Invalid value for property: ${
+                parentProp ? `${parentProp}.` : ''
+              }${prop}. Required one of: ${propSchema.enum.join(', ')}`
             );
           }
         }
@@ -60,7 +83,9 @@ const validateDocument = (docSchema, Doc) => {
         if (typeof propSchema.minimum === 'number') {
           if (propValue < propSchema.minimum) {
             setError(
-              `Invalid value for property: ${prop}. Minimum value is ${propSchema.minimum}`
+              `Invalid value for property: ${
+                parentProp ? `${parentProp}.` : ''
+              }${prop}. Minimum value is ${propSchema.minimum}`
             );
           }
         }
@@ -68,7 +93,9 @@ const validateDocument = (docSchema, Doc) => {
         if (typeof propSchema.maximum === 'number') {
           if (propValue > propSchema.maximum) {
             setError(
-              `Invalid value for property: ${prop}. Maximum value is ${propSchema.maximum}`
+              `Invalid value for property: ${
+                parentProp ? `${parentProp}.` : ''
+              }${prop}. Maximum value is ${propSchema.maximum}`
             );
           }
         }
@@ -77,12 +104,14 @@ const validateDocument = (docSchema, Doc) => {
       if (propSchema.type === 'boolean') {
         if (propValue !== true && propValue !== false) {
           setError(
-            `Invalid value for property: ${prop}. Expected boolean value`
+            `Invalid value for property: ${
+              parentProp ? `${parentProp}.` : ''
+            }${prop}. Expected boolean value`
           );
         }
       }
 
-      if (propSchema.type === 'object') {
+      if (propSchema.type === 'object' && !_.isEmpty(propValue)) {
         if (propSchema.properties) {
           validate(propSchema, propValue, prop);
         }
