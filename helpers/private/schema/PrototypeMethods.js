@@ -81,7 +81,7 @@ module.exports = (globalId) => {
           }
           this.reInitialize(updatedDoc);
         } else {
-          throw new Error(`Update could not reInitialize`);
+          throw new Error(`Update could not reInitialize `);
         }
       } catch (error) {
         throw error;

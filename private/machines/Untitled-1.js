@@ -261,6 +261,101 @@ module.exports = {
         return { ...SystemSettings };
       };
 
+      const bootstrapTransaction = ({
+        action = '',
+        reads = [],
+        writes = [],
+        params = {},
+        ...options
+      }) => {
+        const fanction = String(function (params) {
+          // This code will be executed inside ArangoDB!
+
+          const _ = require('lodash');
+          const db = require('@arangodb').db;
+          const aql = require('@arangodb').aql;
+          const queues = require('@arangodb/foxx/queues');
+          const arangoRequest = require('@arangodb/request');
+
+          try {
+            bearerToken; //1
+            let request = (options) => {
+              const requestOptions = Object.assign(options, {
+                auth: { bearer: bearerToken },
+              });
+
+              return arangoRequest(requestOptions);
+            };
+
+            dbmodules; //2
+
+            const normalize = (data) => {
+              data.id = data._key;
+              delete data._rev;
+              return data;
+            };
+
+            SystemSettings; //3
+
+            let dbServices = dbservices; //4
+            if (
+              dbServices &&
+              dbServices.globals &&
+              typeof dbServices.globals === 'function'
+            ) {
+              dbServices.globals();
+            }
+
+            dbObjects; //5
+
+            return txResult;
+          } catch (error) {
+            throw new Error(
+              `TX ERROR \n ${JSON.stringify(error.toString())}`
+                .replace(/\\n/g, '\n')
+                .replace(/\\"/g, '"')
+            );
+          }
+        });
+
+        let actionStr = `${fanction}`
+          .replace('bearerToken;', '?')
+          .replace('dbmodules', '?')
+          .replace('SystemSettings;', '?')
+          .replace('dbservices', '?')
+          .replace('dbObjects', '?');
+
+        actionStr = SqlString.format(actionStr, [
+          SqlString.raw(`const bearerToken = '${bearerToken}';`),
+          SqlString.raw(dbmodules),
+          SqlString.raw(
+            `const SystemSettings = ${JSON.stringify(getSystemSettings())};`
+          ),
+          SqlString.raw(config.dbServices || '{}'),
+          SqlString.raw(dbObjects || ''),
+          SqlString.raw(String(action)),
+          SqlString.raw(deleteDbObjects),
+        ]);
+
+        return dbConnection.executeTransaction(
+          {
+            read: _.uniq([...reads, '_jobs']),
+            write: _.uniq([...writes, '_jobs']),
+          },
+          actionStr,
+          // .replace('dbmodules;', dbmodules)
+
+          {
+            params: {
+              ...params,
+              dbObjects: dbos,
+            },
+            waitForSync: true,
+            ...options,
+          }
+        );
+      };
+
       const Transaction = ({
         action = '',
         reads = [],
@@ -327,23 +422,13 @@ module.exports = {
           }
         });
 
-        if (
-          dbObjects.includes('async') ||
-          dbObjects.includes('await') ||
-          dbObjects.includes('Promise')
-        ) {
-          throw new Error(
-            `Invalid code in dbobjects folder. Async functions are not allowed.`
-          );
-        }
-
         let actionStr = `${fanction}`
+          .replace('bearerToken;', '?')
           .replace('dbmodules', '?')
+          .replace('SystemSettings;', '?')
           .replace('dbservices', '?')
           .replace('dbObjects', '?')
           .replace('func;', '?')
-          .replace('bearerToken;', '?')
-          .replace('SystemSettings;', '?')
           .replace('deleteDbObjects;', '?');
 
         actionStr = SqlString.format(actionStr, [
