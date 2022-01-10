@@ -154,7 +154,6 @@ const validateDocument = (docSchema, Doc) => {
       }
 
       if (!docKeys.includes(prop)) {
-        throw new Error(`${prop} is not included in ${docKeys}`);
         docKeys = docKeys.filter((key) => key !== prop);
         continue;
       }
