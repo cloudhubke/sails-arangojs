@@ -19,7 +19,7 @@ const validateDocument = (docSchema, Doc) => {
     }
 
     if (propSchema.type === 'number') {
-      if (propValue && typeof propValue !== 'number') {
+      if (typeof propValue !== 'number') {
         setError(
           `Invalid value for property: ${
             parentProp ? `${parentProp}.` : ''
