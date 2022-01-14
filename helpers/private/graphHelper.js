@@ -470,6 +470,18 @@ module.exports = {
             throw new Error(e);
           }
         }
+
+        const afterInitialize =
+          model.ModelObjectConstructor.prototype.afterInitialize;
+        if (typeof afterInitialize === 'function') {
+          if (afterInitialize.constructor.name === 'AsyncFunction') {
+            setTimeout(() => {
+              console.log(
+                `\n\n💥💥Its not advisable that 'afterInitialize' function in model ${model.globalId} should be async or should call other collections.💥💥\n\n`
+              );
+            }, 1000);
+          }
+        }
       }
 
       dbListener.start();

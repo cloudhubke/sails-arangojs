@@ -19,11 +19,11 @@ const validateDocument = (docSchema, Doc) => {
     }
 
     if (propSchema.type === 'number') {
-      if (typeof propValue !== 'number') {
+      if (typeof propValue !== 'number' || `${propValue}` === 'NaN') {
         setError(
           `Invalid value for property: ${
             parentProp ? `${parentProp}.` : ''
-          }${prop}. Expected a number.`
+          }${prop}. Expected a number. but got ${`${propValue}`}`
         );
       }
 
