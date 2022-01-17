@@ -12,7 +12,9 @@ const validateDocument = (docSchema, Doc) => {
           setError(
             `Invalid value for property: ${
               parentProp ? `${parentProp}.` : ''
-            }${prop}. Expected one of: ${propSchema.enum.join(', ')}`
+            }${prop}. Expected one of: ${propSchema.enum.join(
+              ', '
+            )} but got ${propValue}`
           );
         }
       }

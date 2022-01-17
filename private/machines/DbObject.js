@@ -188,6 +188,12 @@ module.exports = ({
         },
       });
 
+      Object.defineProperty(obj, 'modelDefaults', {
+        get: () => {
+          return { ...globalIdDbo.modelDefaults };
+        },
+      });
+
       if (typeof obj.afterInitialize === 'function') {
         obj.afterInitialize();
       }
