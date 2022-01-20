@@ -172,12 +172,20 @@ module.exports = async function buildSchema(
           fldProps.format = rules.format;
         }
 
+        if (_.isArray(rules.enum)) {
+          fldProps.enum = [...rules.enum];
+        }
+
         for (let key in rules) {
-          if (!['minLength', 'maxLength', 'pattern', 'format'].includes(key)) {
+          if (
+            !['minLength', 'maxLength', 'pattern', 'format', 'enum'].includes(
+              key
+            )
+          ) {
             throw new Error(
               `Schema Validation property ${key} in attribute ${fldName} of Model ${tableName} is not supported
                 
-                Supported properties are 'minLength', 'maxLength'
+                Supported properties are 'minLength', 'maxLength', 'pattern', 'format', 'enum'
                 `
             );
           }
