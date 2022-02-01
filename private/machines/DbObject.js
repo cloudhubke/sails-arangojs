@@ -38,6 +38,19 @@ module.exports = ({
       }
     },
 
+    extractKeyProps: function extractKeyProps(doc) {
+      let props = {};
+      for (let prop of globalIdDbo.keyProps) {
+        props[prop] = doc[prop];
+      }
+
+      return {
+        ...props,
+        id: doc._key || doc.id,
+        _id: doc._id,
+      };
+    },
+
     create: function (...params) {
       let docParams;
 

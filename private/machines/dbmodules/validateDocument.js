@@ -118,10 +118,10 @@ const validateDocument = (docSchema, Doc) => {
       let docValue = {};
       for (let additionalProp of additionalProps) {
         additionalSchema.properties[additionalProp] = additionalProperties;
-        docValue[additionalProp] = propValue[additionalProp];
+        docValue[additionalProp] = additionalProps[additionalProp];
       }
 
-      validate(additionalSchema, docValue, prop);
+      validate(additionalSchema, docValue, parentProp);
     }
 
     for (let required of schemaRequired) {
