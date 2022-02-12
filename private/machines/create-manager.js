@@ -162,9 +162,9 @@ module.exports = {
         globalIds.push(model.globalId);
 
         if (model.classType == 'edge') {
-          edges.push(global[`${model.globalId}Dbo`]);
+          edges.push(global[`${model.globalId}Object`]);
         } else {
-          vertices.push(global[`${model.globalId}Dbo`]);
+          vertices.push(global[`${model.globalId}Object`]);
         }
       }
 

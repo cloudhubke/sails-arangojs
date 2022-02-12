@@ -110,13 +110,6 @@ module.exports = ({
       return docObj;
     },
 
-    getDocument: function (params, options = { fireOnGetOne: true }) {
-      const doc = db.globalid.document(params);
-      const docObj = globalIdDbo.initialize(doc, options.fireOnGetOne);
-
-      return docObj;
-    },
-
     find: function (params = {}, options = {}) {
       const { getAndStatement, getLetStatements } = dbmodules.filterStatement();
       // Execute aql using the driver acquired dbConnectio.
