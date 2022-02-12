@@ -262,6 +262,8 @@ module.exports = ({
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     globalId,
+    globalIds: gIds,
+    Models: gIds,
     tableName: `${tableName}`.toLowerCase(),
     keyProps,
     modelDefaults,
