@@ -113,6 +113,13 @@ module.exports = require('machine').build({
     }
 
     let gIds = [];
+    let dsModels = [];
+
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+    // Filter the models that are relevant to this datastore
+    // Loop through each model and determine if it is relevant to this datastore.
+    // If it is, add it to the list of models that will be used with this datastore.
+    // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
     _.each(models, (modelinfo) => {
       let keyProps = modelinfo.keyProps || [];

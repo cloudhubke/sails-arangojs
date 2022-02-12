@@ -147,6 +147,7 @@ module.exports = {
     let dbObjects = `${getDocument}\n\n`;
     let deleteDbObjects = '';
     let collections = [];
+    let globalIds = [];
     let dbos = [];
     let vertices = [];
     let edges = [];
@@ -154,10 +155,12 @@ module.exports = {
 
     _.each(models, (model) => {
       const tenant = config.tenantType || 'default';
-      collections.push(model.tableName);
-      dbos.push(`${model.globalId}Dbo`);
 
       if (model.tenantType.includes(tenant) && global[`${model.globalId}Dbo`]) {
+        dbos.push(`${model.globalId}Dbo`);
+        collections.push(model.tableName);
+        globalIds.push(model.globalId);
+
         if (model.classType == 'edge') {
           edges.push(global[`${model.globalId}Dbo`]);
         } else {
@@ -385,6 +388,22 @@ module.exports = {
         graphCollections = [...vertexCollections, ...edgeCollections];
       }
 
+      async function cleanDatastore() {
+        let dbcollections = await dbConnection.collections();
+        dbcollections = dbcollections.map((collection) => collection._name);
+
+        for (const dbcollection of dbcollections) {
+          const coll = dbConnection.collection(dbcollection);
+          const exists = await coll.exists();
+
+          if (exists && !collections.includes(dbcollection)) {
+            console.log('dropping collection', dsName, dbcollection);
+
+            await coll.drop();
+          }
+        }
+      }
+
       return exits.success({
         manager: {
           dbConnection,
@@ -392,12 +411,15 @@ module.exports = {
           graphEnabled: config.graph,
           graph,
           graphCollections,
+          collections,
+          globalIds,
           graphName,
           aql,
           Transaction,
           SystemSettings,
           getSystemSettings,
           updateSystemSettings,
+          cleanDatastore,
           dsName: config.identity === 'default' ? undefined : config.identity,
           tenantType: config.tenantType || 'admin',
           url,

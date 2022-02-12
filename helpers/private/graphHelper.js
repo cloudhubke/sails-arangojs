@@ -40,7 +40,7 @@ module.exports = {
           (ed) => ed.collection
         );
 
-        const collections = await graph.listVertexCollections();
+        const vertexcollections = await graph.listVertexCollections();
 
         for (let model of definitionsarray) {
           let vertexCollection = await graph.vertexCollection(
@@ -185,7 +185,7 @@ module.exports = {
               // do nothing
             }
 
-            if (!_.includes(collections, model.tableName)) {
+            if (!_.includes(vertexcollections, model.tableName)) {
               try {
                 await graph.addVertexCollection(`${model.tableName}`);
               } catch (error) {
@@ -199,7 +199,7 @@ module.exports = {
       }
       return true;
     } catch (error) {
-      throw error;
+      throw new Error(`Error creating graph ${error.toString()}`);
     }
   },
 

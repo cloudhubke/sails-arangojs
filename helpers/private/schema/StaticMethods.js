@@ -66,6 +66,7 @@ module.exports = ({
   keyProps,
   cache,
   gIds,
+  collections,
   modelDefaults,
   pkColumnName,
   schema,
@@ -263,7 +264,7 @@ module.exports = ({
 
     globalId,
     globalIds: gIds,
-    models: gIds,
+    collections,
     tableName: `${tableName}`.toLowerCase(),
     keyProps,
     modelDefaults,
