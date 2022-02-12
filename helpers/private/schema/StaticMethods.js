@@ -263,7 +263,7 @@ module.exports = ({
 
     globalId,
     globalIds: gIds,
-    Models: gIds,
+    models: gIds,
     tableName: `${tableName}`.toLowerCase(),
     keyProps,
     modelDefaults,
