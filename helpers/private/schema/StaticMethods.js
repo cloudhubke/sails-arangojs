@@ -55,6 +55,8 @@ if (!global.getDocument) {
       throw error;
     }
   };
+
+  global.getDocumentAsync = global.getDocument;
 }
 
 module.exports = ({
