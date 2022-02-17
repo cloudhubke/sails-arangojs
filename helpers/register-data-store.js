@@ -113,7 +113,6 @@ module.exports = require('machine').build({
     }
 
     let gIds = [];
-    let dsModels = [];
 
     // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
     // Filter the models that are relevant to this datastore
@@ -275,6 +274,7 @@ module.exports = require('machine').build({
 
           const dbSchema = {};
           const definitionsarray = [];
+          const modelsArray = [];
 
           _.each(models, (modelinfo) => {
             // console.log('in datastore: `%s`  ……tracking physical model:  `%s` (tableName: `%s`)',datastoreName, phModelInfo.identity, phModelInfo.tableName);
@@ -294,6 +294,11 @@ module.exports = require('machine').build({
             if (!modelinfo.globalId) {
               modelinfo.globalId = modelinfo.identity;
             }
+
+            modelsArray.push({
+              globalId: modelinfo.globalId,
+              tenantTypes: modelinfo.tenantType || [],
+            });
 
             const definition = {
               indexes: modelinfo.indexes,
@@ -382,11 +387,7 @@ module.exports = require('machine').build({
           // If auto build flag is true, construct the model collection
           // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-          const graph = await graphHelper.constructGraph(
-            manager,
-            definitionsarray,
-            exits
-          );
+          await graphHelper.constructGraph(manager, definitionsarray, exits);
 
           modelDefinitions[identity] = dbSchema;
 
@@ -394,7 +395,14 @@ module.exports = require('machine').build({
             graphHelper.sanitizeDb(manager, definitionsarray, identity, exits);
           }
 
-          graphHelper.buildObjects(manager, definitionsarray, identity);
+          graphHelper.buildObjects({
+            definitionsarray,
+            gIds: modelsArray
+              // .filter((model) => model.tenantTypes.includes(config.tenantType))
+              .map((model) => model.globalId),
+            modelsArray,
+            manager,
+          });
 
           graphHelper.afterRegister(manager, definitionsarray);
 

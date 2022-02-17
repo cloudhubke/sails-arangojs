@@ -203,15 +203,9 @@ module.exports = {
     }
   },
 
-  buildObjects: function buildObjects(manager, definitionsarray, dsName) {
+  buildObjects: function buildObjects({ definitionsarray, gIds, modelsArray }) {
     try {
       // const { graph, graphEnabled, dbConnection, Transaction } = manager;
-
-      let gIds = [];
-
-      for (let model of definitionsarray) {
-        gIds.push(model.globalId);
-      }
 
       for (let model of definitionsarray) {
         let keyProps = [...model.keyProps];
@@ -241,6 +235,8 @@ module.exports = {
             keyProps: keyProps,
             cache: Boolean(model.cache),
             gIds: gIds,
+            modelsArray,
+            tenantType: model.tenantType || [],
             modelDefaults: model.modelDefaults,
             pkColumnName,
             schema: model.schema,

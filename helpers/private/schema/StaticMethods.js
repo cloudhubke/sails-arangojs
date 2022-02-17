@@ -66,11 +66,24 @@ module.exports = ({
   keyProps,
   cache,
   gIds,
+  modelsArray,
+  tenantType,
   collections,
   modelDefaults,
   pkColumnName,
   schema,
 }) => {
+  // let gIds = global[`${globalId}Object`].globalIds || [];
+
+  const getTenantGids = () => {
+    return modelsArray.reduce((acc, model) => {
+      const arr = _.intersection(tenantType || [], model.tenantType || []);
+      if (arr.length > 0) {
+        acc = [...acc, model.globalId];
+      }
+    }, []);
+  };
+
   const create = async function (params, dsName) {
     try {
       if (params.Email) {
@@ -146,7 +159,7 @@ module.exports = ({
 
       return doc;
     } catch (error) {
-      throw error;
+      throw new Error(`find one error ${error.toString()}`);
     }
   };
 
@@ -379,8 +392,24 @@ module.exports = ({
             },
           });
 
-          if (gIds) {
-            _.each(gIds, (gId) => {
+          if (!global[`${globalId}Object`].gIds) {
+            global[`${globalId}Object`].gIds = modelsArray
+              .filter((m) => {
+                const arr = (tenantType || []).reduce((acc, t) => {
+                  if (m.tenantTypes.includes(t)) {
+                    acc.push(t);
+                  }
+                  return acc;
+                }, []);
+                return arr.length > 0;
+              })
+              .map((m) => m.globalId);
+          }
+
+          let gIdsInTenant = global[`${globalId}Object`].gIds;
+
+          if (Array.isArray(gIdsInTenant)) {
+            _.each(gIdsInTenant, (gId) => {
               Object.defineProperty(docObj, `_${gId}`, {
                 get: () => {
                   if (docObj.tenantcode) {
@@ -441,7 +470,9 @@ module.exports = ({
         }
         return docObj;
       } catch (error) {
-        throw error;
+        throw new Error(
+          `${globalId} INITIALIZATION ERROR: ${error.toString()}`
+        );
       }
     },
 
@@ -474,7 +505,7 @@ module.exports = ({
           }
         );
       } catch (error) {
-        throw error;
+        throw new Error(`${globalId} VALIDATION ERROR: ${error.toString()}`);
       }
     },
 
