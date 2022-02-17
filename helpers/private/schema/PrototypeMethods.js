@@ -84,7 +84,7 @@ module.exports = (globalId) => {
           throw new Error(`Update could not reInitialize `);
         }
       } catch (error) {
-        throw error;
+        throw new Error(`Error updating document: ${error.toString()}`);
       }
     },
 
@@ -174,6 +174,10 @@ module.exports = (globalId) => {
     },
 
     getDocument: function getDocument({ _id }) {
+      return global.getDocument({ _id }, this.merchantcode);
+    },
+
+    getDocumentAsync: function getDocument({ _id }) {
       return global.getDocument({ _id }, this.merchantcode);
     },
 
