@@ -13,6 +13,10 @@
 //  ╚═════╝ ╚═╝  ╚═╝   ╚═╝   ╚═╝  ╚═╝    ╚══════╝   ╚═╝    ╚═════╝ ╚═╝  ╚═╝╚══════╝
 //
 
+function sleep(ms = 1000) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 String.prototype.capitalize = function () {
   return this.charAt(0).toUpperCase() + this.slice(1);
 };
@@ -407,9 +411,10 @@ module.exports = require('machine').build({
           graphHelper.afterRegister(manager, definitionsarray);
 
           if (config.onDbConnect && _.isFunction(config.onDbConnect)) {
-            setTimeout(() => {
-              config.onDbConnect(manager);
-            }, 3000);
+            while (!sails.isLifted) {
+              await sleep();
+            }
+            config.onDbConnect(manager);
           }
 
           return exits.success({ datastores, modelDefinitions, config });
