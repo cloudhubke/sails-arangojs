@@ -411,10 +411,12 @@ module.exports = require('machine').build({
           graphHelper.afterRegister(manager, definitionsarray);
 
           if (config.onDbConnect && _.isFunction(config.onDbConnect)) {
-            while (!sails.isLifted) {
-              await sleep();
-            }
-            config.onDbConnect(manager);
+            (async () => {
+              while (!sails.getDatastore) {
+                await sleep();
+              }
+              config.onDbConnect(manager);
+            })();
           }
 
           return exits.success({ datastores, modelDefinitions, config });
