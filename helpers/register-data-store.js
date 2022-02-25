@@ -409,7 +409,7 @@ module.exports = require('machine').build({
           if (config.onDbConnect && _.isFunction(config.onDbConnect)) {
             setTimeout(() => {
               config.onDbConnect(manager);
-            }, 2000);
+            }, 3000);
           }
 
           return exits.success({ datastores, modelDefinitions, config });

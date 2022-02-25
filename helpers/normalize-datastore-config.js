@@ -40,9 +40,10 @@ module.exports = require('machine').build({
       normalizeConfig(
         datastoreConfig,
         CONFIG_WHITELIST,
-        EXPECTED_URL_PROTOCOL_PFX,
+        EXPECTED_URL_PROTOCOL_PFX
       );
     } catch (e) {
+      console.log(e, config);
       switch (e.code) {
         case 'E_BAD_CONFIG':
           return exits.badConfiguration(e);
