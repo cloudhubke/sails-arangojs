@@ -458,9 +458,13 @@ module.exports = ({
                 docObj.onGetOne.constructor.name === 'AsyncFunction' ||
                 util.types.isAsyncFunction(docObj.onGetOne)
               ) {
-                return new Promise(async (resolve) => {
-                  await docObj.onGetOne();
-                  resolve(docObj);
+                return new Promise(async (resolve, reject) => {
+                  try {
+                    await docObj.onGetOne();
+                    resolve(docObj);
+                  } catch (error) {
+                    reject(error)
+                  }
                 });
               } else {
                 docObj.onGetOne();
