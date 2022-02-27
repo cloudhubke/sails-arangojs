@@ -139,10 +139,6 @@ module.exports = require('machine').build({
         sql = `${sql} RETURN sum`;
       }
 
-      console.log('====================================');
-      console.log(sql);
-      console.log('====================================');
-
       const cursor = await dbConnection.query(sql);
       result = await cursor.all();
 
