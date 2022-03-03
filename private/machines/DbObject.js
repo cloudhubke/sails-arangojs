@@ -189,6 +189,12 @@ module.exports = ({
         },
       });
 
+      Object.defineProperty(obj, 'tableName', {
+        get: () => {
+          return globalIdDbo.globalId.toLowerCase();
+        },
+      });
+
       Object.defineProperty(obj, 'instanceName', {
         get: () => {
           return 'globalIdDbo';
