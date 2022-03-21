@@ -389,9 +389,19 @@ module.exports = {
       }
 
       async function cleanDatastore() {
+        const graph = dbConnection.graph(`${config.database}`);
+        const graphName = `${config.database}`;
+
+        const exists = await graph.exists();
+
+        if (exists) {
+          await graph.drop();
+        }
+
         let dbcollections = await dbConnection.collections();
         dbcollections = dbcollections.map((collection) => collection._name);
-        const dsName = config.identity === 'default' ? undefined : config.identity;
+        const dsName =
+          config.identity === 'default' ? undefined : config.identity;
 
         for (const dbcollection of dbcollections) {
           const coll = dbConnection.collection(dbcollection);
