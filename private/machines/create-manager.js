@@ -391,13 +391,14 @@ module.exports = {
       async function cleanDatastore() {
         let dbcollections = await dbConnection.collections();
         dbcollections = dbcollections.map((collection) => collection._name);
+        const dsName = config.identity === 'default' ? undefined : config.identity;
 
         for (const dbcollection of dbcollections) {
           const coll = dbConnection.collection(dbcollection);
           const exists = await coll.exists();
 
           if (exists && !collections.includes(dbcollection)) {
-            console.log('dropping collection', dsName, dbcollection);
+            console.log('dropping collection', dbcollection, ' in ', dsName);
 
             await coll.drop();
           }

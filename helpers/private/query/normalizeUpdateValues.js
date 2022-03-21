@@ -53,7 +53,7 @@ const normalizeUpdateValues = (values, letObj = {}) => {
         st[key] = `'PUSH(OLD.${key}, ${specialValue(incvalue)}, ${unique})'`;
       });
     } else {
-      throw new Error('The Values of the `$inc` statement must be an oject');
+      throw new Error('The Values of the `$push` statement must be an oject');
     }
     return st;
   };
@@ -65,7 +65,9 @@ const normalizeUpdateValues = (values, letObj = {}) => {
         st[key] = `'UNSHIFT(OLD.${key}, ${specialValue(incvalue)}, ${unique})'`;
       });
     } else {
-      throw new Error('The Values of the `$inc` statement must be an oject');
+      throw new Error(
+        'The Values of the `$unshift` statement must be an oject'
+      );
     }
     return st;
   };
@@ -74,10 +76,10 @@ const normalizeUpdateValues = (values, letObj = {}) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
-        st[key] = `'POP(OLD.${key}'`;
+        st[key] = `'POP(OLD.${key})'`;
       });
     } else {
-      throw new Error('The Values of the `$inc` statement must be an oject');
+      throw new Error('The Values of the `$pop` statement must be an oject');
     }
     return st;
   };
@@ -86,10 +88,10 @@ const normalizeUpdateValues = (values, letObj = {}) => {
     const st = {};
     if (_.isObject(incvalues)) {
       _.each(incvalues, (incvalue, key) => {
-        st[key] = `'POP(OLD.${key}'`;
+        st[key] = `'SHIFT(OLD.${key})'`;
       });
     } else {
-      throw new Error('The Values of the `$inc` statement must be an oject');
+      throw new Error('The Values of the `$shift` statement must be an oject');
     }
     return st;
   };
@@ -107,7 +109,7 @@ const normalizeUpdateValues = (values, letObj = {}) => {
         }
       });
     } else {
-      throw new Error('The Values of the `$inc` statement must be an oject');
+      throw new Error('The Values of the `$pull` statement must be an oject');
     }
     return st;
   };
@@ -141,7 +143,7 @@ const normalizeUpdateValues = (values, letObj = {}) => {
         newvalues = { ...newvalues, ...getUnshiftValues(value, false) };
         break;
       case '$unshiftset':
-        newvalues = { ...newvalues, ...getUnshiftValues(value, false) };
+        newvalues = { ...newvalues, ...getUnshiftValues(value, true) };
         break;
       case '$push':
         newvalues = { ...newvalues, ...getPushValues(value, false) };

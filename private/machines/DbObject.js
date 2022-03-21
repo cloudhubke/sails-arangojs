@@ -144,7 +144,7 @@ module.exports = ({
     },
 
     findOne: function (params, options = { fireOnGetOne: true }) {
-      const { getAndStatement, getLetStatements } = dbmodules.filterStatement();
+      const { getAndStatement } = dbmodules.filterStatement();
 
       const aql = `FOR record in globalid FILTER ${getAndStatement(
         params

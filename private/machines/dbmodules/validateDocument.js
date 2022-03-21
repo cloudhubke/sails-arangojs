@@ -190,19 +190,21 @@ const validateDocument = (docSchema, Doc) => {
           validate(additionalSchema, docValue, prop);
         }
       } else if (propSchema.type === 'array') {
-        if (propSchema.items && Array.isArray(propValue)) {
-          if (propSchema.items.properties) {
-            for (let item of propValue) {
-              validate(propSchema.items, item, prop);
-            }
-          } else {
-            for (let item of propValue) {
-              checkProp({
-                prop,
-                propSchema: propSchema.items,
-                propValue: item,
-                parentProp,
-              });
+        if (Array.isArray(propValue)) {
+          if (propSchema.items) {
+            if (propSchema.items.properties) {
+              for (let item of propValue) {
+                validate(propSchema.items, item, prop);
+              }
+            } else {
+              for (let item of propValue) {
+                checkProp({
+                  prop,
+                  propSchema: propSchema.items,
+                  propValue: item,
+                  parentProp,
+                });
+              }
             }
           }
         } else {

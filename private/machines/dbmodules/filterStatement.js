@@ -150,6 +150,7 @@ const filterStatement = () => {
           return;
         case '$has':
           str = getHasStatement(value);
+          return;
         case '$nothas':
           str = getNotHasStatement(value);
           return;
