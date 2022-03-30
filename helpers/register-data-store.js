@@ -154,6 +154,7 @@ module.exports = require('machine').build({
             modelinfo.definition[key].required ||
               _.has(modelinfo.definition[key], 'defaultsTo')
           ),
+          defaultsTo: modelinfo.definition[key].defaultsTo,
           rules,
         };
 

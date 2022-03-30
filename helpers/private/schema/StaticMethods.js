@@ -68,6 +68,7 @@ module.exports = ({
   gIds,
   modelsArray,
   tenantType,
+  modelAttributes,
   collections,
   modelDefaults,
   pkColumnName,
@@ -281,6 +282,8 @@ module.exports = ({
     tableName: `${tableName}`.toLowerCase(),
     keyProps,
     modelDefaults,
+    modelAttributes,
+    tenantType,
     cache,
     pkColumnName,
     schema,
@@ -463,7 +466,7 @@ module.exports = ({
                     await docObj.onGetOne();
                     resolve(docObj);
                   } catch (error) {
-                    reject(error)
+                    reject(error);
                   }
                 });
               } else {

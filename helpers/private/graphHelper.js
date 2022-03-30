@@ -238,6 +238,7 @@ module.exports = {
             modelsArray,
             tenantType: model.tenantType || [],
             modelDefaults: model.modelDefaults,
+            modelAttributes: model.modelAttributes,
             pkColumnName,
             schema: model.schema,
           });
