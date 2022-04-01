@@ -137,10 +137,6 @@ module.exports = require('machine').build({
         }
         sql = `${sql} COLLECT AGGREGATE sum = SUM(record.${statement.numericAttrName})`;
         sql = `${sql} RETURN sum`;
-
-        console.log('====================================');
-        console.log(sql);
-        console.log('====================================');
       }
 
       const cursor = await dbConnection.query(sql);
