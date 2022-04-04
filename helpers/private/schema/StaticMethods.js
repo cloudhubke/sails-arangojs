@@ -23,13 +23,15 @@ if (!global.getDocument) {
         _id = `${searchValue._id}`;
       }
 
+      const tableName = `${_id}`.split('/')[0].capitalizeCollection();
+
       if (!_id) {
         throw new Error(
-          `_id attribute should either be an object or a string in ${tableName}`
+          `_id attribute should either be an object or a string in ${
+            tableName || 'getDocumentAsync'
+          }`
         );
       }
-
-      const tableName = `${_id}`.split('/')[0].capitalizeCollection();
 
       if (!global[tableName]) {
         throw new Error(
@@ -64,6 +66,7 @@ module.exports = ({
   globalId,
   tableName,
   keyProps,
+  searchFields,
   cache,
   gIds,
   modelsArray,
@@ -232,7 +235,9 @@ module.exports = ({
 
   const getOne = async function (params, dsName) {
     try {
-      const { id } = params || {};
+      const { id: _key, _id } = params || {};
+
+      const id = `${_key || `${_id}`.split('/')[1]}`;
 
       if (cache) {
         if (dsName) {
@@ -281,6 +286,7 @@ module.exports = ({
     collections,
     tableName: `${tableName}`.toLowerCase(),
     keyProps,
+    searchFields,
     modelDefaults,
     modelAttributes,
     tenantType,

@@ -233,6 +233,7 @@ module.exports = {
             globalId: model.globalId,
             tableName: model.tableName,
             keyProps: keyProps,
+            searchFields: model.searchFields || [],
             cache: Boolean(model.cache),
             gIds: gIds,
             modelsArray,

@@ -154,6 +154,7 @@ module.exports = require('machine').build({
             modelinfo.definition[key].required ||
               _.has(modelinfo.definition[key], 'defaultsTo')
           ),
+          unique,
           defaultsTo: modelinfo.definition[key].defaultsTo,
           rules,
         };
@@ -162,7 +163,7 @@ module.exports = require('machine').build({
           modelAttributes[key].isIn = [...validations.isIn];
         }
 
-        if (unique) {
+        if (unique && keyProps.findIndex((k) => k === key) === -1) {
           keyProps.push(key);
         }
       }
@@ -319,6 +320,7 @@ module.exports = require('machine').build({
               globalId: modelinfo.globalId,
               ModelObjectConstructor: modelinfo.ModelObjectConstructor,
               keyProps: modelinfo.keyProps,
+              searchFields: modelinfo.searchFields || [],
               modelDefaults: modelinfo.modelDefaults,
               modelAttributes: modelinfo.modelAttributes,
               cache: modelinfo.cache,
