@@ -118,7 +118,9 @@ module.exports = require('machine').build({
       if (dbConnection) {
         Helpers.connection.releaseConnection(dbConnection);
       }
-      return exits.badConnection(error);
+      return exits.badConnection(
+        new Error(error.toString() + statement.aggregatestatement)
+      );
     }
 
     // Refactor query function.

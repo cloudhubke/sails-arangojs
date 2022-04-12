@@ -372,7 +372,6 @@ module.exports = {
           {
             params: {
               ...params,
-              dbObjects: dbos,
             },
             waitForSync: true,
             ...options,
