@@ -1,6 +1,6 @@
 {
   "name": "@cloudhub-js/sails-arangojs",
-  "version": "0.3.60",
+  "version": "0.3.61",
   "description": "A sails-arangojs adapter for Sails / Waterline",
   "main": "index.js",
   "scripts": {
