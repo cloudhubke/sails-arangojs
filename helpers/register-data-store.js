@@ -323,6 +323,8 @@ module.exports = require('machine').build({
               searchFields: modelinfo.searchFields || [],
               modelDefaults: modelinfo.modelDefaults,
               modelAttributes: modelinfo.modelAttributes,
+              Module: modelinfo.Module,
+              EntityName: modelinfo.EntityName,
               cache: modelinfo.cache,
             };
 
@@ -356,6 +358,8 @@ module.exports = require('machine').build({
                   globalId: modelinfo.globalId,
                   tableName: modelinfo.tableName,
                   keyProps: modelinfo.keyProps,
+                  Module: modelinfo.Module,
+                  EntityName: modelinfo.EntityName,
                   gIds,
                   modelDefaults: modelinfo.modelDefaults,
                   cache: Boolean(modelinfo.cache),

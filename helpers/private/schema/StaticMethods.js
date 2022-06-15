@@ -62,6 +62,8 @@ if (!global.getDocument) {
 }
 
 module.exports = ({
+  Module,
+  EntityName,
   classType,
   globalId,
   tableName,
@@ -285,6 +287,8 @@ module.exports = ({
     globalIds: gIds,
     collections,
     tableName: `${tableName}`.toLowerCase(),
+    Module,
+    EntityName,
     keyProps,
     searchFields,
     modelDefaults,

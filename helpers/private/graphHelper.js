@@ -240,6 +240,8 @@ module.exports = {
             tenantType: model.tenantType || [],
             modelDefaults: model.modelDefaults,
             modelAttributes: model.modelAttributes,
+            Module: model.Module,
+            EntityName: model.EntityName,
             pkColumnName,
             schema: model.schema,
           });
