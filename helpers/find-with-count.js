@@ -165,6 +165,12 @@ module.exports = require('machine').build({
         sql = `${sql} return record`;
       }
 
+      // if (statement.tableName === 'product') {
+      // console.log('====================================');
+      // console.log(sql);
+      // console.log('====================================');
+      // }
+
       cursor = await dbConnection.query(`${sql}`);
 
       countCursor = await dbConnection.query(`${countSql}`);

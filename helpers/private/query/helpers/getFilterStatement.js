@@ -124,16 +124,16 @@ module.exports = ({ pkColumnName }) => {
     _.each(obj, (value, key) => {
       switch (`${key}`.toLowerCase()) {
         case '$gt':
-          str = `> ${value}`;
+          str = `> ${specialValue(value)}`;
           return;
         case '$gte':
-          str = `>= ${value}`;
+          str = `>= ${specialValue(value)}`;
           return;
         case '$lt':
-          str = `< ${value}`;
+          str = `< ${specialValue(value)}`;
           return;
         case '$lte':
-          str = `<= ${value}`;
+          str = `<= ${specialValue(value)}`;
           return;
         case '$ne':
           str = `!= ${specialValue(value)}`;
@@ -146,10 +146,10 @@ module.exports = ({ pkColumnName }) => {
           str = `>= ${specialValue(value)}`;
           return;
         case '<':
-          str = `< ${value}`;
+          str = `< ${specialValue(value)}`;
           return;
         case '<=':
-          str = `<= ${value}`;
+          str = `<= ${specialValue(value)}`;
           return;
         case '<>':
           str = `!= ${specialValue(value)}`;
