@@ -203,7 +203,12 @@ module.exports = {
     }
   },
 
-  buildObjects: function buildObjects({ definitionsarray, gIds, modelsArray }) {
+  buildObjects: function buildObjects({
+    definitionsarray,
+    gIds,
+    modelsArray,
+    manager,
+  }) {
     try {
       // const { graph, graphEnabled, dbConnection, Transaction } = manager;
 
@@ -238,6 +243,7 @@ module.exports = {
             gIds: gIds,
             modelsArray,
             tenantType: model.tenantType || [],
+            datastores: [manager.dsName || 'admin'],
             modelDefaults: model.modelDefaults,
             modelAttributes: model.modelAttributes,
             Module: model.Module,
@@ -265,6 +271,17 @@ module.exports = {
           // console.log(`Checking`, model);
 
           registeredObjectModels.push(model.globalId);
+        }
+
+        if (
+          model.ModelObjectConstructor &&
+          !model.ModelObjectConstructor.datastores.includes(
+            manager.dsName || 'admin'
+          )
+        ) {
+          model.ModelObjectConstructor.datastores.push(
+            manager.dsName || 'admin'
+          );
         }
       }
     } catch (error) {
