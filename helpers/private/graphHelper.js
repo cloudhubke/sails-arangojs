@@ -275,6 +275,7 @@ module.exports = {
 
         if (
           model.ModelObjectConstructor &&
+          model.ModelObjectConstructor.datastores &&
           !model.ModelObjectConstructor.datastores.includes(
             manager.dsName || 'admin'
           )

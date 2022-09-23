@@ -267,9 +267,9 @@ module.exports = ({
         obj.saveToCache();
       } else {
         throw new Error(
-          `\n\n${globalId} not available in ${
+          `\n\n${globalId} record is not available in ${
             dsName || 'default'
-          } datastore\n\n`
+          } datastore\n\n. Query: ${JSON.stringify(params)}`
         );
       }
 
