@@ -44,7 +44,7 @@
     "@sailshq/lodash": "^3.10.2",
     "ajv": "^7.0.3",
     "arangojs": "^7.3.0",
-    "eventsource": "^1.1.0",
+    "eventsource": "^2.0.2",
     "flaverr": "^1.10.0",
     "lodash": "^4.17.21",
     "machine": "^15.2.2",
