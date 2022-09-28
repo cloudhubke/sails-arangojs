@@ -84,9 +84,13 @@ module.exports = (globalId) => {
           throw new Error(`Update could not reInitialize `);
         }
       } catch (error) {
+        console.log('====================================');
+        console.log(error);
+        console.log('====================================');
         throw new Error(`Error updating document: ${error.toString()}`);
       }
     },
+
 
     destroy: async function destroy(trx) {
       try {

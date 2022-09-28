@@ -501,24 +501,24 @@ module.exports = ({
 
     validate: function validate(values) {
       try {
-        let shema = schema || {};
-        schema = schema.rule || {};
+        let SCHEMA = schema || {};
+        SCHEMA = schema.rule || {};
 
-        if (schema.properties) {
+        if (SCHEMA.properties) {
           const newprops = {};
-          for (let prop in schema.properties) {
+          for (let prop in SCHEMA.properties) {
             const { linkCollections, validateLinks, ...otherprops } =
-              schema.properties[prop];
+              SCHEMA.properties[prop];
             newprops[prop] = otherprops;
           }
-          schema.properties = newprops;
+          SCHEMA.properties = newprops;
         }
 
         validateSchema(
           {
             tableName,
           },
-          schema,
+          SCHEMA,
           {
             ...values,
           }
